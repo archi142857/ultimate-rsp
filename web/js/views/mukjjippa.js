@@ -1,21 +1,22 @@
 // 묵찌빠 화면.
 
 import { h, clear } from "../ui/dom.js";
+import { t, lower } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
 import { createBot } from "../core/bots.js";
 import { makeRng } from "../core/rng.js";
 import { findEntry } from "../data/catalog.js";
 import { createMukjjippa, CALL } from "../games/mukjjippa.js";
-import { handGrid, selectBox, stage, chant, fastToggle, block } from "../ui/widgets.js";
+import { handGrid, selectBox, stage, chant, fastToggle, block, rpsChant } from "../ui/widgets.js";
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
 import { recordLine } from "../ui/widgets.js";
 
 const BOT_CHOICES = [
-  { id: "random", name: "주사위" },
-  { id: "human", name: "사람 흉내" },
-  { id: "pattern", name: "수 읽기" },
+  { id: "random", get name() { return t("주사위"); } },
+  { id: "human", get name() { return t("사람 흉내"); } },
+  { id: "pattern", get name() { return t("수 읽기"); } },
 ];
 
 export function mukjjippaView(main, entry) {
@@ -30,7 +31,7 @@ export function mukjjippaView(main, entry) {
 
   const st = stage();
   const score = scoreboard();
-  const steps = stepList(["가위바위보로 공격을 정한다", "공격이 외치며 손을 바꾸고, 수비도 같이 바꾼다", "같은 손이 나오면 공격이 이긴다"]);
+  const steps = stepList([t("가위바위보로 공격을 정한다"), t("공격이 외치며 손을 바꾸고, 수비도 같이 바꾼다"), t("같은 손이 나오면 공격이 이긴다")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("mukjjippa")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -38,7 +39,7 @@ export function mukjjippaView(main, entry) {
   const callNames = V.hands.map((x) => `${CALL[x.id]}! (${x.name})`);
 
   const botSel = selectBox({
-    label: "컴퓨터 전략",
+    label: t("컴퓨터 전략"),
     value: botId,
     options: BOT_CHOICES,
     onChange(id) {
@@ -48,18 +49,18 @@ export function mukjjippaView(main, entry) {
   });
 
   function roleText() {
-    if (game.phase === "rps") return "가위바위보! 이기는 쪽이 공격이 된다.";
+    if (game.phase === "rps") return t("가위바위보! 이기는 쪽이 공격이 된다.");
     return game.attacker === 0
-      ? "내가 공격. 외칠 손을 고르자. 컴퓨터가 같은 손을 내면 내가 이긴다."
-      : "컴퓨터가 공격. 같은 손을 내면 진다. 다른 손으로 이기면 공격을 빼앗는다.";
+      ? t("내가 공격. 외칠 손을 고르자. 컴퓨터가 같은 손을 내면 내가 이긴다.")
+      : t("컴퓨터가 공격. 같은 손을 내면 진다. 다른 손으로 이기면 공격을 빼앗는다.");
   }
 
   function refresh() {
     steps.set(game.done ? 2 : game.phase === "rps" ? 0 : 1);
-    st.me.tag(game.attacker === 0 ? "공격" : game.attacker === 1 ? "수비" : "");
-    st.op.tag(game.attacker === 1 ? "공격" : game.attacker === 0 ? "수비" : "");
+    st.me.tag(game.attacker === 0 ? t("공격") : game.attacker === 1 ? t("수비") : "");
+    st.op.tag(game.attacker === 1 ? t("공격") : game.attacker === 0 ? t("수비") : "");
     grid.setNames(game.phase === "attack" ? callNames : null);
-    score.set(wins[0], wins[1], "이긴 판");
+    score.set(wins[0], wins[1], t("이긴 판"));
   }
 
   function newGame() {
@@ -96,28 +97,29 @@ export function mukjjippaView(main, entry) {
     const attacker = game.attacker;
     st.me.set(V, null);
     st.op.set(V, null);
-    await chant(st, phase === "rps" ? ["가위!", "바위!", "보!"] : ["묵!", "찌!", "빠!"]);
+    await chant(st, phase === "rps" ? rpsChant() : [`${CALL.rock}!`, `${CALL.scissors}!`, `${CALL.paper}!`]);
     const r = game.play(i, j);
     throws.push({ me: j, op: i });
     st.me.set(V, i, phase === "attack" && attacker === 0 ? `${CALL[V.hands[i].id]}!` : "");
     st.op.set(V, j, phase === "attack" && attacker === 1 ? `${CALL[V.hands[j].id]}!` : "");
     let line;
     if (r.note === "again") {
-      st.say("비겼다");
-      line = `가위바위보: 둘 다 ${V.hands[i].name}. 다시.`;
+      st.say(t("비겼다"));
+      line = t("가위바위보: 둘 다 {h}. 다시.", { h: lower(V.hands[i].name) });
     } else if (r.note === "start") {
-      st.say(game.attacker === 0 ? "내가 공격" : "컴퓨터 공격", game.attacker === 0 ? "win" : "lose");
-      line = `가위바위보: ${V.sentence(i, j)}. ${game.attacker === 0 ? "내가" : "컴퓨터가"} 공격.`;
+      st.say(game.attacker === 0 ? t("내가 공격") : t("컴퓨터 공격"), game.attacker === 0 ? "win" : "lose");
+      line = game.attacker === 0 ? t("가위바위보: {s}. 내가 공격.", { s: V.sentence(i, j) }) : t("가위바위보: {s}. 컴퓨터가 공격.", { s: V.sentence(i, j) });
     } else if (r.note === "hit") {
       const meWon = game.winner === 0;
-      st.say(meWon ? "이겼다!" : "졌다", meWon ? "win" : "lose");
+      st.say(meWon ? t("이겼다!") : t("졌다"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
-      line = `같은 손 ${V.hands[i].name}! ${meWon ? "내가" : "컴퓨터가"} 공격이라 ${meWon ? "내가 이겼다" : "컴퓨터가 이겼다"}.`;
+      line = meWon ? t("같은 손 {h}! 내가 공격이라 내가 이겼다.", { h: lower(V.hands[i].name) }) : t("같은 손 {h}! 컴퓨터가 공격이라 컴퓨터가 이겼다.", { h: lower(V.hands[i].name) });
     } else {
-      const who = game.attacker === 0 ? "내가" : "컴퓨터가";
-      st.say(r.note === "keep" ? "공격 그대로" : "공격이 넘어갔다", game.attacker === 0 ? "win" : "lose");
-      line = `${V.sentence(i, j)}. ${r.note === "keep" ? `${who} 계속 공격.` : `이제 ${who} 공격.`}`;
+      const s = V.sentence(i, j);
+      st.say(r.note === "keep" ? t("공격 그대로") : t("공격이 넘어갔다"), game.attacker === 0 ? "win" : "lose");
+      if (r.note === "keep") line = game.attacker === 0 ? t("{s}. 내가 계속 공격.", { s }) : t("{s}. 컴퓨터가 계속 공격.", { s });
+      else line = game.attacker === 0 ? t("{s}. 이제 내가 공격.", { s }) : t("{s}. 이제 컴퓨터가 공격.", { s });
     }
     log.add(line, r.note === "hit" ? (game.winner === 0 ? "w" : "l") : "");
     st.sub(game.done ? "" : roleText());
@@ -125,8 +127,8 @@ export function mukjjippaView(main, entry) {
       wins[game.winner] += 1;
       rec.textContent = recordLine(addRecord("mukjjippa", game.winner === 0 ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, game.winner === 0 ? "묵찌빠 승리" : "묵찌빠 패배"),
-        h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, "한 판 더"),
+        h("strong", {}, game.winner === 0 ? t("묵찌빠 승리") : t("묵찌빠 패배")),
+        h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
     } else grid.lock(false);
@@ -137,17 +139,17 @@ export function mukjjippaView(main, entry) {
   const side = h(
     "div",
     { class: "side-panel" },
-    block("차례", steps.el),
+    block(t("차례"), steps.el),
     h(
       "p",
       { class: "note" },
-      h("b", {}, "공격을 쥐면 유리하다. "),
-      "둘 다 아무렇게나 내면 공격 쪽이 결국 이길 확률이 2/3 이다. 같은 손이 나올 확률 1/3, 공격을 지킬 확률 1/3, 빼앗길 확률 1/3 이 이어지기 때문이다.",
+      h("b", {}, t("공격을 쥐면 유리하다. ")),
+      t("둘 다 아무렇게나 내면 공격 쪽이 결국 이길 확률이 2/3 이다. 같은 손이 나올 확률 1/3, 공격을 지킬 확률 1/3, 빼앗길 확률 1/3 이 이어지기 때문이다."),
     ),
   );
   const panel = h(
     "section",
-    { class: "panel", "aria-label": "묵찌빠 하기" },
+    { class: "panel", "aria-label": t("묵찌빠 하기") },
     h("div", { class: "controls" }, botSel.el, fastToggle()),
     score.el,
     st.el,

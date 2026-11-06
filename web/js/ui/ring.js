@@ -1,9 +1,9 @@
 // 상성 고리: 손을 원 위에 고리 차례로 놓고, 이기는 손에서 지는 손으로 화살표를 긋는다.
 
 import { s } from "./dom.js";
+import { t, lower, listWords } from "../i18n.js";
 import { ringArt } from "./art.js";
 import { handVars } from "./colors.js";
-import { josa } from "../core/josa.js";
 
 function nodeRadius(n, size, mini, emoji) {
   if (mini && emoji) return n <= 3 ? size * 0.17 : n <= 4 ? size * 0.15 : size * 0.13;
@@ -150,20 +150,16 @@ function varsToStyle(v) {
 
 export function nodeTitle(V, i) {
   const h = V.hands[i];
-  const w = V.beats(i).map((k) => V.hands[k].name);
-  const l = V.beatenBy(i).map((k) => V.hands[k].name);
-  const parts = [];
-  if (w.length) parts.push(`${josa(listKo(w), "을를")} 이기고`);
-  if (l.length) parts.push(`${listKo(l)}에 진다`);
-  else if (parts.length) parts[parts.length - 1] = parts[parts.length - 1].replace(/이기고$/, "이긴다");
-  return `${h.name}: ${parts.join(" ") || "모두와 비긴다"}`;
-}
-
-export function listKo(names) {
-  if (names.length <= 1) return names.join("");
-  return names.join(", ");
+  const names = (ks) => listWords(ks.map((k) => lower(V.hands[k].name, V.hands[k].proper)));
+  const w = V.beats(i);
+  const l = V.beatenBy(i);
+  const vars = { name: h.name, w: names(w), l: names(l) };
+  if (w.length && l.length) return t("{name}: {w:을를} 이기고 {l}에 진다", vars);
+  if (w.length) return t("{name}: {w:을를} 이긴다", vars);
+  if (l.length) return t("{name}: {l}에 진다", vars);
+  return t("{name}: 모두와 비긴다", vars);
 }
 
 function ringLabel(V) {
-  return `${V.name} 상성 고리. 손 ${V.n}개. ` + V.hands.map((h) => nodeTitle(V, h.i)).join(". ");
+  return t("{name} 상성 고리. 손 {n}개. ", { name: V.name, n: V.n }) + V.hands.map((h) => nodeTitle(V, h.i)).join(". ");
 }

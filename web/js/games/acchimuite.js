@@ -1,10 +1,12 @@
 // 아치무이테호이. 1단계(janken): 가위바위보, 2단계(hoi): 이긴 쪽이 가리키고 진 쪽이 고개를 돌린다.
 
+import { t } from "../i18n.js";
+
 export const DIRS = [
-  { id: "up", name: "위", arrow: "↑", emoji: "⬆️" },
-  { id: "down", name: "아래", arrow: "↓", emoji: "⬇️" },
-  { id: "left", name: "왼쪽", arrow: "←", emoji: "⬅️" },
-  { id: "right", name: "오른쪽", arrow: "→", emoji: "➡️" },
+  { id: "up", get name() { return t("위"); }, arrow: "↑", emoji: "⬆️" },
+  { id: "down", get name() { return t("아래"); }, arrow: "↓", emoji: "⬇️" },
+  { id: "left", get name() { return t("왼쪽"); }, arrow: "←", emoji: "⬅️" },
+  { id: "right", get name() { return t("오른쪽"); }, arrow: "→", emoji: "➡️" },
 ];
 
 export function createAcchimuite(V) {

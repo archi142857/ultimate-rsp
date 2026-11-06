@@ -1,9 +1,11 @@
 // 명령 가위바위보: 손 하나와 명령(이겨라·져라·비겨라)을 보고 맞는 손을 낸다.
 
+import { t } from "../i18n.js";
+
 export const ORDERS = [
-  { id: "win", name: "이겨라", weight: 0.45 },
-  { id: "lose", name: "져라", weight: 0.45 },
-  { id: "draw", name: "비겨라", weight: 0.1 },
+  { id: "win", get name() { return t("이겨라"); }, weight: 0.45 },
+  { id: "lose", get name() { return t("져라"); }, weight: 0.45 },
+  { id: "draw", get name() { return t("비겨라"); }, weight: 0.1 },
 ];
 
 export function createCommand(V, rng, seconds = 30) {

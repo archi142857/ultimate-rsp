@@ -1,6 +1,7 @@
 // 여럿이 하는 놀이: 여럿이 가위바위보, 가위바위보 기차, 진화 가위바위보.
 
 import { groupWinner } from "../core/engine.js";
+import { t } from "../i18n.js";
 
 /**
  * 여럿이 가위바위보. 0번이 나.
@@ -87,11 +88,11 @@ export function createTrain(V, rng, people = 16) {
 }
 
 export const EVO_STAGES = [
-  { id: "egg", name: "알", emoji: "🥚" },
-  { id: "chick", name: "병아리", emoji: "🐣" },
-  { id: "hen", name: "닭", emoji: "🐔" },
-  { id: "dino", name: "공룡", emoji: "🦖" },
-  { id: "king", name: "왕", emoji: "👑" },
+  { id: "egg", get name() { return t("알"); }, emoji: "🥚" },
+  { id: "chick", get name() { return t("병아리"); }, emoji: "🐣" },
+  { id: "hen", get name() { return t("닭"); }, emoji: "🐔" },
+  { id: "dino", get name() { return t("공룡"); }, emoji: "🦖" },
+  { id: "king", get name() { return t("왕"); }, emoji: "👑" },
 ];
 
 /** 진화 가위바위보. 같은 단계끼리 짝을 지어 겨룬다. 꼭대기(왕)는 빠진다 */

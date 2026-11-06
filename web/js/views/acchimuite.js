@@ -1,12 +1,13 @@
 // 아치무이테호이 화면.
 
 import { h, clear } from "../ui/dom.js";
+import { t, lower } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
 import { createBot } from "../core/bots.js";
 import { makeRng } from "../core/rng.js";
 import { findEntry } from "../data/catalog.js";
 import { createAcchimuite, DIRS } from "../games/acchimuite.js";
-import { handGrid, stage, chant, fastToggle, block, recordLine } from "../ui/widgets.js";
+import { handGrid, stage, chant, fastToggle, block, recordLine, rpsChant } from "../ui/widgets.js";
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
@@ -23,7 +24,7 @@ export function acchimuiteView(main, entry) {
 
   const st = stage();
   const score = scoreboard();
-  const steps = stepList(["가위바위보", "이긴 쪽이 가리키고, 진 쪽이 같은 순간 고개를 돌린다", "가리킨 쪽을 보면 진다. 아니면 1번부터"]);
+  const steps = stepList([t("@step:가위바위보"), t("이긴 쪽이 가리키고, 진 쪽이 같은 순간 고개를 돌린다"), t("가리킨 쪽을 보면 진다. 아니면 1번부터")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("acchimuite")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -44,10 +45,10 @@ export function acchimuiteView(main, entry) {
     const hoiPhase = game.phase === "hoi" && !game.done;
     grid.el.hidden = hoiPhase;
     dirBox.hidden = !hoiPhase;
-    if (hoiPhase) dirLabel.textContent = game.pointer === 0 ? "어디를 가리킬까" : "어디로 고개를 돌릴까";
-    st.me.tag(game.pointer === 0 ? "가리키기" : game.pointer === 1 ? "고개 돌리기" : "");
-    st.op.tag(game.pointer === 1 ? "가리키기" : game.pointer === 0 ? "고개 돌리기" : "");
-    score.set(wins[0], wins[1], "이긴 판");
+    if (hoiPhase) dirLabel.textContent = game.pointer === 0 ? t("어디를 가리킬까") : t("어디로 고개를 돌릴까");
+    st.me.tag(game.pointer === 0 ? t("가리키기") : game.pointer === 1 ? t("고개 돌리기") : "");
+    st.op.tag(game.pointer === 1 ? t("가리키기") : game.pointer === 0 ? t("고개 돌리기") : "");
+    score.set(wins[0], wins[1], t("이긴 판"));
   }
 
   function newGame() {
@@ -59,7 +60,7 @@ export function acchimuiteView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub("가위바위보부터.");
+    st.sub(t("가위바위보부터."));
     log.clear();
     refresh();
   }
@@ -72,19 +73,19 @@ export function acchimuiteView(main, entry) {
     const j = bot.pick({ history: throws });
     st.me.set(V, null);
     st.op.set(V, null);
-    await chant(st, ["가위!", "바위!", "보!"]);
+    await chant(st, rpsChant());
     const r = game.janken(i, j);
     throws.push({ me: j, op: i });
     st.me.set(V, i);
     st.op.set(V, j);
     if (r.cmp === 0) {
-      st.say("비겼다");
-      st.sub("다시 가위바위보.");
-      log.add(`가위바위보: 둘 다 ${V.hands[i].name}.`);
+      st.say(t("비겼다"));
+      st.sub(t("다시 가위바위보."));
+      log.add(t("가위바위보: 둘 다 {h}.", { h: lower(V.hands[i].name) }));
     } else {
-      st.say(game.pointer === 0 ? "내가 가리킨다" : "컴퓨터가 가리킨다", game.pointer === 0 ? "win" : "lose");
-      st.sub(game.pointer === 0 ? "컴퓨터가 고개를 돌릴 쪽을 맞혀라." : "컴퓨터가 가리킬 쪽을 피해라.");
-      log.add(`가위바위보: ${V.sentence(i, j)}.`);
+      st.say(game.pointer === 0 ? t("내가 가리킨다") : t("컴퓨터가 가리킨다"), game.pointer === 0 ? "win" : "lose");
+      st.sub(game.pointer === 0 ? t("컴퓨터가 고개를 돌릴 쪽을 맞혀라.") : t("컴퓨터가 가리킬 쪽을 피해라."));
+      log.add(t("가위바위보: {s}.", { s: V.sentence(i, j) }));
     }
     grid.lock(false);
     refresh();
@@ -96,7 +97,7 @@ export function acchimuiteView(main, entry) {
     busy = true;
     const j = botDir();
     const pointer = game.pointer;
-    await chant(st, ["아치", "무이테", "호이!"], 230);
+    await chant(st, t("아치 무이테 호이!").split(" "), 230);
     const r = game.hoi(k, j);
     myDirs.push(k);
     const meD = DIRS[k];
@@ -105,20 +106,20 @@ export function acchimuiteView(main, entry) {
     st.op.text(opD.arrow, opD.name);
     if (r.hit) {
       const meWon = game.winner === 0;
-      st.say(meWon ? "이겼다!" : "졌다", meWon ? "win" : "lose");
-      st.sub(pointer === 0 ? `${meD.name}을 가리켰는데 컴퓨터가 그쪽을 봤다.` : `컴퓨터가 ${opD.name}을 가리켰고 나도 그쪽을 봤다.`);
-      log.add(`호이! 둘 다 ${meD.name}. ${meWon ? "내가" : "컴퓨터가"} 이겼다.`, meWon ? "w" : "l");
+      st.say(meWon ? t("이겼다!") : t("졌다"), meWon ? "win" : "lose");
+      st.sub(pointer === 0 ? t("{d:을를} 가리켰는데 컴퓨터가 그쪽을 봤다.", { d: lower(meD.name) }) : t("컴퓨터가 {d:을를} 가리켰고 나도 그쪽을 봤다.", { d: lower(opD.name) }));
+      log.add(meWon ? t("호이! 둘 다 {d}. 내가 이겼다.", { d: lower(meD.name) }) : t("호이! 둘 다 {d}. 컴퓨터가 이겼다.", { d: lower(meD.name) }), meWon ? "w" : "l");
       wins[game.winner] += 1;
       rec.textContent = recordLine(addRecord("acchimuite", meWon ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, meWon ? "아치무이테호이 승리" : "아치무이테호이 패배"),
-        h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, "한 판 더"),
+        h("strong", {}, meWon ? t("아치무이테호이 승리") : t("아치무이테호이 패배")),
+        h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
     } else {
-      st.say("빗나갔다");
-      st.sub("다시 가위바위보부터.");
-      log.add(`호이! 나 ${meD.name}, 컴퓨터 ${opD.name}. 빗나갔다.`);
+      st.say(t("빗나갔다"));
+      st.sub(t("다시 가위바위보부터."));
+      log.add(t("호이! 나 {a}, 컴퓨터 {b}. 빗나갔다.", { a: lower(meD.name), b: lower(opD.name) }));
     }
     refresh();
     busy = false;
@@ -137,17 +138,17 @@ export function acchimuiteView(main, entry) {
   const side = h(
     "div",
     { class: "side-panel" },
-    block("차례", steps.el),
+    block(t("차례"), steps.el),
     h(
       "p",
       { class: "note" },
-      h("b", {}, "가리키는 쪽이 이길 확률은 한 번에 1/4. "),
-      "그래서 가위바위보를 여러 번 이겨야 끝나는 경우가 많다. 교토 기온의 술자리 놀이에서 비롯됐다는 이야기가 있다.",
+      h("b", {}, t("가리키는 쪽이 이길 확률은 한 번에 1/4. ")),
+      t("그래서 가위바위보를 여러 번 이겨야 끝나는 경우가 많다. 교토 기온의 술자리 놀이에서 비롯됐다는 이야기가 있다."),
     ),
   );
   const panel = h(
     "section",
-    { class: "panel", "aria-label": "아치무이테호이 하기" },
+    { class: "panel", "aria-label": t("아치무이테호이 하기") },
     h("div", { class: "controls" }, fastToggle()),
     score.el,
     st.el,

@@ -1,5 +1,7 @@
 // 작은 DOM 도구. h("div", { class: "x", onclick }, 자식...)
 
+import { t as tr } from "../i18n.js";
+
 export function h(tag, attrs, ...children) {
   const el = document.createElement(tag);
   if (attrs) {
@@ -77,6 +79,6 @@ export function frac(p) {
   return pct(p);
 }
 
-export function setTitle(t) {
-  document.title = t ? `${t} — Ultimate RSP` : "Ultimate RSP — 궁극의 가위바위보";
+export function setTitle(title) {
+  document.title = title ? `${title} — Ultimate RSP` : `Ultimate RSP — ${tr("궁극의 가위바위보")}`;
 }

@@ -1,23 +1,23 @@
 // 한 판짜리 변종 화면: 고리 그림 + 컴퓨터와 겨루기 + 규칙·전략.
 
 import { h, clear, frac, append } from "../ui/dom.js";
+import { t, lower, listWords, scriptLang } from "../i18n.js";
 import { handArt } from "../ui/art.js";
 import { compileVariant } from "../core/engine.js";
 import { BOTS, createBot } from "../core/bots.js";
 import { makeRng } from "../core/rng.js";
 import { createMatch, FORMATS, formatById } from "../games/match.js";
 import { createRing } from "../ui/ring.js";
-import { handGrid, selectBox, segmented, stage, chant, fastToggle, RESULT_WORD, mixBar, block, recordLine } from "../ui/widgets.js";
+import { handGrid, selectBox, segmented, stage, chant, fastToggle, RESULT_WORD, mixBar, block, recordLine, rpsChant, countChant } from "../ui/widgets.js";
 import { addRecord, record, setting, setSetting } from "../ui/store.js";
 import { entryHead, entryBody, scoreboard, histItem } from "./common.js";
-import { josa } from "../core/josa.js";
 
 const CLASSIC_IDS = ["scissors", "rock", "paper"];
 
 export function chantWords(V) {
   const ids = V.hands.map((x) => x.id);
-  if (V.n === 3 && CLASSIC_IDS.every((id) => ids.includes(id))) return ["가위!", "바위!", "보!"];
-  return ["하나!", "둘!", "셋!"];
+  if (V.n === 3 && CLASSIC_IDS.every((id) => ids.includes(id))) return rpsChant();
+  return countChant();
 }
 
 export function drawChance(V) {
@@ -44,7 +44,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
   const ring = createRing(V, { size: 440 });
   const st = stage();
   const score = scoreboard();
-  const hist = h("ol", { class: "hist", "aria-label": "지난 판" });
+  const hist = h("ol", { class: "hist", "aria-label": t("지난 판") });
   const rec = h("p", { class: "rec" }, recordLine(record(recordId)));
   const doneBar = h("div", { class: "done-bar", hidden: true });
 
@@ -57,7 +57,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
   });
 
   const botSel = selectBox({
-    label: "컴퓨터 전략",
+    label: t("컴퓨터 전략"),
     value: botId,
     options: BOTS.map((b) => ({ id: b.id, name: b.name })),
     onChange(id) {
@@ -70,7 +70,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
   });
   const botDesc = h("p", { class: "rec" }, BOTS.find((b) => b.id === botId).desc);
   const fmtSeg = segmented({
-    label: "판",
+    label: t("판"),
     value: fmt.id,
     options: FORMATS.map((f) => ({ id: f.id, name: f.name })),
     onChange(id) {
@@ -91,14 +91,14 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(fmt.target === Infinity ? "끝없이 겨룬다. 몇 판이든 해 보자." : `먼저 ${fmt.target}번 이기면 끝난다. 비긴 판은 세지 않는다.`);
+    st.sub(fmt.target === Infinity ? t("끝없이 겨룬다. 몇 판이든 해 보자.") : t("먼저 {n}번 이기면 끝난다. 비긴 판은 세지 않는다.", { n: fmt.target }));
     ring.clear();
     updateScore();
   }
 
   function updateScore() {
-    const t = fmt.target === Infinity ? `${match.rounds.length}판째` : `먼저 ${fmt.target}승`;
-    score.set(match.score[0], match.score[1], t);
+    const note = fmt.target === Infinity ? t("{n}판째", { n: match.rounds.length }) : t("먼저 {n}승", { n: fmt.target });
+    score.set(match.score[0], match.score[1], note);
   }
 
   async function play(i) {
@@ -115,7 +115,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     st.me.set(V, i);
     st.op.set(V, j);
     st.say(RESULT_WORD[r.cmp], r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
-    st.sub(r.cmp === 0 ? (i === j ? `둘 다 ${V.hands[i].name}. 다시 낸다.` : `${r.sentence}. 다시 낸다.`) : `${r.sentence}.`);
+    st.sub(r.cmp === 0 ? `${V.sentence(i, j)}. ${t("다시 낸다.")}` : `${r.sentence}.`);
     st.me.mark(r.cmp > 0 ? "won" : r.cmp < 0 ? "lost" : null);
     st.op.mark(r.cmp < 0 ? "won" : r.cmp > 0 ? "lost" : null);
     ring.bout(i, j);
@@ -126,8 +126,8 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     if (match.done) {
       const won = match.winner === 0;
       clear(doneBar).append(
-        h("strong", {}, won ? `${fmt.name} 승리` : `${fmt.name} 패배`),
-        h("button", { class: "btn btn-ink", type: "button", onclick: newMatch }, "새 경기"),
+        h("strong", {}, won ? t("{f} 승리", { f: fmt.name }) : t("{f} 패배", { f: fmt.name })),
+        h("button", { class: "btn btn-ink", type: "button", onclick: newMatch }, t("새 경기")),
       );
       doneBar.hidden = false;
     } else {
@@ -138,14 +138,14 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
 
   const k = V.beats(0).length;
   const facts = [
-    ["손", `${V.n}개`],
-    ["아무렇게나 낼 때 비길 확률", frac(drawChance(V))],
-    ["판", V.balanced ? `고르다, 저마다 ${k}개를 이긴다` : "고르지 않다"],
+    [t("손"), t("{n}개", { n: V.n })],
+    [t("아무렇게나 낼 때 비길 확률"), frac(drawChance(V))],
+    [t("@fact:판"), V.balanced ? t("고르다, 저마다 {k}개를 이긴다", { k }) : t("고르지 않다")],
   ];
 
   const playPanel = h(
     "section",
-    { class: "panel", "aria-label": "컴퓨터와 겨루기" },
+    { class: "panel", "aria-label": t("컴퓨터와 겨루기") },
     h("div", { class: "controls" }, botSel.el, fmtSeg.el, fastToggle()),
     botDesc,
     score.el,
@@ -160,7 +160,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     "div",
     { class: "ring-panel" },
     h("div", { class: "ring-box" }, ring.el),
-    h("p", { class: "ring-note" }, "화살표는 이기는 손에서 지는 손으로 간다. 손을 짚으면 그 손이 이기는 쪽은 그 손 색으로, 지는 쪽은 진하게 보인다." + (hasDraws(V) ? " 선이 없는 두 손은 비긴다." : "")),
+    h("p", { class: "ring-note" }, t("화살표는 이기는 손에서 지는 손으로 간다. 손을 짚으면 그 손이 이기는 쪽은 그 손 색으로, 지는 쪽은 진하게 보인다.") + (hasDraws(V) ? t(" 선이 없는 두 손은 비긴다.") : "")),
   );
 
   append(main, [
@@ -188,11 +188,12 @@ function relationsBlock(V) {
   // 손이 아주 많으면 손마다 늘어놓지 않고 고리 차례만 보여 준다(고리 그림에서 짚으면 바로 보인다)
   if (V.n > 25 && V.cycle) {
     return block(
-      "누가 누구를 이기나",
-      h("p", {}, `손을 아래 차례로 고리에 늘어놓고, 손마다 그 뒤로 ${V.cycle}개를 이긴다. 끝에 닿으면 처음으로 돌아간다. 고리 그림에서 손을 짚으면 누구를 이기는지 보인다.`),
+      t("누가 누구를 이기나"),
+      h("p", {}, t("손을 아래 차례로 고리에 늘어놓고, 손마다 그 뒤로 {k}개를 이긴다. 끝에 닿으면 처음으로 돌아간다. 고리 그림에서 손을 짚으면 누구를 이기는지 보인다.", { k: V.cycle })),
       h("ol", { class: "ringlist" }, V.order.map((i) => h("li", {}, handArt(V.hands[i]), ` ${V.hands[i].name}`))),
     );
   }
+  const names = (ks) => listWords(ks.map((x) => lower(V.hands[x].name, V.hands[x].proper)));
   const items = V.hands.map((hd) => {
     const w = V.beats(hd.i);
     const l = V.beatenBy(hd.i);
@@ -205,21 +206,21 @@ function relationsBlock(V) {
         {},
         h("b", {}, hd.name),
         " ",
-        w.length ? `${josa(w.map((x) => V.hands[x].name).join(", "), "을를")} 이긴다. ` : "",
-        l.length ? `${l.map((x) => V.hands[x].name).join(", ")}에 진다.` : "",
+        w.length ? t("{w:을를} 이긴다. ", { w: names(w) }) : "",
+        l.length ? t("{l}에 진다.", { l: names(l) }) : "",
       ),
     );
   });
   const parts = [h("ul", { class: "relist" }, items)];
   if (V.n <= 9) parts.push(h("div", { class: "table-wrap" }, matrixTable(V)));
-  return block("누가 누구를 이기나", ...parts);
+  return block(t("누가 누구를 이기나"), ...parts);
 }
 
 function matrixTable(V) {
   const head = h(
     "tr",
     {},
-    h("th", { scope: "col" }, h("span", { class: "sr" }, "내 손 / 상대 손")),
+    h("th", { scope: "col" }, h("span", { class: "sr" }, t("내 손 / 상대 손"))),
     V.hands.map((hd) => h("th", { scope: "col", class: "e", title: hd.name }, handArt(hd), h("span", { class: "sr" }, hd.name))),
   );
   const rows = V.hands.map((a) =>
@@ -229,15 +230,15 @@ function matrixTable(V) {
       h("th", { scope: "row", class: "e", title: a.name }, handArt(a), h("span", { class: "sr" }, a.name)),
       V.hands.map((b) => {
         const c = V.cmp(a.i, b.i);
-        if (a.i === b.i) return h("td", { class: "s", title: "같은 손" }, "–");
-        return h("td", { class: c > 0 ? "w" : c < 0 ? "l" : "", title: V.sentence(a.i, b.i) }, c > 0 ? "승" : c < 0 ? "패" : "무");
+        if (a.i === b.i) return h("td", { class: "s", title: t("같은 손") }, "–");
+        return h("td", { class: c > 0 ? "w" : c < 0 ? "l" : "", title: V.sentence(a.i, b.i) }, c > 0 ? t("승") : c < 0 ? t("패") : t("무"));
       }),
     ),
   );
   return h(
     "table",
     { class: "grid" },
-    h("caption", { class: "sr" }, "판정표: 줄이 내 손, 칸이 상대 손"),
+    h("caption", { class: "sr" }, t("판정표: 줄이 내 손, 칸이 상대 손")),
     h("thead", {}, head),
     h("tbody", {}, rows),
   );
@@ -247,7 +248,7 @@ function howBlock(V) {
   const withHow = V.hands.filter((hd) => hd.how);
   if (!withHow.length) return null;
   return block(
-    "손 모양",
+    t("손 모양"),
     h(
       "ul",
       { class: "howlist" },
@@ -260,22 +261,22 @@ function strategyBlock(V) {
   const eq = V.equilibrium;
   if (eq.uniform) {
     return block(
-      "어떻게 내야 할까",
+      t("어떻게 내야 할까"),
       h(
         "p",
         {},
-        `모든 손을 똑같이 ${frac(1 / V.n)}씩 섞어 내면 된다. 그러면 상대가 무엇을 내든 길게 보면 이기는 판과 지는 판이 같아진다. ` +
-          "대신 상대에게 버릇이 있으면 그걸 노려야 이긴다. '컴퓨터 전략'에서 고집이나 돌림처럼 버릇 있는 상대를 골라 보자.",
+        t("모든 손을 똑같이 {p}씩 섞어 내면 된다. 그러면 상대가 무엇을 내든 길게 보면 이기는 판과 지는 판이 같아진다. ", { p: frac(1 / V.n) }) +
+          t("대신 상대에게 버릇이 있으면 그걸 노려야 이긴다. '컴퓨터 전략'에서 고집이나 돌림처럼 버릇 있는 상대를 골라 보자."),
       ),
     );
   }
-  const zero = V.hands.filter((hd) => eq.mix[hd.i] < 1e-9).map((hd) => hd.name);
+  const zero = V.hands.filter((hd) => eq.mix[hd.i] < 1e-9).map((hd) => lower(hd.name, hd.proper));
   return block(
-    "어떻게 내야 할까",
-    h("p", {}, "이 판은 고르지 않아서 손마다 내야 할 몫이 다르다. 선형 계획법으로 푼 최적 섞기는 이렇다."),
+    t("어떻게 내야 할까"),
+    h("p", {}, t("이 판은 고르지 않아서 손마다 내야 할 몫이 다르다. 선형 계획법으로 푼 최적 섞기는 이렇다.")),
     mixBar(V, eq.mix),
     zero.length
-      ? h("p", { class: "note" }, h("b", {}, `${josa(zero.join(", "), "은는")} 내지 않는다.`), " 어떤 손을 만나도 다른 손보다 못하거나 같기 때문이다.")
+      ? h("p", { class: "note" }, h("b", {}, t("{z:은는} 내지 않는다.", { z: listWords(zero) })), t(" 어떤 손을 만나도 다른 손보다 못하거나 같기 때문이다."))
       : null,
   );
 }
@@ -283,11 +284,11 @@ function strategyBlock(V) {
 function akaBlock(entry) {
   if (!entry.aka) return null;
   return block(
-    "다른 이름",
+    t("다른 이름"),
     h(
       "dl",
       { class: "aka" },
-      entry.aka.map(([name, where]) => [h("dt", {}, where), h("dd", {}, name)]),
+      entry.aka.map(([name, where]) => [h("dt", {}, where), h("dd", { lang: scriptLang(name) }, name)]),
     ),
   );
 }

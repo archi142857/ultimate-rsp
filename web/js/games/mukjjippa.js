@@ -1,7 +1,19 @@
 // 묵찌빠. 0 = 나, 1 = 상대. 손은 가위바위보 변종(V)의 번호를 쓴다.
 // 1단계(rps): 가위바위보로 공격을 정한다. 2단계(attack): 같은 손이면 공격이 이기고, 다르면 그 판에 이긴 쪽이 공격.
 
-export const CALL = { rock: "묵", scissors: "찌", paper: "빠" };
+import { t } from "../i18n.js";
+
+export const CALL = {
+  get rock() {
+    return t("묵");
+  },
+  get scissors() {
+    return t("찌");
+  },
+  get paper() {
+    return t("빠");
+  },
+};
 
 export function createMukjjippa(V) {
   const g = {

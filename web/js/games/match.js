@@ -1,11 +1,13 @@
 // 한 판짜리 변종(손을 동시에 내고 바로 판정하는 꼴)의 경기 진행.
 // target: 먼저 몇 번 이기면 끝나는지(Infinity 면 끝없이), limits: { 손 id: 쓸 수 있는 횟수 }, carry: 비긴 점수 넘기기
 
+import { t } from "../i18n.js";
+
 export const FORMATS = [
-  { id: "single", name: "단판", target: 1 },
-  { id: "bo3", name: "삼세판", target: 2 },
-  { id: "bo5", name: "5판 3선승", target: 3 },
-  { id: "endless", name: "끝없이", target: Infinity },
+  { id: "single", get name() { return t("단판"); }, target: 1 },
+  { id: "bo3", get name() { return t("삼세판"); }, target: 2 },
+  { id: "bo5", get name() { return t("5판 3선승"); }, target: 3 },
+  { id: "endless", get name() { return t("끝없이"); }, target: Infinity },
 ];
 
 export function formatById(id) {

@@ -1,6 +1,7 @@
 // 첫 화면: 큰 제목과 바로 한 판, 고리 그림, 그리고 갈래별 도감.
 
 import { h, clear, setTitle } from "../ui/dom.js";
+import { t, lang } from "../i18n.js";
 import { handArt } from "../ui/art.js";
 import { CATALOG, CATEGORIES, findEntry } from "../data/catalog.js";
 import { compileVariant } from "../core/engine.js";
@@ -44,10 +45,11 @@ const META = {
 
 const compiled = new Map();
 export function compiledOf(entry) {
-  if (!compiled.has(entry.id)) {
-    compiled.set(entry.id, entry.kind === "custom" ? compileVariant(makeCustomDef({ n: 11, seed: 3 })) : compileVariant(entry));
+  const key = `${lang()}:${entry.id}`;
+  if (!compiled.has(key)) {
+    compiled.set(key, entry.kind === "custom" ? compileVariant(makeCustomDef({ n: 11, seed: 3 })) : compileVariant(entry));
   }
-  return compiled.get(entry.id);
+  return compiled.get(key);
 }
 
 const HERO_RINGS = ["classic", "rpsls", "rps7", "rps9", "rps11", "rps15", "rps25", "rps101"];
@@ -60,10 +62,10 @@ export function homeView(main, { focus } = {}) {
   const history = [];
 
   // 바로 한 판
-  const out = h("p", { class: "quick-out", "aria-live": "polite" }, "손을 고르면 컴퓨터도 같이 낸다.");
+  const out = h("p", { class: "quick-out", "aria-live": "polite" }, t("손을 고르면 컴퓨터도 같이 낸다."));
   const grid = handGrid(classic, {
     compact: true,
-    label: "가위바위보 한 판",
+    label: t("가위바위보 한 판"),
     onPick(i) {
       const j = bot.pick({ history: history.map((r) => ({ me: r.op, op: r.me })) });
       history.push({ me: i, op: j });
@@ -71,11 +73,11 @@ export function homeView(main, { focus } = {}) {
       addRecord("classic", c);
       clear(out).append(
         h("strong", {}, RESULT_WORD[c]),
-        "나 ",
+        t("나") + " ",
         handArt(classic.hands[i]),
-        " 컴퓨터 ",
+        " " + t("컴퓨터") + " ",
         handArt(classic.hands[j]),
-        `. ${c === 0 ? "한 번 더?" : classic.sentence(i, j) + "."}`,
+        `. ${c === 0 ? t("한 번 더?") : classic.sentence(i, j) + "."}`,
       );
     },
   });
@@ -86,16 +88,16 @@ export function homeView(main, { focus } = {}) {
     h(
       "div",
       { class: "hero-text" },
-      h("h1", { class: "hero-title", id: "hero-title" }, h("span", {}, "궁극의"), h("span", {}, "가위바위보")),
+      h("h1", { class: "hero-title", id: "hero-title" }, h("span", {}, t("궁극의")), h("span", {}, t("가위바위보"))),
       h(
         "p",
         { class: "hero-lead" },
-        `가위바위보 ${CATALOG.length}가지를 모았다. 누가 누구를 이기는지 고리 그림으로 보고, 컴퓨터와 바로 겨룬다.`,
+        t("가위바위보 {n}가지를 모았다. 누가 누구를 이기는지 고리 그림으로 보고, 컴퓨터와 바로 겨룬다.", { n: CATALOG.length }),
       ),
       h(
         "div",
         { class: "quick" },
-        h("div", { class: "quick-head" }, h("h2", {}, "바로 한 판"), h("a", { href: "#/v/classic" }, "삼세판으로 하기")),
+        h("div", { class: "quick-head" }, h("h2", {}, t("바로 한 판")), h("a", { href: "#/v/classic" }, t("삼세판으로 하기"))),
         grid.el,
         out,
       ),
@@ -140,12 +142,12 @@ function heroRing() {
     current = id;
     const k = (V.n - 1) / 2;
     clear(cap).append(
-      `${V.name}. 손 ${V.n}개, 저마다 ${k}개를 이기고 ${k}개에 진다. 손을 짚으면 누구를 이기는지 보인다. `,
-      h("a", { href: `#/v/${id}` }, "이 판 하기"),
+      t("{name}. 손 {n}개, 저마다 {k}개를 이기고 {k}개에 진다. 손을 짚으면 누구를 이기는지 보인다. ", { name: V.name, n: V.n, k }),
+      h("a", { href: `#/v/${id}` }, t("이 판 하기")),
     );
   }
   const seg = segmented({
-    label: "고리 크기",
+    label: t("고리 크기"),
     small: true,
     value: "rps15",
     options: HERO_RINGS.map((id) => ({ id, name: String(compiledOf(findEntry(id)).n) })),
@@ -160,11 +162,11 @@ function tile(e) {
   let meta;
   if (e.kind === "matrix" || e.kind === "custom") {
     const V = compiledOf(e);
-    art = createRing(V, { size: 96, mini: true, emoji: V.n <= 5, title: `${e.name} 고리` }).el;
-    meta = e.kind === "custom" ? "손 3개부터 101개까지" : `손 ${V.n}개` + (V.balanced ? "" : ", 고르지 않음");
+    art = createRing(V, { size: 96, mini: true, emoji: V.n <= 5, title: t("{name} 고리", { name: e.name }) }).el;
+    meta = e.kind === "custom" ? t("손 3개부터 101개까지") : t("손 {n}개", { n: V.n }) + (V.balanced ? "" : t(", 고르지 않음"));
   } else {
     art = h("span", { class: "art-emoji", "aria-hidden": "true" }, ART[e.id] || "✊");
-    meta = META[e.id] || "";
+    meta = META[e.id] ? t(META[e.id]) : "";
   }
   return h(
     "a",

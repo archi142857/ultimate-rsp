@@ -1,6 +1,7 @@
 // 직접 만들기(RPS-n): 손 개수와 이기는 수를 정하면 고리 규칙을 만들어 바로 겨룬다.
 
 import { h, clear } from "../ui/dom.js";
+import { t } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
 import { makeCustomDef, maxWins, CUSTOM_MIN, CUSTOM_MAX } from "../data/custom.js";
 import { buildMatrixPage } from "./matrix.js";
@@ -20,7 +21,7 @@ export function customView(main, entry, params) {
     const def = makeCustomDef({ n, k, seed });
     const V = compileVariant(def);
     history.replaceState(null, "", `#/v/custom?n=${n}&k=${k}&seed=${seed}`);
-    page = buildMatrixPage(host, { ...entry, ...def, id: "custom", about: [...def.about, ...entry.about], sub: null, origin: "직접 만들기" }, V, {
+    page = buildMatrixPage(host, { ...entry, ...def, id: "custom", about: [...def.about, ...entry.about], sub: null, origin: t("직접 만들기") }, V, {
       extraControls: controls(),
       recordId: "custom",
     });
@@ -34,7 +35,7 @@ export function customView(main, entry, params) {
       min: CUSTOM_MIN,
       max: CUSTOM_MAX,
       value: n,
-      "aria-label": "손 개수",
+      "aria-label": t("손 개수"),
       oninput: () => (nOut.textContent = nIn.value),
       onchange: () => {
         n = Number(nIn.value);
@@ -47,7 +48,7 @@ export function customView(main, entry, params) {
       min: 1,
       max: maxWins(n),
       value: k,
-      "aria-label": "손마다 이기는 수",
+      "aria-label": t("손마다 이기는 수"),
       disabled: maxWins(n) <= 1,
       oninput: () => (kOut.textContent = kIn.value),
       onchange: () => {
@@ -57,12 +58,12 @@ export function customView(main, entry, params) {
     });
     return h(
       "section",
-      { class: "panel", style: { marginBottom: "24px" }, "aria-label": "규칙 만들기" },
+      { class: "panel", style: { marginBottom: "24px" }, "aria-label": t("규칙 만들기") },
       h(
         "div",
         { class: "controls", style: { marginBottom: "0" } },
-        h("div", { class: "range" }, h("span", { class: "field-label" }, "손 개수 ", nOut), nIn),
-        h("div", { class: "range" }, h("span", { class: "field-label" }, "손마다 이기는 수 ", kOut), kIn),
+        h("div", { class: "range" }, h("span", { class: "field-label" }, t("손 개수") + " ", nOut), nIn),
+        h("div", { class: "range" }, h("span", { class: "field-label" }, t("손마다 이기는 수") + " ", kOut), kIn),
         h(
           "button",
           {
@@ -73,13 +74,13 @@ export function customView(main, entry, params) {
               render();
             },
           },
-          "손 다시 뽑기",
+          t("손 다시 뽑기"),
         ),
       ),
       h(
         "p",
         { class: "rec" },
-        `이기는 수가 손 개수의 절반보다 적으면 비기는 짝이 생긴다. 러브레이스의 RPS-101 처럼 손 101개도 만들 수 있다. 주소를 보내면 같은 판을 연다.`,
+        t("이기는 수가 손 개수의 절반보다 적으면 비기는 짝이 생긴다. 러브레이스의 RPS-101 처럼 손 101개도 만들 수 있다. 주소를 보내면 같은 판을 연다."),
       ),
     );
   }

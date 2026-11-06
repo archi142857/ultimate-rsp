@@ -60,6 +60,7 @@ export function compileVariant(def) {
   }
 
   const weight = hands.map((h) => (def.weights && def.weights[h.id]) || 1);
+  const en = def.lang === "en";
 
   const V = {
     ...def,
@@ -74,10 +75,11 @@ export function compileVariant(def) {
     cmp(a, b) {
       return win[a][b] ? 1 : win[b][a] ? -1 : 0;
     },
-    /** 이긴 쪽이 진 쪽을 어떻게 이기는지 한 문장 */
+    /** 이긴 쪽이 진 쪽을 어떻게 이기는지 한 문장. 영어판(def.lang === "en")은 영어로 */
     sentence(a, b) {
-      if (win[a][b]) return phrases[a][b] || say(hands[a], hands[b], verbs[a][b]);
-      if (win[b][a]) return phrases[b][a] || say(hands[b], hands[a], verbs[b][a]);
+      if (win[a][b]) return phrases[a][b] || say(hands[a], hands[b], verbs[a][b], en);
+      if (win[b][a]) return phrases[b][a] || say(hands[b], hands[a], verbs[b][a], en);
+      if (en) return a === b ? `Both threw ${inSentence(hands[a])}` : `${hands[a].name} and ${inSentence(hands[b])}: no winner`;
       return a === b ? `둘 다 ${hands[a].name}` : `${josa(hands[a].name, "과와")} ${hands[b].name}, 승부가 없다`;
     },
     /** 손 a 가 이기는 손들, 지는 손들 */
@@ -94,8 +96,30 @@ export function compileVariant(def) {
   return V;
 }
 
-function say(w, l, verb) {
+function say(w, l, verb, en) {
+  if (en) {
+    const v = verb || "beats";
+    return `${w.name} ${w.plural ? plainVerb(v) : v} ${inSentence(l)}`;
+  }
   return `${josa(w.name, "이가")} ${josa(l.name, "을를")} ${verb || "이긴다"}`;
+}
+
+/** 영어 문장 가운데의 손 이름: 고유 이름·약자가 아니면 첫 글자를 소문자로 */
+export function inSentence(hand) {
+  const n = hand.name;
+  return hand.proper || !/^[A-Z][a-z]/.test(n) ? n : n[0].toLowerCase() + n.slice(1);
+}
+
+/** 3인칭 단수 동사를 원형으로(복수 주어용): crushes → crush, carries → carry, cuts → cut. 첫 낱말만 */
+export function plainVerb(v) {
+  const [first, ...rest] = v.split(" ");
+  let w = first;
+  if (w === "is") w = "are";
+  else if (w === "has") w = "have";
+  else if (/[^aeiou]ies$/.test(w)) w = w.slice(0, -3) + "y";
+  else if (/(ss|sh|ch|x|z|o)es$/.test(w)) w = w.slice(0, -2);
+  else if (/s$/.test(w) && !/ss$/.test(w)) w = w.slice(0, -1);
+  return [w, ...rest].join(" ");
 }
 
 function lookupVerb(dict, a, b) {

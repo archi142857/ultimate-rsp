@@ -127,8 +127,9 @@ select {
   margin: 0 auto;
   padding: 14px var(--gutter);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 8px 16px;
 }
 .brand {
   display: inline-flex;
@@ -161,6 +162,7 @@ select {
   border: 0;
   cursor: pointer;
   line-height: 1.2;
+  white-space: nowrap;
 }
 .nav a:hover,
 .theme-btn:hover {
@@ -221,6 +223,11 @@ main:focus-visible {
 }
 .hero-title span {
   display: block;
+}
+/* 영어 제목은 낱말이 길어 크기를 줄인다: The Ultimate / Rock Paper / Scissors 세 줄 */
+.hero-title:lang(en) {
+  font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+  line-height: 1;
 }
 .hero-lead {
   font-size: var(--step-1);
@@ -631,7 +638,11 @@ main:focus-visible {
 }
 .field {
   display: grid;
+  grid-template-columns: minmax(0, auto);
   gap: 6px;
+  /* 긴 선택지(영어 변종 이름 등)가 좁은 화면에서 줄 밖으로 나가지 않게 */
+  min-width: 0;
+  max-width: 100%;
 }
 .field > label,
 .field-label {
@@ -1076,6 +1087,8 @@ main:focus-visible {
 
 /* 판정표 */
 .table-wrap {
+  /* 안쪽의 화면 낭독용 글(.sr, absolute)이 스크롤 상자 밖으로 새어 쪽 너비를 늘리지 않게 */
+  position: relative;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -1594,9 +1607,13 @@ table.grid td.s {
   display: grid;
   gap: 10px;
 }
-.botlist b {
-  display: inline-block;
-  min-width: 6.5em;
+.botlist li {
+  display: grid;
+  grid-template-columns: 6.5em minmax(0, 1fr);
+  gap: 12px;
+}
+.botlist li:lang(en) {
+  grid-template-columns: 8.5em minmax(0, 1fr);
 }
 
 /* 이어 하는 놀이 */
@@ -1797,6 +1814,10 @@ table.grid td.s {
   .theme-btn {
     padding: 8px 9px;
   }
+  .nav a:lang(en) {
+    font-size: 0.875rem;
+    padding: 8px 7px;
+  }
   .brand span {
     display: none;
   }
@@ -1909,4 +1930,12 @@ table.grid td.s {
 .ringlist li::marker {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* 언어 단추: 바꿀 언어를 글자로 보여 준다 */
+.lang-btn {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  min-width: 2.6em;
 }

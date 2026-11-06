@@ -1,8 +1,9 @@
 // 가위바위보 전쟁: 떠돌다 부딪히면 진 쪽이 이긴 쪽으로 바뀐다.
 
 import { h, clear } from "../ui/dom.js";
+import { t } from "../i18n.js";
 import { handArt, artBitmap } from "../ui/art.js";
-import { compileVariant } from "../core/engine.js";
+import { compileVariant, inSentence } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
 import { CATALOG } from "../data/catalog.js";
 import { createWar } from "../sims/war.js";
@@ -26,35 +27,35 @@ export function warView(main, entry) {
   const W = 640;
   const H = 420;
 
-  const canvas = h("canvas", { width: W, height: H, role: "img", "aria-label": "가위바위보 전쟁 판" });
+  const canvas = h("canvas", { width: W, height: H, role: "img", "aria-label": t("가위바위보 전쟁 판") });
   const ctx = canvas.getContext("2d");
   const legend = h("ul", { class: "legend" });
   const status = h("p", { class: "note", "aria-live": "polite", style: { margin: "12px 0 0" } });
   const stats = h("div", { class: "stats" });
-  const playBtn = h("button", { class: "btn btn-ink", type: "button", onclick: () => toggle() }, "시작");
-  const resetBtn = h("button", { class: "btn", type: "button", onclick: () => reset() }, "처음부터");
+  const playBtn = h("button", { class: "btn btn-ink", type: "button", onclick: () => toggle() }, t("시작"));
+  const resetBtn = h("button", { class: "btn", type: "button", onclick: () => reset() }, t("처음부터"));
 
   const vSel = selectBox({
-    label: "무엇끼리",
+    label: t("무엇끼리"),
     value: variantId,
     options: choices.map((x) => ({ id: x.e.id, name: x.e.name })),
     onChange: (v) => ((variantId = v), reset()),
   });
   const nSeg = segmented({
-    label: "손마다",
+    label: t("손마다"),
     small: true,
     value: String(per),
-    options: [10, 30, 60].map((n) => ({ id: String(n), name: `${n}개` })),
+    options: [10, 30, 60].map((n) => ({ id: String(n), name: t("{n}개", { n }) })),
     onChange: (v) => ((per = Number(v)), reset()),
   });
   const sSeg = segmented({
-    label: "빠르기",
+    label: t("빠르기"),
     small: true,
     value: "1",
     options: [
-      { id: "0.5", name: "천천히" },
-      { id: "1", name: "보통" },
-      { id: "2.5", name: "빠르게" },
+      { id: "0.5", name: t("천천히") },
+      { id: "1", name: t("보통") },
+      { id: "2.5", name: t("빠르게") },
     ],
     onChange: (v) => (speed = Number(v)),
   });
@@ -100,7 +101,7 @@ export function warView(main, entry) {
         h("li", { class: c[hd.i] ? "" : "zero" }, h("span", { class: "swatch", vars: handVars(V, hd.i), "aria-hidden": "true" }), handArt(hd), ` ${hd.name} `, h("b", {}, String(c[hd.i]))),
       ),
     );
-    clear(stats).append(stat("시간", `${sim.time.toFixed(0)}초`), stat("바뀐 횟수", String(sim.conversions)), stat("모두", String(total)));
+    clear(stats).append(stat(t("시간"), t("{n}초", { n: sim.time.toFixed(0) })), stat(t("바뀐 횟수"), String(sim.conversions)), stat(t("모두"), String(total)));
   }
 
   function stat(k, v) {
@@ -108,10 +109,10 @@ export function warView(main, entry) {
   }
 
   let frames = 0;
-  function frame(t) {
+  function frame(now) {
     if (!running || !alive) return;
-    const dt = Math.min(0.05, (t - last) / 1000 || 0.016) * speed;
-    last = t;
+    const dt = Math.min(0.05, (now - last) / 1000 || 0.016) * speed;
+    last = now;
     const sub = Math.ceil(dt / 0.02);
     for (let k = 0; k < sub; k++) sim.step(dt / sub);
     draw();
@@ -119,11 +120,11 @@ export function warView(main, entry) {
     if (frames % 6 === 0) drawStats();
     if (sim.done()) {
       running = false;
-      playBtn.textContent = "시작";
+      playBtn.textContent = t("시작");
       drawStats();
       const c = sim.counts();
       const w = V.hands.find((hd) => c[hd.i] > 0);
-      clear(status).append(handArt(w), ` ${w.name}만 남았다. ${sim.time.toFixed(0)}초 걸렸다.`);
+      clear(status).append(handArt(w), " " + t("{h}만 남았다. {n}초 걸렸다.", { h: inSentence(w), n: sim.time.toFixed(0) }));
       return;
     }
     raf = requestAnimationFrame(frame);
@@ -132,7 +133,7 @@ export function warView(main, entry) {
   function toggle() {
     if (sim.done()) reset();
     running = !running;
-    playBtn.textContent = running ? "멈춤" : "시작";
+    playBtn.textContent = running ? t("멈춤") : t("시작");
     if (running) {
       status.textContent = "";
       last = performance.now();
@@ -145,8 +146,8 @@ export function warView(main, entry) {
     cancelAnimationFrame(raf);
     V = choices.find((x) => x.e.id === variantId).V;
     sim = createWar({ win: V.win, rng: makeRng(), perKind: per, width: W, height: H, radius: per > 40 ? 9 : 11 });
-    playBtn.textContent = "시작";
-    status.textContent = "시작을 누르면 움직인다.";
+    playBtn.textContent = t("시작");
+    status.textContent = t("시작을 누르면 움직인다.");
     setupCanvas();
     draw();
     drawStats();
@@ -155,11 +156,11 @@ export function warView(main, entry) {
   const left = h("div", {}, h("div", { class: "canvas-box" }, canvas), status, stats, legend);
   const right = h(
     "section",
-    { class: "panel", "aria-label": "전쟁 설정" },
+    { class: "panel", "aria-label": t("전쟁 설정") },
     h("div", { class: "controls" }, vSel.el),
     h("div", { class: "controls" }, nSeg.el, sSeg.el),
     h("div", { class: "btn-row" }, playBtn, resetBtn),
-    h("p", { class: "rec" }, "같은 손끼리 부딪히면 튕겨 나가기만 하고, 다른 손끼리 부딪히면 진 쪽이 이긴 쪽으로 바뀐다."),
+    h("p", { class: "rec" }, t("같은 손끼리 부딪히면 튕겨 나가기만 하고, 다른 손끼리 부딪히면 진 쪽이 이긴 쪽으로 바뀐다.")),
   );
   main.append(
     entryHead(entry),
@@ -167,9 +168,9 @@ export function warView(main, entry) {
     entryBody(
       entry,
       block(
-        "왜 매번 다를까",
-        h("p", {}, "셋이 서로 먹고 먹히니, 한 손이 늘면 그 손을 이기는 손이 곧 따라 는다. 그래서 수가 오르락내리락하다가, 우연히 한 손이 바닥나는 순간 승부가 정해진다."),
-        h("p", {}, "고르지 않은 판(우물, 다이너마이트)을 골라 보면 약한 손이 먼저 사라지는지 볼 수 있다."),
+        t("왜 매번 다를까"),
+        h("p", {}, t("셋이 서로 먹고 먹히니, 한 손이 늘면 그 손을 이기는 손이 곧 따라 는다. 그래서 수가 오르락내리락하다가, 우연히 한 손이 바닥나는 순간 승부가 정해진다.")),
+        h("p", {}, t("고르지 않은 판(우물, 다이너마이트)을 골라 보면 약한 손이 먼저 사라지는지 볼 수 있다.")),
       ),
     ),
   );

@@ -1,6 +1,7 @@
 // 여러 화면이 같이 쓰는 조각: 고르기, 손 버튼, 무대(나 대 컴퓨터), 외치기, 섞기 막대, 출처.
 
 import { h, clear, reducedMotion, sleep, pct, frac } from "./dom.js";
+import { t, isEn } from "../i18n.js";
 import { handArt, setArt } from "./art.js";
 import { handVars } from "./colors.js";
 import { setting, setSetting } from "./store.js";
@@ -63,7 +64,7 @@ export function field(label, control) {
  * 손 버튼 묶음. onPick(i). 숫자 키 1~9 도 받는다(keys 가 참이면).
  * setAllowed(boolean[]), setCount(i, 남은 수)로 한정 판을 보여 준다.
  */
-export function handGrid(V, { onPick, label = "낼 손", names = null, keys = true, compact = false } = {}) {
+export function handGrid(V, { onPick, label = t("낼 손"), names = null, keys = true, compact = false } = {}) {
   const grid = h("div", {
     class: "hands" + (V.n > 7 ? " hands-many" : "") + (V.n > 15 ? " hands-lots" : "") + (V.n > 41 ? " hands-huge" : "") + (compact ? " hands-compact" : ""),
     role: "group",
@@ -102,7 +103,7 @@ export function handGrid(V, { onPick, label = "낼 손", names = null, keys = tr
       const el = buttons[i].querySelector(".hand-count");
       el.hidden = c === null || c === undefined || c === Infinity;
       el.textContent = c === Infinity ? "" : `${c}`;
-      buttons[i].setAttribute("aria-label", `${V.hands[i].name}${el.hidden ? "" : `, ${c}개 남음`}`);
+      buttons[i].setAttribute("aria-label", el.hidden ? V.hands[i].name : t("{name}, {c}개 남음", { name: V.hands[i].name, c }));
     },
     lock(on) {
       grid.classList.toggle("locked", on);
@@ -125,7 +126,7 @@ export function handGrid(V, { onPick, label = "낼 손", names = null, keys = tr
 }
 
 /** 나 대 상대 무대 */
-export function stage({ meLabel = "나", opLabel = "컴퓨터" } = {}) {
+export function stage({ meLabel = t("나"), opLabel = t("컴퓨터") } = {}) {
   const me = side("me", meLabel);
   const op = side("op", opLabel);
   const msg = h("div", { class: "stage-msg", "aria-live": "polite" });
@@ -189,6 +190,16 @@ export function stage({ meLabel = "나", opLabel = "컴퓨터" } = {}) {
   };
 }
 
+/** 가위바위보 외치기(언어마다 다르다) */
+/** 셋을 세는 외침 */
+export function countChant() {
+  return isEn() ? ["One!", "Two!", "Three!"] : ["하나!", "둘!", "셋!"];
+}
+
+export function rpsChant() {
+  return isEn() ? ["Rock!", "Paper!", "Scissors!", "Shoot!"] : ["가위!", "바위!", "보!"];
+}
+
 /** '가위! 바위! 보!' 를 한 마디씩 띄운다. 빨리 하기를 켜거나 움직임 줄이기면 건너뛴다 */
 export async function chant(st, words, step = 190) {
   if (fastMode() || reducedMotion()) return;
@@ -210,13 +221,23 @@ export function fastToggle() {
     checked: fastMode(),
     onchange: () => setSetting("fast", box.checked),
   });
-  return h("label", { class: "check", for: id }, box, h("span", {}, "외치기 건너뛰기"));
+  return h("label", { class: "check", for: id }, box, h("span", {}, t("외치기 건너뛰기")));
 }
 
-export const RESULT_WORD = { 1: "이겼다!", 0: "비겼다", "-1": "졌다" };
+export const RESULT_WORD = {
+  get 1() {
+    return t("이겼다!");
+  },
+  get 0() {
+    return t("비겼다");
+  },
+  get "-1"() {
+    return t("졌다");
+  },
+};
 
 /** 섞기 막대(고르지 않은 판에서만 의미가 있다) */
-export function mixBar(V, mix, { label = "최적 섞기" } = {}) {
+export function mixBar(V, mix, { label = t("최적 섞기") } = {}) {
   const items = V.hands.map((hd) => ({ hd, p: mix[hd.i] })).filter((x) => x.p > 1e-9);
   const bar = h(
     "div",
@@ -268,10 +289,10 @@ export function paragraphs(list) {
 
 export function recordLine(r) {
   const total = r.w + r.d + r.l;
-  if (!total) return "아직 기록이 없다.";
-  const tally = `지금까지 ${r.w}승 ${r.d}무 ${r.l}패`;
+  if (!total) return t("아직 기록이 없다.");
+  const tally = t("지금까지 {w}승 {d}무 {l}패", r);
   if (!(r.w + r.l)) return `${tally}.`;
-  return `${tally}, 비긴 판을 빼면 ${Math.round((100 * r.w) / (r.w + r.l))}% 이겼다.`;
+  return tally + t(", 비긴 판을 빼면 {p}% 이겼다.", { p: Math.round((100 * r.w) / (r.w + r.l)) });
 }
 
 export function emptyNode(el) {

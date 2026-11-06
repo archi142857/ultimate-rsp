@@ -18,6 +18,11 @@
     try { d = s === "dark" || (s !== "light" && matchMedia("(prefers-color-scheme: dark)").matches); } catch (e) {}
     document.documentElement.dataset.scheme = d ? "dark" : "light";
     document.querySelector('meta[name="theme-color"]').content = d ? "#0f1126" : "#f1f3f8";
+    // 언어도 미리 정한다(i18n.js 의 detect 와 같은 판단)
+    var l = null;
+    try { l = JSON.parse(localStorage.getItem("ursp.set.lang")); } catch (e) {}
+    if (l !== "ko" && l !== "en") l = /^ko\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || "ko") ? "ko" : "en";
+    document.documentElement.lang = l;
   })();
 </script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -28,9 +33,9 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<a class="skip" href="#main">본문으로 건너뛰기</a>
+<a class="skip" href="#main" data-i18n="본문으로 건너뛰기">본문으로 건너뛰기</a>
 <header class="top">
-  <a class="brand" href="#/" aria-label="Ultimate RSP 첫 화면">
+  <a class="brand" href="#/" aria-label="Ultimate RSP 첫 화면" data-i18n-aria="Ultimate RSP 첫 화면">
     <svg viewBox="0 0 64 64" aria-hidden="true">
       <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.35">
         <path d="M32 14 L47.6 41"/><path d="M47.6 41 L16.4 41"/><path d="M16.4 41 L32 14"/>
@@ -41,20 +46,21 @@
     </svg>
     <span>Ultimate RSP</span>
   </a>
-  <nav class="nav" aria-label="주 메뉴">
-    <a href="#/" data-nav="home">도감</a>
-    <a href="#/sims" data-nav="sims">시뮬레이션</a>
-    <a href="#/about" data-nav="about">정보</a>
+  <nav class="nav" aria-label="주 메뉴" data-i18n-aria="주 메뉴">
+    <a href="#/" data-nav="home" data-i18n="도감">도감</a>
+    <a href="#/sims" data-nav="sims" data-i18n="시뮬레이션">시뮬레이션</a>
+    <a href="#/about" data-nav="about" data-i18n="정보">정보</a>
+    <button class="theme-btn lang-btn" type="button" id="lang-btn" lang="en">EN</button>
     <button class="theme-btn" type="button" id="theme-btn" aria-label="화면 밝기 바꾸기"></button>
   </nav>
 </header>
 <main id="main" tabindex="-1"></main>
 <footer class="foot">
-  <span>Ultimate RSP. 기록은 이 브라우저에만 남는다.</span>
-  <a href="#/about">만든 사람과 출처</a>
+  <span data-i18n="Ultimate RSP. 기록은 이 브라우저에만 남는다.">Ultimate RSP. 기록은 이 브라우저에만 남는다.</span>
+  <a href="#/about" data-i18n="만든 사람과 출처">만든 사람과 출처</a>
   <a href="https://github.com/Archi142857/ultimate-rsp" rel="noopener">GitHub</a>
 </footer>
-<noscript><p style="padding:24px">자바스크립트를 켜야 쓸 수 있다.</p></noscript>
+<noscript><p style="padding:24px">자바스크립트를 켜야 쓸 수 있다. / Please turn on JavaScript.</p></noscript>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

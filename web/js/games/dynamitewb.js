@@ -1,6 +1,8 @@
 // 다이너마이트와 물풍선: 가위·바위·보 + 다이너마이트(개수 제한) + 물풍선. 비긴 점수 넘기기를 켤 수 있다.
 
-export const DWB_DEF = {
+import { lang } from "../i18n.js";
+
+const DWB_KO = {
   id: "dynamitewb",
   kind: "matrix",
   name: "다이너마이트와 물풍선",
@@ -25,6 +27,38 @@ export const DWB_DEF = {
     ["paper", "balloon", "막아 낸다"],
   ],
 };
+
+const DWB_EN = {
+  ...DWB_KO,
+  lang: "en",
+  name: "Dynamite and Water Balloon",
+  hands: [
+    { id: "scissors", art: "hand-scissors", name: "Scissors", emoji: "✌️", plural: true },
+    { id: "rock", art: "hand-rock", name: "Rock", emoji: "✊" },
+    { id: "paper", art: "hand-paper", name: "Paper", emoji: "✋" },
+    { id: "dynamite", name: "Dynamite", emoji: "🧨" },
+    { id: "balloon", name: "Water balloon", emoji: "🎈" },
+  ],
+  rel: [
+    ["rock", "scissors", "crushes"],
+    ["scissors", "paper", "cuts"],
+    ["paper", "rock", "wraps"],
+    ["dynamite", "rock", "blows up"],
+    ["dynamite", "scissors", "blows up"],
+    ["dynamite", "paper", "burns"],
+    ["balloon", "dynamite", "douses"],
+    ["rock", "balloon", "bursts"],
+    ["scissors", "balloon", "pops"],
+    ["paper", "balloon", "blocks"],
+  ],
+};
+
+/** 지금 언어의 판 정의 */
+export function dwbDef() {
+  return lang() === "en" ? DWB_EN : DWB_KO;
+}
+/** 한국어 판 정의(테스트·그림 목록용) */
+export const DWB_DEF = DWB_KO;
 
 /**
  * '폭탄 꾼': 비겨서 점수가 쌓였을 때 다이너마이트를 쓰고, 상대가 그런 버릇을 보이면 물풍선으로 받는다.

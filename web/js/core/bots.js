@@ -1,7 +1,9 @@
 // 컴퓨터 상대. 어떤 손 개수의 변종에도 쓸 수 있게 만들었다.
 // pick(ctx) 의 ctx: { history: [{ me, op }], allowed?: boolean[] }  — me 가 봇 자신의 손, op 가 상대 손
 
-export const BOTS = [
+import { t } from "../i18n.js";
+
+const BOT_TEXT = [
   { id: "random", name: "주사위", desc: "아무 손이나 같은 확률로 낸다." },
   { id: "nash", name: "계산기", desc: "최적 섞기대로 낸다. 길게 보면 누구에게도 지지 않는다." },
   { id: "human", name: "사람 흉내", desc: "이기면 그 손을 또 내고, 지면 자기를 이긴 손을 이기는 손으로 바꾸는 버릇이 있다." },
@@ -12,6 +14,17 @@ export const BOTS = [
   { id: "mirror", name: "따라쟁이", desc: "상대가 방금 낸 손을 따라 낸다." },
   { id: "avenger", name: "앙갚음", desc: "상대가 방금 낸 손을 이기는 손을 낸다." },
 ];
+
+/** 이름과 설명은 지금 언어로 읽힌다 */
+export const BOTS = BOT_TEXT.map((b) => ({
+  id: b.id,
+  get name() {
+    return t(b.name);
+  },
+  get desc() {
+    return t(b.desc);
+  },
+}));
 
 export function botInfo(id) {
   return BOTS.find((b) => b.id === id) || BOTS[0];
@@ -98,9 +111,9 @@ export function createBot(id, V, rng) {
       return rng.chance(0.9) ? beaterOf(V, guess, ctx.allowed, rng) : pickers.random(ctx);
     },
     cycle(ctx) {
-      const t = ctx.history.length;
+      const turn = ctx.history.length;
       for (let d = 0; d < V.n; d++) {
-        const x = V.order[(cycleStart + t + d) % V.n];
+        const x = V.order[(cycleStart + turn + d) % V.n];
         if (!ctx.allowed || ctx.allowed[x]) return x;
       }
       return pickers.random(ctx);

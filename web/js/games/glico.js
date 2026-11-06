@@ -1,11 +1,12 @@
 // 글리코(계단 가위바위보). 이긴 쪽만 이긴 손의 글자 수만큼 오른다.
 
 import { solveGame } from "../core/lp.js";
+import { t } from "../i18n.js";
 
 export const GLICO_WORDS = {
-  rock: { steps: 3, kana: ["グ", "リ", "コ"], read: "구리코" },
-  scissors: { steps: 6, kana: ["チ", "ヨ", "コ", "レ", "イ", "ト"], read: "치요코레이토" },
-  paper: { steps: 6, kana: ["パ", "イ", "ナ", "ツ", "プ", "ル"], read: "파이나쓰푸루" },
+  rock: { steps: 3, kana: ["グ", "リ", "コ"], get read() { return t("구리코"); } },
+  scissors: { steps: 6, kana: ["チ", "ヨ", "コ", "レ", "イ", "ト"], get read() { return t("치요코레이토"); } },
+  paper: { steps: 6, kana: ["パ", "イ", "ナ", "ツ", "プ", "ル"], get read() { return t("파이나쓰푸루"); } },
 };
 
 export function stepsOf(V) {

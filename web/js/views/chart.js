@@ -1,6 +1,7 @@
 // 작은 선 그래프(SVG). 선 2px, 가는 눈금, 범례, 마우스를 올리면 세로선과 값 상자.
 
 import { h, s, clear } from "../ui/dom.js";
+import { t } from "../i18n.js";
 
 // 눈금 간격은 1, 2, 5의 10배수로 맞춘다.
 function niceStep(raw) {
@@ -35,7 +36,7 @@ export function createLineChart({ series, yMax = null, yFormat = (v) => String(M
   const W = 560;
   const H = height;
   const m = { l: 40, r: 12, t: 10, b: 28 };
-  const svg = s("svg", { class: "chart", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${yLabel} 변화 그래프` });
+  const svg = s("svg", { class: "chart", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": t("{y} 변화 그래프", { y: yLabel }) });
   const gridG = s("g");
   const lineG = s("g");
   const hover = s("line", { class: "crosshair", y1: m.t, y2: H - m.b, visibility: "hidden" });

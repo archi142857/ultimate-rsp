@@ -1,6 +1,7 @@
 // 진화 가위바위보 화면: 알에서 왕까지.
 
 import { h, clear, sleep } from "../ui/dom.js";
+import { t } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
 import { findEntry } from "../data/catalog.js";
@@ -20,14 +21,14 @@ export function evolutionView(main, entry) {
   const rows = h("div", { class: "evo" });
   const stats = h("div", { class: "stats" });
   const chartBox = h("div", { style: { position: "relative" } });
-  const stepBtn = h("button", { class: "btn", type: "button", onclick: () => step() }, "한 차례");
-  const runBtn = h("button", { class: "btn btn-ink", type: "button", onclick: () => runAll() }, "끝까지");
-  const resetBtn = h("button", { class: "btn", type: "button", onclick: () => reset() }, "처음부터");
+  const stepBtn = h("button", { class: "btn", type: "button", onclick: () => step() }, t("한 차례"));
+  const runBtn = h("button", { class: "btn btn-ink", type: "button", onclick: () => runAll() }, t("끝까지"));
+  const resetBtn = h("button", { class: "btn", type: "button", onclick: () => reset() }, t("처음부터"));
   const nSeg = segmented({
-    label: "사람 수",
+    label: t("사람 수"),
     small: true,
     value: String(people),
-    options: [10, 20, 30, 60].map((n) => ({ id: String(n), name: `${n}명` })),
+    options: [10, 20, 30, 60].map((n) => ({ id: String(n), name: t("{n}명", { n }) })),
     onChange: (v) => ((people = Number(v)), reset()),
   });
 
@@ -49,13 +50,13 @@ export function evolutionView(main, entry) {
           );
         }),
     );
-    clear(stats).append(stat("차례", `${sim.turn}번`), stat("가위바위보", `${sim.throws}번`), stat("왕", `${c[EVO_STAGES.length - 1]}명`));
+    clear(stats).append(stat(t("@stat:차례"), t("{n}번", { n: sim.turn })), stat(t("@stat:가위바위보"), t("{n}번", { n: sim.throws })), stat(t("@stat:왕"), t("{n}명", { n: c[EVO_STAGES.length - 1] })));
     clear(chartBox).append(
       lineChart({
         series: EVO_STAGES.map((stg, k) => ({ name: `${stg.emoji} ${stg.name}`, values: sim.history.map((hh) => hh[k]), colors: [SERIES_COLORS.light[k], SERIES_COLORS.dark[k]] })),
         yMax: people,
-        xLabel: "차례",
-        yLabel: "사람",
+        xLabel: t("@axis:차례"),
+        yLabel: t("@axis:사람"),
         height: 200,
       }),
     );
@@ -92,14 +93,14 @@ export function evolutionView(main, entry) {
     "div",
     { class: "side-panel" },
     block(
-      "끝은 늘 비슷하다",
-      h("p", {}, "같은 단계끼리만 겨루니, 어느 단계든 사람이 둘 이상 남아 있으면 판이 이어진다. 그래서 끝나면 알·병아리·닭·공룡에는 많아야 한 명씩만 남고 나머지는 모두 왕이 된다."),
-      h("p", {}, "지면 한 단계 내려가니 왕 바로 아래에서 오래 맴도는 사람도 생긴다."),
+      t("끝은 늘 비슷하다"),
+      h("p", {}, t("같은 단계끼리만 겨루니, 어느 단계든 사람이 둘 이상 남아 있으면 판이 이어진다. 그래서 끝나면 알·병아리·닭·공룡에는 많아야 한 명씩만 남고 나머지는 모두 왕이 된다.")),
+      h("p", {}, t("지면 한 단계 내려가니 왕 바로 아래에서 오래 맴도는 사람도 생긴다.")),
     ),
   );
   const panel = h(
     "section",
-    { class: "panel", "aria-label": "진화 가위바위보 지켜보기" },
+    { class: "panel", "aria-label": t("진화 가위바위보 지켜보기") },
     h("div", { class: "controls" }, nSeg.el, h("div", { class: "btn-row" }, stepBtn, runBtn, resetBtn)),
     stats,
     rows,

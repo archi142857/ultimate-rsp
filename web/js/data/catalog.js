@@ -2,6 +2,8 @@
 // 글은 docs/variants.md 와 같이 고친다(출처도 그쪽에 더 자세히 있다).
 
 import { OBJECT_VERBS } from "./verbs.js";
+import { lang, onLang } from "../i18n.js";
+import { localizeCatalog } from "./catalog-en.js";
 
 // ── 손 모음 ─────────────────────────────────────────────
 const H = {
@@ -126,7 +128,7 @@ const objs = (ids) => ids.map((id) => O[id]);
 const LOVELACE_SRC = { t: "David C. Lovelace, RPS 확장판 모음 (umop.com)", u: "https://www.umop.com/rps.htm" };
 
 // ── 갈래 ─────────────────────────────────────────────
-export const CATEGORIES = [
+const CATEGORIES_KO = [
   {
     id: "three",
     title: "셋이 물고 무는 꼴",
@@ -155,7 +157,7 @@ export const CATEGORIES = [
 ];
 
 // ── 도감 ─────────────────────────────────────────────
-export const CATALOG = [
+const CATALOG_KO = [
   // 셋이 물고 무는 꼴
   {
     id: "classic",
@@ -806,6 +808,25 @@ export const CATALOG = [
     ],
   },
 ];
+
+// ── 언어에 따라 바뀌는 도감 ─────────────────────
+// CATALOG·CATEGORIES 는 지금 언어의 자료를 가리킨다(언어를 바꾸면 새로 가리킨다). 영어판은 catalog-en.js.
+export let CATEGORIES = CATEGORIES_KO;
+export let CATALOG = CATALOG_KO;
+let english = null;
+
+function useLang(l) {
+  if (l === "en") {
+    english ||= localizeCatalog(CATEGORIES_KO, CATALOG_KO, OBJECT_VERBS);
+    CATEGORIES = english.categories;
+    CATALOG = english.catalog;
+  } else {
+    CATEGORIES = CATEGORIES_KO;
+    CATALOG = CATALOG_KO;
+  }
+}
+useLang(lang());
+onLang(useLang);
 
 export function findEntry(id) {
   return CATALOG.find((e) => e.id === id) || null;
