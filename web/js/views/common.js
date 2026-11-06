@@ -1,6 +1,7 @@
 // 항목 화면의 머리와 본문 틀.
 
 import { h } from "../ui/dom.js";
+import { handArt } from "../ui/art.js";
 import { block, paragraphs, sourcesList } from "../ui/widgets.js";
 
 export function entryHead(entry, { facts = [], title = entry.name, sub = entry.sub } = {}) {
@@ -65,7 +66,7 @@ export function histItem(V, a, b, cmp) {
   return h(
     "li",
     { class: cls, title: V.sentence(a, b) },
-    h("span", { "aria-hidden": "true" }, `${V.hands[a].emoji}${V.hands[b].emoji}`),
+    h("span", { class: "pair", "aria-hidden": "true" }, handArt(V.hands[a]), handArt(V.hands[b])),
     h("span", { class: "sr" }, `나 ${V.hands[a].name}, 상대 ${V.hands[b].name}, `),
     h("b", {}, word),
   );

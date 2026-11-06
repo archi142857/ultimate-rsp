@@ -1,6 +1,7 @@
 // 한 판짜리 변종 화면: 고리 그림 + 컴퓨터와 겨루기 + 규칙·전략.
 
 import { h, clear, frac, append } from "../ui/dom.js";
+import { handArt } from "../ui/art.js";
 import { compileVariant } from "../core/engine.js";
 import { BOTS, createBot } from "../core/bots.js";
 import { makeRng } from "../core/rng.js";
@@ -184,13 +185,21 @@ function hasDraws(V) {
 }
 
 function relationsBlock(V) {
+  // 손이 아주 많으면 손마다 늘어놓지 않고 고리 차례만 보여 준다(고리 그림에서 짚으면 바로 보인다)
+  if (V.n > 25 && V.cycle) {
+    return block(
+      "누가 누구를 이기나",
+      h("p", {}, `손을 아래 차례로 고리에 늘어놓고, 손마다 그 뒤로 ${V.cycle}개를 이긴다. 끝에 닿으면 처음으로 돌아간다. 고리 그림에서 손을 짚으면 누구를 이기는지 보인다.`),
+      h("ol", { class: "ringlist" }, V.order.map((i) => h("li", {}, handArt(V.hands[i]), ` ${V.hands[i].name}`))),
+    );
+  }
   const items = V.hands.map((hd) => {
     const w = V.beats(hd.i);
     const l = V.beatenBy(hd.i);
     return h(
       "li",
       {},
-      h("span", { class: "e", "aria-hidden": "true" }, hd.emoji),
+      handArt(hd, "e"),
       h(
         "span",
         {},
@@ -211,13 +220,13 @@ function matrixTable(V) {
     "tr",
     {},
     h("th", { scope: "col" }, h("span", { class: "sr" }, "내 손 / 상대 손")),
-    V.hands.map((hd) => h("th", { scope: "col", class: "e", title: hd.name }, hd.emoji)),
+    V.hands.map((hd) => h("th", { scope: "col", class: "e", title: hd.name }, handArt(hd), h("span", { class: "sr" }, hd.name))),
   );
   const rows = V.hands.map((a) =>
     h(
       "tr",
       {},
-      h("th", { scope: "row", class: "e", title: a.name }, a.emoji),
+      h("th", { scope: "row", class: "e", title: a.name }, handArt(a), h("span", { class: "sr" }, a.name)),
       V.hands.map((b) => {
         const c = V.cmp(a.i, b.i);
         if (a.i === b.i) return h("td", { class: "s", title: "같은 손" }, "–");
@@ -242,7 +251,7 @@ function howBlock(V) {
     h(
       "ul",
       { class: "howlist" },
-      withHow.map((hd) => h("li", {}, h("span", { class: "e", "aria-hidden": "true" }, hd.emoji), h("span", {}, h("b", {}, hd.name), ` ${hd.how}`))),
+      withHow.map((hd) => h("li", {}, handArt(hd, "e"), h("span", {}, h("b", {}, hd.name), ` ${hd.how}`))),
     ),
   );
 }

@@ -1,6 +1,7 @@
 // 가위바위보 전쟁: 떠돌다 부딪히면 진 쪽이 이긴 쪽으로 바뀐다.
 
 import { h, clear } from "../ui/dom.js";
+import { handArt, artBitmap } from "../ui/art.js";
 import { compileVariant } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
 import { CATALOG } from "../data/catalog.js";
@@ -72,6 +73,8 @@ export function warView(main, entry) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `${sim.radius * 1.75}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+    // 그림이 있으면 그림을, 없으면 이모지를 그린다
+    const box = sim.radius * 2.5;
     for (const a of sim.agents) {
       if (a.flash > 0) {
         ctx.beginPath();
@@ -82,7 +85,10 @@ export function warView(main, entry) {
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
-      ctx.fillText(V.hands[a.kind].emoji, a.x, a.y + 1);
+      const hd = V.hands[a.kind];
+      const img = artBitmap(hd);
+      if (img) ctx.drawImage(img, a.x - box / 2, a.y - box / 2, box, box);
+      else ctx.fillText(hd.emoji, a.x, a.y + 1);
     }
   }
 
@@ -91,7 +97,7 @@ export function warView(main, entry) {
     const total = c.reduce((a, b) => a + b, 0);
     clear(legend).append(
       ...V.hands.map((hd) =>
-        h("li", { class: c[hd.i] ? "" : "zero" }, h("span", { class: "swatch", vars: handVars(V, hd.i), "aria-hidden": "true" }), `${hd.emoji} ${hd.name} `, h("b", {}, String(c[hd.i]))),
+        h("li", { class: c[hd.i] ? "" : "zero" }, h("span", { class: "swatch", vars: handVars(V, hd.i), "aria-hidden": "true" }), handArt(hd), ` ${hd.name} `, h("b", {}, String(c[hd.i]))),
       ),
     );
     clear(stats).append(stat("시간", `${sim.time.toFixed(0)}초`), stat("바뀐 횟수", String(sim.conversions)), stat("모두", String(total)));
@@ -117,7 +123,7 @@ export function warView(main, entry) {
       drawStats();
       const c = sim.counts();
       const w = V.hands.find((hd) => c[hd.i] > 0);
-      status.textContent = `${w.emoji} ${w.name}만 남았다. ${sim.time.toFixed(0)}초 걸렸다.`;
+      clear(status).append(handArt(w), ` ${w.name}만 남았다. ${sim.time.toFixed(0)}초 걸렸다.`);
       return;
     }
     raf = requestAnimationFrame(frame);

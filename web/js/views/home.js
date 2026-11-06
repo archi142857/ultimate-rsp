@@ -1,6 +1,7 @@
 // 첫 화면: 큰 제목과 바로 한 판, 고리 그림, 그리고 갈래별 도감.
 
 import { h, clear, setTitle } from "../ui/dom.js";
+import { handArt } from "../ui/art.js";
 import { CATALOG, CATEGORIES, findEntry } from "../data/catalog.js";
 import { compileVariant } from "../core/engine.js";
 import { makeCustomDef } from "../data/custom.js";
@@ -49,7 +50,7 @@ export function compiledOf(entry) {
   return compiled.get(entry.id);
 }
 
-const HERO_RINGS = ["classic", "rpsls", "rps7", "rps9", "rps11", "rps15", "rps25"];
+const HERO_RINGS = ["classic", "rpsls", "rps7", "rps9", "rps11", "rps15", "rps25", "rps101"];
 
 export function homeView(main, { focus } = {}) {
   setTitle(null);
@@ -70,7 +71,11 @@ export function homeView(main, { focus } = {}) {
       addRecord("classic", c);
       clear(out).append(
         h("strong", {}, RESULT_WORD[c]),
-        `나 ${classic.hands[i].emoji} 컴퓨터 ${classic.hands[j].emoji}. ${c === 0 ? "한 번 더?" : classic.sentence(i, j) + "."}`,
+        "나 ",
+        handArt(classic.hands[i]),
+        " 컴퓨터 ",
+        handArt(classic.hands[j]),
+        `. ${c === 0 ? "한 번 더?" : classic.sentence(i, j) + "."}`,
       );
     },
   });
@@ -81,7 +86,7 @@ export function homeView(main, { focus } = {}) {
     h(
       "div",
       { class: "hero-text" },
-      h("h1", { class: "hero-title", id: "hero-title" }, h("span", {}, "세상의"), h("span", {}, "가위바위보")),
+      h("h1", { class: "hero-title", id: "hero-title" }, h("span", {}, "궁극의"), h("span", {}, "가위바위보")),
       h(
         "p",
         { class: "hero-lead" },

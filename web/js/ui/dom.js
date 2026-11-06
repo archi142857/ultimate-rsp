@@ -78,5 +78,5 @@ export function frac(p) {
 }
 
 export function setTitle(t) {
-  document.title = t ? `${t} — Ultimate RSP` : "Ultimate RSP — 세상의 가위바위보";
+  document.title = t ? `${t} — Ultimate RSP` : "Ultimate RSP — 궁극의 가위바위보";
 }

@@ -5,9 +5,9 @@ export const DWB_DEF = {
   kind: "matrix",
   name: "다이너마이트와 물풍선",
   hands: [
-    { id: "scissors", name: "가위", emoji: "✌️" },
-    { id: "rock", name: "바위", emoji: "✊" },
-    { id: "paper", name: "보", emoji: "✋" },
+    { id: "scissors", art: "hand-scissors", name: "가위", emoji: "✌️" },
+    { id: "rock", art: "hand-rock", name: "바위", emoji: "✊" },
+    { id: "paper", art: "hand-paper", name: "보", emoji: "✋" },
     { id: "dynamite", name: "다이너마이트", emoji: "🧨" },
     { id: "balloon", name: "물풍선", emoji: "🎈" },
   ],

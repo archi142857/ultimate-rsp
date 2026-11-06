@@ -1,6 +1,7 @@
 // 명령 가위바위보 화면: 30초 동안 시키는 대로 이기고, 지고, 비긴다.
 
 import { h, clear } from "../ui/dom.js";
+import { handArt, setArt } from "../ui/art.js";
 import { compileVariant } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
 import { findEntry } from "../data/catalog.js";
@@ -22,7 +23,7 @@ export function commandView(main, entry) {
   let best = load("commandBest", 0);
 
   const score = scoreboard({ meLabel: "맞힘", opLabel: "틀림" });
-  const handEl = h("div", { class: "cmd-hand", "aria-hidden": "true" }, "✊");
+  const handEl = h("div", { class: "cmd-hand", "aria-hidden": "true" }, handArt(V.hands[V.index.rock]));
   const orderEl = h("div", { class: "cmd-order" }, "준비");
   const sayEl = h("p", { class: "sr", "aria-live": "assertive" });
   const feedback = h("p", { class: "stage-sub", style: { textAlign: "center", minHeight: "1.6em" } });
@@ -40,7 +41,7 @@ export function commandView(main, entry) {
   function show() {
     const p = game.next();
     const name = V.hands[p.hand].name;
-    handEl.textContent = V.hands[p.hand].emoji;
+    setArt(handEl, V.hands[p.hand]);
     orderEl.textContent = p.order.id === "draw" ? `${josa(name, "과와")} 비겨라` : `${name}에게 ${p.order.name}`;
     sayEl.textContent = orderEl.textContent;
     shownAt = performance.now();

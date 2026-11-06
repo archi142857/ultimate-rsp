@@ -1,6 +1,7 @@
 // 상성 고리: 손을 원 위에 고리 차례로 놓고, 이기는 손에서 지는 손으로 화살표를 긋는다.
 
 import { s } from "./dom.js";
+import { ringArt } from "./art.js";
 import { handVars } from "./colors.js";
 import { josa } from "../core/josa.js";
 
@@ -85,11 +86,7 @@ export function createRing(V, { size = 360, mini = false, emoji = !mini && V.n <
       style: varsToStyle(handVars(V, hd.i)),
     });
     g.append(s("circle", { r: nr }));
-    if (emoji) {
-      g.append(
-        s("text", { class: "emo", "text-anchor": "middle", "dominant-baseline": "central", "font-size": (nr * 1.05).toFixed(1), y: 1 }, hd.emoji),
-      );
-    }
+    if (emoji) g.append(ringArt(hd, nr * 1.5));
     if (!mini) g.append(s("title", {}, nodeTitle(V, hd.i)));
     nodesG.append(g);
     return g;

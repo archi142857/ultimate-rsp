@@ -1,6 +1,7 @@
 // 여럿이 가위바위보 화면.
 
 import { h, clear, pct, sleep } from "../ui/dom.js";
+import { handArt } from "../ui/art.js";
 import { compileVariant, groupDecisiveChance } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
 import { findEntry } from "../data/catalog.js";
@@ -59,7 +60,7 @@ export function groupView(main, entry) {
         return h(
           "div",
           { class: "person" + (p === 0 ? " me" : "") + (alive || (game.done && p === game.last) ? "" : " out") },
-          h("span", { class: "face", "aria-hidden": "true" }, t === undefined ? (p === 0 ? "🙂" : "🤖") : V.hands[t].emoji),
+          h("span", { class: "face", "aria-hidden": "true" }, t === undefined ? (p === 0 ? "🙂" : "🤖") : handArt(V.hands[t])),
           h("span", { class: "nm" }, name(p)),
           h("span", { class: "st" }, status),
         );

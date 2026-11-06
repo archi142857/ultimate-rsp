@@ -1,15 +1,15 @@
 <h1 align="center">Ultimate RSP</h1>
 
 <p align="center">
-  세상의 가위바위보<br>
+  궁극의 가위바위보<br>
   <a href="https://archi142857.github.io/ultimate-rsp/"><b>웹에서 바로 하기</b></a>
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/home.png" alt="첫 화면: '세상의 가위바위보' 제목과 바로 한 판 버튼, 손 15개가 서로 이기고 지는 사이를 선으로 이은 고리 그림" width="100%">
+  <img src="docs/screenshots/home.png" alt="첫 화면: '궁극의 가위바위보' 제목과 바로 한 판 버튼, 손 15개가 서로 이기고 지는 사이를 선으로 이은 고리 그림" width="100%">
 </p>
 
-가위바위보와 그 변종 32가지를 모아 둔 웹 앱입니다. 일본의 옛 손 놀이인 무시켄과 키츠네켄, 손이 스물다섯인 RPS-25, 묵찌빠와 하나빼기 같은 놀이까지 규칙을 읽고 바로 컴퓨터와 겨뤄 볼 수 있습니다. 컴퓨터 전략끼리 수천 판을 붙여 보거나, 가위바위보처럼 서로 물고 무는 생물이 어떻게 함께 사는지 시뮬레이션으로 볼 수도 있습니다.
+가위바위보와 그 변종 33가지를 모아 둔 웹 앱입니다. 일본의 옛 손 놀이인 무시켄과 키츠네켄, 손이 101개인 RPS-101, 묵찌빠와 하나빼기 같은 놀이까지 규칙을 읽고 바로 컴퓨터와 겨뤄 볼 수 있습니다. 컴퓨터 전략끼리 수천 판을 붙여 보거나, 가위바위보처럼 서로 물고 무는 생물이 어떻게 함께 사는지 시뮬레이션으로 볼 수도 있습니다.
 
 ## 쓰는 법
 
@@ -26,7 +26,7 @@
 </p>
 
 - 셋이 물고 무는 꼴 8가지: 가위바위보, 무시켄, 키츠네켄, 토라켄, 수트(개미·사람·코끼리), 새·물·돌, 곰·사냥꾼·닌자, 호랑이·막대기·닭.
-- 손을 더한 꼴 11가지: 우물, 다이너마이트, 불과 물, 막대기·호랑이·닭·벌레, 가위바위보 도마뱀 스팍, RPS-7·9·11·15·25. 손 개수(3–101개)와 이기는 개수를 정해 `직접 만들기`로 새 판을 만들 수도 있습니다.
+- 손을 더한 꼴 12가지: 우물, 다이너마이트, 불과 물, 막대기·호랑이·닭·벌레, 가위바위보 도마뱀 스팍, RPS-7·9·11·15·25·101. 손 개수(3–101개)와 이기는 개수를 정해 `직접 만들기`로 새 판을 만들 수도 있습니다.
 - 변종마다 누가 누구를 이기는지 고리 그림으로 보여 줍니다. 손을 짚으면 그 손이 이기는 쪽과 지는 쪽이 드러나고, 판을 할 때마다 이긴 손에서 진 손으로 화살표가 그어집니다.
 - 손이 고르지 않은 판은 최적 섞기를 계산해 보여 줍니다. 우물에서는 바위를, 다이너마이트에서는 보를 아예 내지 않는 것이 최선입니다.
 - 판정은 "종이가 바위를 감싼다"처럼 문장으로 알려 줍니다. 손 이름에 맞춰 조사(이/가, 을/를)를 붙입니다.
@@ -79,7 +79,7 @@
 
 ## 계산은 이렇게 합니다
 
-- 변종마다 손과 '누가 누구를 이기는지'만 적으면 판정표가 만들어집니다. RPS-7부터 RPS-25까지와 `직접 만들기`는 손을 고리로 늘어놓고 손마다 그 뒤로 몇 개를 이긴다는 규칙 하나로 만듭니다.
+- 변종마다 손과 '누가 누구를 이기는지'만 적으면 판정표가 만들어집니다. RPS-7부터 RPS-101까지와 `직접 만들기`는 손을 고리로 늘어놓고 손마다 그 뒤로 몇 개를 이긴다는 규칙 하나로 만듭니다.
 - 최적 섞기는 판정표를 영합 게임으로 보고 선형 계획법(심플렉스)으로 풉니다. 모든 손을 똑같이 섞어도 지지 않는 판이면 그것을 그대로 보여 줍니다.
 - 묵찌빠에서 둘 다 아무렇게나 내면 공격하는 쪽이 이길 확률은 2/3입니다. 하나빼기에서는 서로 다른 두 손 짝 셋을 1/3씩 내는 것이 최선입니다.
 - 글리코는 꼭대기까지 남은 칸 수마다 이길 확률을 가치 반복으로 풉니다. 둘 다 꼭대기에서 멀 때는 바위와 가위를 40%씩, 보를 20% 내는 것이 최선에 가깝습니다.
@@ -106,18 +106,20 @@ node scripts/variants_doc.mjs > docs/variants.md   # 변종 목록 문서 다시
 web/                          웹 앱 (GitHub Pages)
   index.html, style.css
   icons/                      파비콘
+  art/                        손 그림 SVG (Fluent UI Emoji, 없는 손은 이모지)
   js/app.js                   주소(#/…)에 따라 화면을 고른다
   js/core/                    판정(engine), 최적 섞기(lp), 컴퓨터 전략(bots), 난수(rng), 조사(josa)
-  js/data/                    도감(catalog), RPS 확장판 판정 문장(verbs), 직접 만들기 손 모음(custom)
+  js/data/                    도감(catalog), RPS 확장판 판정 문장(verbs), 직접 만들기 손 모음(custom), 손 그림 목록(art-files)
   js/games/                   놀이 규칙: 판(match), 묵찌빠, 아치무이테호이, 하나빼기, 글리코,
                               한정 가위바위보, 다이너마이트와 물풍선, 명령, 여럿이·기차·진화(group)
   js/sims/                    전략 리그, 격자 생태계, 가위바위보 전쟁
-  js/ui/                      DOM 도구, 색, 고리 그림, 저장, 공통 위젯
+  js/ui/                      DOM 도구, 색, 고리 그림, 손 그림(art), 저장, 공통 위젯
   js/views/                   화면
-tests/                        node --test (판정, 최적 섞기, 놀이 규칙, 시뮬레이션)
+tests/                        node --test (판정, 최적 섞기, 놀이 규칙, 시뮬레이션, 손 그림)
 scripts/
   stamp.py                    배포할 때 스크립트·스타일 주소에 판(?v=)을 붙인다
   variants_doc.mjs            catalog.js → docs/variants.md
+  art_list.mjs                web/art/ → js/data/art-files.js (그림 목록과 규격 검사)
 docs/
   variants.md                 변종마다 규칙과 출처
   screenshots/                이 README 의 화면 캡처
@@ -130,6 +132,7 @@ docs/
 
 - 변종을 더하려면 `web/js/data/catalog.js`에 한 항목을 적습니다. 손과 `rel`(누가 누구를 어떻게 이기나) 또는 `cycle`(고리에서 뒤로 몇 개를 이기나)만 적으면 판정, 고리 그림, 최적 섞기, 플레이 화면이 따라옵니다. 그다음 `docs/variants.md`를 다시 만듭니다.
 - 판 흐름이 있는 놀이는 규칙을 `js/games/`에, 화면을 `js/views/`에 나눠 둡니다. 규칙 쪽은 DOM 없이 돌아서 `node --test`로 시험합니다.
+- 손 그림은 `js/ui/art.js` 한 곳에서 찍습니다. 손마다 그림 이름(`art`, 없으면 `id`)이 있고, `web/art/<그림 이름>.svg`가 있으면 그 그림을, 없으면 이모지를 씁니다. 그림은 Microsoft Fluent UI Emoji를 64×64 에 감싼 것이라 어느 기기에서나 같은 모양으로 보입니다. 그림을 넣거나 빼면 `node scripts/art_list.mjs`로 목록을 다시 만듭니다.
 - 손 이름 뒤 조사는 `js/core/josa.js`의 `josa()`로 붙입니다. 받침에 따라 이/가, 을/를, 과/와, 으로/로를 고릅니다.
 - 손 색은 `js/ui/colors.js`의 팔레트를 순서대로 씁니다. 색각 이상에서도 이웃한 색이 구별되는지 검사한 순서라서 바꾸지 않습니다.
 - `main`에 푸시하면 Actions가 테스트를 돌리고 `web/`을 GitHub Pages로 올립니다. 처음 한 번은 레포 Settings → Pages → Source를 `GitHub Actions`로 바꿔야 합니다.
@@ -142,8 +145,8 @@ docs/
 | --- | --- |
 | 코드: `web/`, `scripts/`, `tests/` | MIT (`LICENSE`) |
 | 글꼴: Black Han Sans, IBM Plex Sans KR. 저장소에 없고 jsDelivr의 Fontsource에서 불러옵니다 | SIL Open Font License 1.1 |
-| 손 그림 | 그림 파일이 없습니다. 보는 기기의 이모지 글꼴로 그립니다 |
-| 놀이 규칙 | 놀이를 만든 사람과 전해 온 문화의 것입니다. RPS-7–25의 손 구성과 고리 순서는 David C. Lovelace([umop.com](https://www.umop.com/rps.htm))가 만들었습니다. 판정 문장과 설명은 이 앱에서 새로 썼습니다. 출처는 [docs/variants.md](docs/variants.md)에 있습니다 |
+| 손 그림: `web/art/*.svg`. [Microsoft Fluent UI Emoji](https://github.com/microsoft/fluentui-emoji)를 64×64 에 감싼 것입니다. 아직 그림이 없는 손은 보는 기기의 이모지 글꼴로 그립니다 | MIT (© Microsoft Corporation). 고지문은 `web/art/LICENSE-fluentui-emoji.txt` |
+| 놀이 규칙 | 놀이를 만든 사람과 전해 온 문화의 것입니다. RPS-7–101의 손 구성과 고리 순서는 David C. Lovelace([umop.com](https://www.umop.com/rps.htm))가 만들었습니다. 판정 문장과 설명은 이 앱에서 새로 썼습니다. 출처는 [docs/variants.md](docs/variants.md)에 있습니다 |
 | 이름 `Ultimate RSP`, 아이콘(`web/icons/`), 화면 캡처(`docs/screenshots/`) | 라이선스를 주지 않습니다(MIT 대상이 아닙니다) |
 
 ## 만든 사람

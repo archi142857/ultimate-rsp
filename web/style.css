@@ -1,4 +1,4 @@
-/* Ultimate RSP — 세상의 가위바위보
+/* Ultimate RSP — 궁극의 가위바위보
    색: 남색 잉크 + 푸르스름한 종이. 색깔은 손에만 쓴다(손 8개까지는 색각 검사를 거친 8색, 그 이상은 색상환).
    글자: 크게 외치는 자리는 Black Han Sans, 나머지는 IBM Plex Sans KR. */
 
@@ -181,6 +181,10 @@ main {
   max-width: var(--wrap);
   margin: 0 auto;
   padding: 8px var(--gutter) 64px;
+  outline: none;
+}
+/* 화면을 옮길 때 본문으로 포커스를 옮기지만(스크린리더용) 본문 전체에 테두리는 그리지 않는다 */
+main:focus-visible {
   outline: none;
 }
 
@@ -1835,4 +1839,74 @@ table.grid td.s {
   .panel {
     border: 1px solid CanvasText;
   }
+}
+
+/* ── 손 그림 (web/js/ui/art.js) ───────────────────────────── */
+/* 그림이 있으면 SVG, 없으면 이모지. 그림 본체가 상자의 3/4 쯤이라 상자를 키워 이모지 한 글자 크기에 맞춘다 */
+.art-svg {
+  display: inline-block;
+  width: 1.4em;
+  height: 1.4em;
+  margin: -0.2em 0;
+  vertical-align: -0.33em;
+}
+.art-svg > img,
+.art-svg > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ring .art-g {
+  pointer-events: none;
+}
+/* 손 색으로 채운 동그라미 위에서는 그림 선 색을 바꾼다 */
+.ring .node,
+.stage-side {
+  --on: var(--ol, var(--ink));
+}
+:root[data-scheme="dark"] .ring .node,
+:root[data-scheme="dark"] .stage-side {
+  --on: var(--od, var(--ink));
+}
+.ring .node.on {
+  color: var(--on);
+}
+.stage-side.won .stage-hand {
+  color: var(--on);
+}
+
+/* 손이 아주 많은 판(RPS-101): 버튼을 작게, 묶음 안에서 굴린다 */
+.hands-huge {
+  grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+  max-height: 25rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 4px 6px 2px;
+}
+.hands-huge .hand {
+  padding: 8px 2px 7px;
+}
+.hands-huge .hand-emoji {
+  font-size: 1.35rem;
+}
+.hands-huge .hand-name {
+  font-size: 0.6875rem;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+.ringlist {
+  margin: 12px 0 0;
+  padding: 0;
+  columns: 9.5em auto;
+  column-gap: 20px;
+  list-style-position: inside;
+  font-size: 0.875rem;
+  line-height: 1.9;
+}
+.ringlist li {
+  break-inside: avoid;
+}
+.ringlist li::marker {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }

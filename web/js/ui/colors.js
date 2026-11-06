@@ -20,10 +20,24 @@ export function handColors(V) {
   return out;
 }
 
-/** CSS 변수로 넘길 꼴 */
+/** CSS 변수로 넘길 꼴. --ol·--od 는 그 색으로 채운 면 위에 놓을 글자·그림 색 */
 export function handVars(V, i) {
   const c = (V._colors ||= handColors(V))[i];
-  return { "--cl": c[0], "--cd": c[1] };
+  return { "--cl": c[0], "--cd": c[1], "--ol": onInk(c[0]), "--od": onInk(c[1]) };
+}
+
+/** 색 면 위의 글자 색: 밝은 면(노랑 등)에는 진한 남색, 나머지는 흰색 */
+export function onInk(hex) {
+  return luminance(hex) > 0.42 ? "#1a1e3a" : "#ffffff";
+}
+
+export function luminance(hex) {
+  const v = hex.replace("#", "");
+  const c = [0, 2, 4].map((k) => {
+    const x = parseInt(v.slice(k, k + 2), 16) / 255;
+    return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 }
 
 export function isDark() {

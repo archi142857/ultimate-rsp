@@ -1,6 +1,7 @@
 // 한정 가위바위보 화면.
 
 import { h, clear } from "../ui/dom.js";
+import { handArt } from "../ui/art.js";
 import { compileVariant } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
 import { findEntry } from "../data/catalog.js";
@@ -54,7 +55,7 @@ export function limitedView(main, entry) {
     grid.setAllowed(game.allowed(0));
     clear(theirDeck).append(
       h("span", { class: "field-label" }, "컴퓨터에게 남은 카드"),
-      ...V.hands.map((hd) => h("span", {}, `${hd.emoji} ${hd.name} ${game.hand[1][hd.i]}장`)),
+      ...V.hands.map((hd) => h("span", {}, handArt(hd), ` ${hd.name} ${game.hand[1][hd.i]}장`)),
     );
     leftLine.textContent = game.done ? "" : `남은 카드 ${game.left()}장씩. 카드를 다 쓰면 별이 많은 쪽이 이긴다.`;
     score.set(wins[0], wins[1], wins[2] ? `이긴 판, 비김 ${wins[2]}` : "이긴 판");

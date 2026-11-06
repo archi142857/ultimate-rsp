@@ -158,3 +158,23 @@ test("조사", () => {
   assert.equal(josa("길", "으로로"), "길로");
   assert.equal(josa("밥", "으로로"), "밥으로");
 });
+
+test("RPS-101: 손 101개, 고리에서 뒤 50개를 이긴다 (umop.com 판정과 같다)", () => {
+  const V = compileVariant(findEntry("rps101"));
+  assert.equal(V.n, 101);
+  assert.ok(V.balanced);
+  const at = (id) => V.index[id];
+  // 1번 다이너마이트는 2번 토네이도부터 51번 바퀴벌레까지 이기고 52번 뇌에 진다
+  assert.equal(V.cmp(at("dynamite"), at("tornado")), 1);
+  assert.equal(V.cmp(at("dynamite"), at("cockroach")), 1);
+  assert.equal(V.cmp(at("dynamite"), at("brain")), -1);
+  // 고리 끝에서 처음으로 돌아간다: 98번 핵폭탄은 47번 고양이까지 이긴다. RPS-25 와 달리 늑대를 이긴다
+  assert.equal(V.cmp(at("nuke"), at("cat")), 1);
+  assert.equal(V.cmp(at("nuke"), at("wolf")), 1);
+  assert.equal(V.cmp(at("nuke"), at("bird")), -1);
+  const V25 = compileVariant(findEntry("rps25"));
+  assert.equal(V25.cmp(V25.index.wolf, V25.index.nuke), 1);
+  // 이름과 이모지가 겹치지 않는다
+  assert.equal(new Set(V.hands.map((hd) => hd.name)).size, 101);
+  assert.equal(new Set(V.hands.map((hd) => hd.emoji)).size, 101);
+});

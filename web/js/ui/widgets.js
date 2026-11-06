@@ -1,6 +1,7 @@
 // 여러 화면이 같이 쓰는 조각: 고르기, 손 버튼, 무대(나 대 컴퓨터), 외치기, 섞기 막대, 출처.
 
 import { h, clear, reducedMotion, sleep, pct, frac } from "./dom.js";
+import { handArt, setArt } from "./art.js";
 import { handVars } from "./colors.js";
 import { setting, setSetting } from "./store.js";
 
@@ -64,7 +65,7 @@ export function field(label, control) {
  */
 export function handGrid(V, { onPick, label = "낼 손", names = null, keys = true, compact = false } = {}) {
   const grid = h("div", {
-    class: "hands" + (V.n > 7 ? " hands-many" : "") + (V.n > 15 ? " hands-lots" : "") + (compact ? " hands-compact" : ""),
+    class: "hands" + (V.n > 7 ? " hands-many" : "") + (V.n > 15 ? " hands-lots" : "") + (V.n > 41 ? " hands-huge" : "") + (compact ? " hands-compact" : ""),
     role: "group",
     "aria-label": label,
   });
@@ -80,7 +81,7 @@ export function handGrid(V, { onPick, label = "낼 손", names = null, keys = tr
         "aria-keyshortcuts": key || undefined,
         onclick: () => !b.disabled && onPick(hd.i),
       },
-      h("span", { class: "hand-emoji", "aria-hidden": "true" }, hd.emoji),
+      handArt(hd, "hand-emoji"),
       h("span", { class: "hand-name" }, names ? names[hd.i] : hd.name),
       key && V.n <= 9 ? h("span", { class: "hand-key", "aria-hidden": "true" }, key) : null,
       h("span", { class: "hand-count", hidden: true }),
@@ -140,14 +141,14 @@ export function stage({ meLabel = "나", opLabel = "컴퓨터" } = {}) {
       el: box,
       set(V, i, extra = "") {
         if (i === null || i === undefined) {
-          face.textContent = "";
+          setArt(face, null);
           name.textContent = extra || "";
           box.classList.add("empty");
           box.removeAttribute("style");
           return;
         }
         box.classList.remove("empty");
-        face.textContent = V.hands[i].emoji;
+        setArt(face, V.hands[i]);
         name.textContent = extra || V.hands[i].name;
         const v = handVars(V, i);
         for (const [k, val] of Object.entries(v)) box.style.setProperty(k, val);
@@ -222,11 +223,10 @@ export function mixBar(V, mix, { label = "최적 섞기" } = {}) {
     { class: "mixbar", role: "img", "aria-label": `${label}: ` + items.map((x) => `${x.hd.name} ${frac(x.p)}`).join(", ") },
     items.map((x) => {
       const v = handVars(V, x.hd.i);
-      // 칸 안 글자: 밝은 칸(노랑 등)에는 검정, 나머지는 흰색
-      const ink = (hex) => (luminance(hex) > 0.42 ? "#0b0b0b" : "#ffffff");
+      // 칸 안 글자: 밝은 칸(노랑 등)에는 진한 색, 나머지는 흰색
       return h(
         "span",
-        { class: "mix-seg", vars: { ...v, "--w": String(x.p), "--tl": ink(v["--cl"]), "--td": ink(v["--cd"]) }, title: `${x.hd.name} ${frac(x.p)} (${pct(x.p)})` },
+        { class: "mix-seg", vars: { ...v, "--w": String(x.p), "--tl": v["--ol"], "--td": v["--od"] }, title: `${x.hd.name} ${frac(x.p)} (${pct(x.p)})` },
         x.p >= 0.12 ? h("span", { class: "mix-in" }, frac(x.p)) : null,
       );
     }),
@@ -239,7 +239,8 @@ export function mixBar(V, mix, { label = "최적 섞기" } = {}) {
         "li",
         { class: mix[hd.i] > 1e-9 ? "" : "zero" },
         h("span", { class: "swatch", vars: handVars(V, hd.i), "aria-hidden": "true" }),
-        `${hd.emoji} ${hd.name} `,
+        handArt(hd),
+        ` ${hd.name} `,
         h("b", {}, frac(mix[hd.i])),
       ),
     ),
@@ -247,14 +248,6 @@ export function mixBar(V, mix, { label = "최적 섞기" } = {}) {
   return h("div", { class: "mix" }, bar, legend);
 }
 
-function luminance(hex) {
-  const v = hex.replace("#", "");
-  const c = [0, 2, 4].map((k) => {
-    const x = parseInt(v.slice(k, k + 2), 16) / 255;
-    return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-}
 
 export function sourcesList(list) {
   if (!list || !list.length) return null;

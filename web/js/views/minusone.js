@@ -1,6 +1,7 @@
 // 하나빼기 화면.
 
 import { h, clear, frac } from "../ui/dom.js";
+import { handArt } from "../ui/art.js";
 import { compileVariant } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
 import { findEntry } from "../data/catalog.js";
@@ -47,7 +48,7 @@ export function minusOneView(main, entry) {
             throwBtn.disabled = picks[0] === null || picks[1] === null;
           },
         },
-        h("span", { class: "hand-emoji", "aria-hidden": "true" }, hd.emoji),
+        handArt(hd, "hand-emoji"),
         h("span", { class: "hand-name" }, hd.name),
       ),
     );
@@ -121,7 +122,7 @@ export function minusOneView(main, entry) {
         h(
           "button",
           { type: "button", class: "hand", vars: handVars(V, x), onclick: () => keep(side) },
-          h("span", { class: "hand-emoji", "aria-hidden": "true" }, V.hands[x].emoji),
+          handArt(V.hands[x], "hand-emoji"),
           h("span", { class: "hand-name" }, `${side === 0 ? "왼손" : "오른손"} ${V.hands[x].name} 남기기`),
         ),
       ),
@@ -143,7 +144,7 @@ export function minusOneView(main, entry) {
       { class: "pair-line" },
       h("span", { class: "field-label" }, who),
       " ",
-      pair.map((x) => h("span", { class: "pair-hand", vars: handVars(V, x), title: V.hands[x].name }, V.hands[x].emoji)),
+      pair.map((x) => h("span", { class: "pair-hand", vars: handVars(V, x), title: V.hands[x].name }, handArt(V.hands[x]))),
       h("span", { class: "sr" }, pair.map((x) => V.hands[x].name).join(", ")),
     );
   }
