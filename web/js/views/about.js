@@ -41,7 +41,7 @@ export function aboutView(main) {
       ),
       block(
         t("만든 사람"),
-        h("p", {}, t("동물생명공학전공 25학번 이영표. 버그 제보와 새 변종 제안은 "), h("a", { href: "https://github.com/Archi142857/ultimate-rsp/issues", rel: "noopener" }, t("GitHub 이슈")), t("로 받는다.")),
+        h("p", {}, t("서울대학교 동물생명공학전공 25학번 이영표. 버그 제보와 새 변종 제안은 "), h("a", { href: "https://github.com/Archi142857/ultimate-rsp/issues", rel: "noopener" }, t("GitHub 이슈")), t("로 받는다.")),
       ),
     ),
   );

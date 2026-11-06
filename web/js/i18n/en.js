@@ -193,7 +193,7 @@ export const EN = {
   "손 그림은 Microsoft 의 ": "The hand pictures are adapted from Microsoft's ",
   "(© Microsoft Corporation, MIT 라이선스)를 고쳐 쓴다. 아직 그림이 없는 손은 보는 기기의 이모지로 나온다.": " (© Microsoft Corporation, MIT license). Hands without a picture yet use your device's emoji.",
   "만든 사람": "Made by",
-  "동물생명공학전공 25학번 이영표. 버그 제보와 새 변종 제안은 ": "Youngpyo Lee, Animal Biotechnology, entering class of 2025. Send bug reports and ideas for new variants through ",
+  "서울대학교 동물생명공학전공 25학번 이영표. 버그 제보와 새 변종 제안은 ": "Youngpyo Lee, Animal Biotechnology, Seoul National University (entered 2025). Send bug reports and ideas for new variants through ",
   "GitHub 이슈": "GitHub issues",
   "로 받는다.": ".",
 
