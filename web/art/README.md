@@ -4,5 +4,5 @@
 
 - 파일 이름은 `<그림 이름>.svg`. 그림 이름은 `web/js/data/catalog.js` 의 손마다 `art`(없으면 `id`).
 - 넣거나 빼거나 고친 뒤 `node scripts/art_list.mjs` 로 `web/js/data/art-files.js` 를 다시 만든다. 목록에 없는 그림은 쓰지 않는다.
-- 규격은 `scripts/art_list.mjs` 의 `checkSvg` 와 `tests/art.test.mjs` 가 검사한다: viewBox `0 0 64 64`, 그림 40KB 아래(파일에 붙는 `<metadata>` 는 세지 않는다), 글자·스크립트·바깥 주소 없이.
+- 규격은 `scripts/art_list.mjs` 의 `checkSvg` 와 `tests/art.test.mjs` 가 검사한다: viewBox `0 0 64 64`, 그림 80KB 아래(보통 40KB 아래, 파일에 붙는 `<metadata>` 는 세지 않는다), 글자·스크립트·바깥 주소 없이.
 - 그림이 없는 손은 이모지가 나온다.

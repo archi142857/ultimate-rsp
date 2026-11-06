@@ -50,7 +50,7 @@ test("SVG 규격 검사", () => {
   // 파일에 붙어 오는 메타데이터는 크기에 안 센다
   const meta = good.replace("<circle", `<metadata>${"A".repeat(20000)}</metadata><circle`);
   assert.deepEqual(checkSvg(meta), []);
-  assert.ok(checkSvg(good.replace("<circle", `<path d="${"M0 0".repeat(12000)}"/><circle`)).length);
+  assert.ok(checkSvg(good.replace("<circle", `<path d="${"M0 0".repeat(24000)}"/><circle`)).length);
   // Fluent 이모지는 흐림 필터를 쓴다
   assert.deepEqual(checkSvg(good.replace("<circle", '<defs><filter id="f"><feGaussianBlur stdDeviation="1"/></filter></defs><circle filter="url(#f)"')), []);
   // 안쪽 id 를 가리키는 것은 괜찮다

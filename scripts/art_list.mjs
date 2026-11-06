@@ -15,9 +15,10 @@ const outFile = join(root, "web", "js", "data", "art-files.js");
 /** 규격 검사. 어긋난 까닭들을 돌려준다(없으면 빈 배열) */
 export function checkSvg(text) {
   const bad = [];
-  // 크기는 그림만 잰다. 파일에 붙어 오는 <metadata>(만든 도구·출처 정보)는 세지 않는다
+  // 크기는 그림만 잰다. 파일에 붙어 오는 <metadata>(만든 도구·출처 정보)는 세지 않는다.
+  // 보통 40KB 아래지만 Fluent 원본이 복잡한 것(여왕 73KB)이 있어 80KB 까지 둔다. 압축해서 보내면 10KB 안팎이다
   const drawing = text.replace(/<metadata\b[\s\S]*?<\/metadata>/gi, "");
-  if (Buffer.byteLength(drawing, "utf8") > 40 * 1024) bad.push("그림이 40KB 를 넘는다");
+  if (Buffer.byteLength(drawing, "utf8") > 80 * 1024) bad.push("그림이 80KB 를 넘는다");
   if (!/<svg\b[^>]*\bviewBox="0 0 64 64"/.test(text)) bad.push('viewBox="0 0 64 64" 가 아니다');
   if (/<script\b/i.test(text)) bad.push("script 가 있다");
   if (/<foreignObject\b/i.test(text)) bad.push("foreignObject 가 있다");
