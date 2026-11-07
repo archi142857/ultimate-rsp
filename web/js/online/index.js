@@ -2,10 +2,11 @@
 
 import { h, setTitle } from "../ui/dom.js";
 import { t } from "../i18n.js";
-import { onlineHead } from "./common.js";
+import { topBar, bigTitle } from "./common.js";
 import { onlineHomeView } from "./home.js";
 import { challengeView } from "./challenge.js";
 import { newChallengeView } from "./challenge-new.js";
+import { matchView } from "./match.js";
 import { roomView } from "./room.js";
 
 export { parseOnline } from "./ids.js";
@@ -15,6 +16,7 @@ export function onlineView(main, route, params) {
   if (route.kind === "new-challenge") return newChallengeView(main, params);
   if (route.kind === "challenge") return challengeView(main, route.code, params);
   if (route.kind === "room") return roomView(main, route.code, params);
+  if (route.kind === "match") return matchView(main, params);
   return badLinkView(main, route.what);
 }
 
@@ -26,8 +28,10 @@ function badLinkView(main, what) {
     h(
       "div",
       { class: "online" },
-      onlineHead(title),
-      h("p", { class: "note" }, room ? t("방 코드가 맞지 않는다. 코드를 다시 확인해 주세요.") : t("링크가 맞지 않는다. 받은 링크를 다시 확인해 주세요.")),
+      topBar({ href: "#/play", label: t("온라인") }).el,
+      bigTitle(title),
+      h("p", { class: "o-p" }, room ? t("방 코드가 맞지 않는다. 코드를 다시 확인해 주세요.") : t("링크가 맞지 않는다. 받은 링크를 다시 확인해 주세요.")),
+      h("a", { class: "btn btn-ink btn-big", href: "#/play" }, t("온라인 첫 화면")),
     ),
   );
   return {};

@@ -5,7 +5,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import * as P from "../server/src/protocol.js";
 import { checkName, normCode, makeCode } from "../server/src/check.js";
-import { matrixIds } from "../server/src/games.js";
+import { matrixIds, groupBaseIds, normRules } from "../server/src/games.js";
+import * as C from "../web/js/online/protocol.js";
+import { cleanRules, groupBases } from "../web/js/online/rules.js";
+import { wsErrorText } from "../web/js/online/messages.js";
+import { BOTS } from "../web/js/core/bots.js";
 import { readFileSync, existsSync } from "node:fs";
 import { PROTOCOL, DEFAULT_SERVER } from "../web/js/online/config.js";
 import { CODE_ABC, CODE_LEN, checkCode } from "../web/js/online/ids.js";
@@ -40,14 +44,14 @@ test("화면이 다듬은 이름은 서버가 받는다", () => {
       const n = randomName(l);
       assert.equal(checkName(n), n);
     }
-  const nasty = ["a‮b", "줄\n바꿈", "  띄어   쓰기  ", "x​y", "é", "\u{1F468}‍\u{1F469}‍\u{1F467} 가족", "가".repeat(30), "　전각　빈칸　"];
+  const nasty = ["a\u202Eb", "줄\n바꿈", "  띄어   쓰기  ", "x\u200By", "e\u0301", "\u{1F468}\u200D\u{1F469}\u200D\u{1F467} 가족", "가".repeat(30), "\u3000전각\u3000빈칸\u3000"];
   for (const raw of nasty) {
     const c = cleanName(raw);
     assert.ok(c, JSON.stringify(raw));
     assert.equal(checkName(c), c, `서버가 받아야 한다: ${JSON.stringify(c)}`);
   }
   // 보이는 글자가 없으면 화면은 빈 이름으로 보고(바꾸지 않는다), 서버도 안 받는다
-  for (const raw of ["́", "   ", "​"]) {
+  for (const raw of ["\u0301", "   ", "\u200B"]) {
     assert.equal(cleanName(raw), "");
     assert.throws(() => checkName(raw));
   }
@@ -58,8 +62,8 @@ test("서버 오류 코드마다 화면 문구가 있다", () => {
   for (const code of Object.keys(P.ERRORS)) {
     const msg = errorText(code);
     assert.ok(msg, code);
-    // busy·server 는 '닿지 않는다'와 같은 안내(규약 5장). bad_rules 는 방(4단계)에서 문구를 붙인다
-    if (!["busy", "server", "bad_rules"].includes(code)) assert.notEqual(msg, unreachable, code);
+    // busy·server 는 '닿지 않는다'와 같은 안내(규약 5장)
+    if (!["busy", "server"].includes(code)) assert.notEqual(msg, unreachable, code);
   }
 });
 
@@ -75,4 +79,28 @@ test("화면의 기본 서버 주소가 서버 README 의 주소와 같다", () 
   if (!existsSync(readme)) return;
   const found = readFileSync(readme, "utf8").match(/https:\/\/ultimate-rsp\.[a-z0-9-]+\.workers\.dev/);
   if (found) assert.equal(DEFAULT_SERVER, found[0]);
+});
+
+test("방·매칭 수가 서버와 같다(규약 1.4·3·4·5장)", () => {
+  for (const k of ["EMOTES", "EMOTE_GAP_MS", "FORMATS", "MATCH_FORMATS", "TIMERS", "ROOM_DEFAULTS", "GROUP_SEATS", "GROUP_MODES", "GRACE_MS", "REVEAL_MS", "MATCH_BOT_OFFER_MS", "PING", "PONG", "PING_MS", "RETRY_MS", "CLOSE", "NO_RETRY"])
+    assert.deepEqual(C[k], P[k], k);
+  for (const code of P.WS_ERRORS) assert.notEqual(wsErrorText(code), errorText("network"), code);
+  assert.deepEqual(
+    groupBases().map((e) => e.id),
+    groupBaseIds(),
+  );
+});
+
+test("화면이 보내는 방 규칙을 서버가 그대로 받는다", () => {
+  const tries = [{}];
+  for (const game of [...matrixIds(), "group"])
+    for (const format of P.FORMATS)
+      for (const timer of P.TIMERS) tries.push({ game, format, timer, bot: BOTS[(timer / 10) % BOTS.length].id, mode: timer ? "loser" : "survive", seats: 3 + (timer % 8) });
+  tries.push({ game: "custom", custom: { n: 9, k: 4, seed: 123 } });
+  for (const base of groupBaseIds()) tries.push({ game: "group", base, seats: 10 });
+  for (const r of tries) {
+    const mine = cleanRules(r);
+    const server = normRules(mine);
+    for (const [k, v] of Object.entries(mine)) assert.deepEqual(server[k], v, `${JSON.stringify(r)} → ${k}`);
+  }
 });

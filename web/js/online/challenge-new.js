@@ -1,94 +1,130 @@
-// 도전장 만들기(#/c/new, #/c/new?v=게임): 게임과 손을 고르면 서버가 번호를 주고, 그 도전장 화면(#/c/번호)으로 간다.
+// 도전장 만들기(디자인 시안 ③ 2–3번). 세 단계:
+//  1. #/c/new        변종 고르기(랜덤 매칭 목록과 같은 모양). 누르면 2단계로
+//  2. #/c/new?v=게임  손 고르기 + 같이 보낼 이모트(안 골라도 된다) → '링크 만들기'
+//  3. #/c/번호        서버가 번호를 주면 그 도전장 화면이 '도전장이 준비됐다'(3/3)로 보인다(challenge.js)
 // 내 손은 서버와 이 브라우저(mine.js)에만 남는다. 링크에는 번호만 들어간다.
 
-import { h, clear, setTitle } from "../ui/dom.js";
+import { h, setTitle } from "../ui/dom.js";
 import { t } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
-import { selectBox } from "../ui/widgets.js";
+import { handGrid } from "../ui/widgets.js";
 import { setting, setSetting } from "../ui/store.js";
-import { onlineHead, statusLine, ringPanel, handPicker } from "./common.js";
+import { topBar, bigTitle, variantRow, handRing } from "./common.js";
+import { noticeSlot } from "./notice.js";
+import { emoteRow } from "./emotes.js";
 import { challengeGames, challengeGame } from "./games.js";
 import { myName, playerId } from "./identity.js";
 import { createChallenge } from "./api.js";
-import { rememberChallenge } from "./mine.js";
-import { errorText } from "./messages.js";
+import { rememberChallenge, markFresh } from "./mine.js";
+import { noticeFor } from "./messages.js";
+
+const compiled = new Map();
+const variant = (entry) => {
+  if (!compiled.has(entry.id)) compiled.set(entry.id, compileVariant(entry));
+  return compiled.get(entry.id);
+};
 
 export function newChallengeView(main, params = {}) {
+  const entry = params.v ? challengeGame(params.v) : null;
+  return entry ? handStep(main, entry) : gameStep(main);
+}
+
+// ── 1단계: 변종 고르기 ─────────────────
+function gameStep(main) {
   setTitle(t("도전장 만들기"));
+  const last = setting("online.game", "classic");
+  const list = h(
+    "div",
+    { class: "var-list" },
+    challengeGames().map((e) => variantRow(variant(e), { href: `#/c/new?v=${encodeURIComponent(e.id)}`, on: e.id === last })),
+  );
+  main.append(
+    h(
+      "div",
+      { class: "online" },
+      topBar({ href: "#/play", label: t("온라인") }, stepText(1)).el,
+      bigTitle(t("무엇으로 겨룰까?")),
+      h("p", { class: "o-p" }, t("손을 숨겨 링크로 보낸다. 처음 답한 한 사람과 겨룬다.")),
+      list,
+    ),
+  );
+  return {};
+}
+
+// ── 2단계: 손과 이모트 고르기 ─────────────────
+function handStep(main, entry) {
+  setTitle(t("도전장 만들기"));
+  setSetting("online.game", entry.id);
   const ctl = new AbortController();
-  let gameId = [params.v, setting("online.game", null), "classic"].find((id) => id && challengeGame(id));
-  let V = null;
-  let picker = null;
+  const V = variant(entry);
+  const notices = noticeSlot();
+  let picked = null;
 
-  const status = statusLine({ hidden: true });
-  const send = h("button", { type: "button", class: "btn btn-ink", disabled: true }, t("도전장 만들기"));
-  send.addEventListener("click", submit);
-  const gameSel = selectBox({
-    label: t("게임"),
-    value: gameId,
-    options: challengeGames().map((e) => ({ id: e.id, name: e.name })),
-    onChange(id) {
-      gameId = id;
-      setSetting("online.game", id);
-      draw();
-    },
-  });
-  const grid = h("div", { class: "entry-grid" });
+  const send = h("button", { type: "button", class: "btn btn-ink btn-big", disabled: true }, t("링크 만들기"));
+  const ring = handRing(V, { pickable: true, onPick: (i) => choose(i, "ring") });
+  // 손이 많으면 고리를 누르기 어렵다. 그때는 지금의 손 단추로 고른다
+  const grid = V.n > 7 ? handGrid(V, { onPick: (i) => choose(i, "grid") }) : null;
+  const emotes = emoteRow({ selectable: true, label: t("같이 보낼 이모트") });
 
-  function draw() {
-    V = compileVariant(challengeGame(gameId));
-    const rp = ringPanel(V, { rulesLink: `#/v/${gameId}` });
-    picker = handPicker(V, { ring: rp.ring, label: t("낼 손"), onPick: () => (send.disabled = false) });
-    send.disabled = true;
-    status.hide();
-    clear(grid).append(
-      rp.el,
-      h(
-        "section",
-        { class: "panel challenge-form", "aria-label": t("도전장 만들기") },
-        gameSel.el,
-        h("p", { class: "challenge-lead" }, t("낼 손을 고르세요. 받은 사람은 결과가 나올 때까지 모른다.")),
-        picker.el,
-        h("p", { class: "online-note" }, t("보내는 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play" }, t("이름 바꾸기"))),
-        h("div", { class: "form-actions" }, send),
-        status.el,
-      ),
-    );
+  function choose(i, from) {
+    picked = i;
+    if (from !== "ring") ring.set(i);
+    if (grid)
+      grid.buttons.forEach((b, k) => {
+        b.classList.toggle("picked", k === i);
+        b.setAttribute("aria-pressed", String(k === i));
+      });
+    send.disabled = false;
   }
+  if (grid) grid.buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
 
-  async function submit() {
-    if (!picker || picker.picked === null || send.disabled) return;
-    const hand = V.hands[picker.picked].id;
-    const game = gameId;
+  send.addEventListener("click", async () => {
+    if (picked === null || send.disabled) return;
+    const hand = V.hands[picked].id;
     send.disabled = true;
-    picker.lock(true);
-    status.set("wait", t("도전장을 만드는 중…"));
+    notices.set("wait", { title: t("도전장을 만드는 중…"), spin: true });
     try {
-      const { code } = await createChallenge({ game, hands: [hand], name: myName(), pid: playerId() }, { signal: ctl.signal });
-      rememberChallenge({ id: code, role: "maker", game, hand, at: Date.now() });
+      const e = emotes.picked || undefined;
+      const { code } = await createChallenge({ game: entry.id, hands: [hand], name: myName(), pid: playerId(), e }, { signal: ctl.signal });
+      rememberChallenge({ id: code, role: "maker", game: entry.id, hand, at: Date.now() });
+      markFresh(code);
       location.hash = `#/c/${code}`;
-    } catch (e) {
+    } catch (err) {
       if (ctl.signal.aborted) return;
-      status.set("bad", errorText(e.code));
+      notices.clear("wait");
+      const n = noticeFor(err.code);
+      notices.set(n.kind, n);
       send.disabled = false;
-      picker.lock(false);
     }
-  }
+  });
 
   main.append(
     h(
       "div",
-      { class: "online online-wide" },
-      onlineHead(t("도전장 만들기"), t("게임과 손을 고르면 링크가 생긴다. 받은 사람은 내 손을 모른 채 손을 고른다.")),
-      grid,
+      { class: "online" },
+      notices.el,
+      topBar({ href: "#/c/new", label: t("도전장 만들기") }, stepText(2)).el,
+      variantRow(V, { right: h("a", { class: "o-link", href: "#/c/new" }, t("바꾸기")) }),
+      h("h1", { class: "o-h2" }, t("무엇을 낼까?")),
+      h("div", { class: "hand-ring-box" }, ring.el),
+      h("p", { class: "o-p o-center" }, t("상대는 내 손을 못 본다. 화살표는 이기는 쪽이다.")),
+      grid ? grid.el : null,
+      h("p", { class: "o-label" }, t("같이 보낼 이모트(안 골라도 된다)")),
+      emotes.el,
+      h("div", { class: "o-actions o-bottom" }, send),
+      h("p", { class: "o-p o-small o-center" }, t("보내는 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play" }, t("이름 바꾸기"))),
     ),
   );
-  draw();
 
   return {
-    onKey: (e) => (picker ? picker.keyHandler(e) : false),
+    onKey: (e) => (grid ? grid.keyHandler(e) : false),
     destroy() {
       ctl.abort();
+      notices.destroy();
     },
   };
+}
+
+function stepText(n) {
+  return h("span", {}, h("b", {}, String(n)), "/3");
 }

@@ -30,11 +30,12 @@ export function checkCode(s, kind) {
 
 /**
  * 온라인 주소면 { kind } 를 돌려준다. 아니면 null.
- *   { kind: "home" } | { kind: "new-challenge" } | { kind: "challenge", code } | { kind: "room", code } | { kind: "bad", what }
+ *   { kind: "home" } | { kind: "new-challenge" } | { kind: "challenge", code } | { kind: "room", code } | { kind: "match" } | { kind: "bad", what }
  */
 export function parseOnline(path) {
   if (path === "/play" || path === "/play/") return { kind: "home" };
   if (path === "/c/new" || path === "/c/new/") return { kind: "new-challenge" };
+  if (path === "/match" || path === "/match/") return { kind: "match" };
   let m = /^\/c\/([^/]*)\/?$/.exec(path);
   if (m) {
     const code = checkCode(decode(m[1]), "challenge");

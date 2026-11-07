@@ -3,8 +3,8 @@
 
 import { h, clear } from "../ui/dom.js";
 import { t } from "../i18n.js";
-import { selectBox } from "../ui/widgets.js";
-import { BOTS } from "../core/bots.js";
+import { selectBox, segmented } from "../ui/widgets.js";
+import { BOTS, botInfo } from "../core/bots.js";
 import { formatById } from "../games/match.js";
 import { findEntry } from "../data/catalog.js";
 import { variantOf, roomGameIds } from "./games.js";
@@ -63,8 +63,20 @@ export function rulesLine(rules) {
   return parts.join(" · ");
 }
 
+/** 모두에게 보이는 규칙 줄들(방장이 아닌 사람): [[이름, 값], …] */
+export function rulesRows(rules) {
+  const rows = [[t("게임"), gameName(rules)]];
+  if (isGroup(rules)) {
+    rows.push([t("정하기"), modeName(rules.mode)], [t("인원"), t("@seats:{n}명", { n: rules.seats })]);
+  } else {
+    rows.push([t("판 수"), formatById(rules.format).name], [t("컴퓨터"), botInfo(rules.bot).name]);
+  }
+  rows.push([t("시간"), timerName(rules.timer)]);
+  return rows;
+}
+
 /**
- * 방장이 규칙을 고르는 칸. onChange(rules) 는 바뀐 규칙 전체(cleanRules 꼴).
+ * 방장이 규칙을 고르는 칸(시안 ③ 규칙 카드: 이름 + 고르기 한 줄씩). onChange(rules) 는 바뀐 규칙 전체(cleanRules 꼴).
  * set(rules) 로 서버가 돌려준 규칙에 맞춘다(고르던 칸을 다시 만들지 않아 초점이 그대로다).
  */
 export function rulesEditor(initial, { onChange }) {
@@ -80,63 +92,73 @@ export function rulesEditor(initial, { onChange }) {
     options: roomGameIds().map((id) => ({ id, name: gameName({ game: id, base: "classic" }) })),
     onChange: (id) => emit(id === "group" ? { game: "group", custom: null } : { game: id, custom: null }),
   });
-  const formatSel = selectBox({
-    label: t("판 수"),
-    value: rules.format,
-    options: FORMATS.map((id) => ({ id, name: formatById(id).name })),
-    onChange: (id) => emit({ format: id }),
-  });
   const baseSel = selectBox({
-    label: t("바탕 게임"),
+    label: t("바탕"),
     value: rules.base || "classic",
     options: groupBases().map((e) => ({ id: e.id, name: e.name })),
     onChange: (id) => emit({ base: id }),
   });
-  const modeSel = selectBox({
-    label: t("무엇을 정하나"),
-    value: rules.mode || GROUP_MODES[0],
-    options: GROUP_MODES.map((id) => ({ id, name: modeName(id) })),
-    onChange: (id) => emit({ mode: id }),
-  });
-  const seatsSel = selectBox({
-    label: t("사람 수"),
-    value: String(rules.seats),
-    options: Array.from({ length: GROUP_SEATS.max - GROUP_SEATS.min + 1 }, (_, k) => {
-      const n = GROUP_SEATS.min + k;
-      return { id: String(n), name: t("@seats:{n}명", { n }) };
-    }),
-    onChange: (id) => emit({ seats: Number(id) }),
-  });
   const botSel = selectBox({
-    label: t("빈자리 컴퓨터"),
+    label: t("컴퓨터"),
     value: rules.bot,
     options: BOTS.map((b) => ({ id: b.id, name: b.name })),
     onChange: (id) => emit({ bot: id }),
   });
-  const timerSel = selectBox({
-    label: t("손 낼 시간"),
+  const formatSeg = segmented({
+    label: t("판 수"),
+    value: rules.format || ROOM_DEFAULTS.format,
+    options: FORMATS.map((id) => ({ id, name: formatById(id).name })),
+    onChange: (id) => emit({ format: id }),
+    small: true,
+  });
+  const modeSeg = segmented({
+    label: t("정하기"),
+    value: rules.mode || GROUP_MODES[0],
+    options: GROUP_MODES.map((id) => ({ id, name: modeName(id) })),
+    onChange: (id) => emit({ mode: id }),
+    small: true,
+  });
+  const seatsSeg = segmented({
+    label: t("인원"),
+    value: String(rules.seats),
+    options: Array.from({ length: GROUP_SEATS.max - GROUP_SEATS.min + 1 }, (_, k) => {
+      const n = String(GROUP_SEATS.min + k);
+      return { id: n, name: n };
+    }),
+    onChange: (id) => emit({ seats: Number(id) }),
+    small: true,
+  });
+  const timerSeg = segmented({
+    label: t("시간"),
     value: String(rules.timer),
-    options: TIMERS.map((s) => ({ id: String(s), name: timerName(s) })),
+    options: TIMERS.map((sec) => ({ id: String(sec), name: sec ? t("{n}초", { n: sec }) : t("@timer:없음") })),
     onChange: (id) => emit({ timer: Number(id) }),
+    small: true,
   });
 
   function layout() {
     const group = isGroup(rules);
     // 여럿이 할 때 컴퓨터는 늘 아무 손이나 낸다(규약 3.2)
-    clear(el).append(gameSel.el, ...(group ? [baseSel.el, modeSel.el, seatsSel.el] : [formatSel.el, botSel.el]), timerSel.el);
+    clear(el).append(gameSel.el, ...(group ? [baseSel.el, modeSeg.el, seatsSeg.el] : [formatSeg.el, botSel.el]), timerSeg.el);
   }
   function set(next) {
     const wasGroup = isGroup(rules);
     rules = cleanRules(next);
-    gameSel.sel.value = rules.game === "custom" ? gameSel.sel.value : rules.game;
-    if (rules.format) formatSel.sel.value = rules.format;
+    if (rules.game !== "custom") gameSel.sel.value = rules.game;
+    if (rules.format) formatSeg.set(rules.format);
     if (rules.base) baseSel.sel.value = rules.base;
-    if (rules.mode) modeSel.sel.value = rules.mode;
-    seatsSel.sel.value = String(rules.seats);
+    if (rules.mode) modeSeg.set(rules.mode);
+    seatsSeg.set(String(rules.seats));
     botSel.sel.value = rules.bot;
-    timerSel.sel.value = String(rules.timer);
+    timerSeg.set(String(rules.timer));
     if (wasGroup !== isGroup(rules)) layout();
   }
   layout();
-  return { el, set, get rules() { return rules; } };
+  return {
+    el,
+    set,
+    get rules() {
+      return rules;
+    },
+  };
 }

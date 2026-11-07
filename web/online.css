@@ -1,303 +1,1238 @@
-/* Ultimate RSP — 온라인 대전 화면(#/play, #/c/번호, #/room/코드).
-   style.css 의 색 변수·글꼴·단추를 그대로 쓴다. 디자인 시안이 오면 이 파일을 그 모습으로 바꾼다. */
+/* Ultimate RSP — 온라인 대전 화면(#/play, #/c/…, #/room/…, #/match). 디자인 시안 ③ 고리(2026-11-07).
+   style.css 의 색 변수·글꼴·단추를 그대로 쓴다. 색은 손에만 쓰고, 사람 고리는 무채색(나는 --focus).
+   한 줄로 쌓는 화면(폭 480px 까지)이라 넓은 화면에서는 가운데에 놓는다. */
+
+:root {
+  --warn: #9a6a00;
+  --warnbg: #fff3d6;
+}
+:root[data-scheme="dark"] {
+  --warn: #ffd27a;
+  --warnbg: #3a3214;
+}
 
 .online {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 20px;
-  max-width: 880px;
+  gap: 12px;
+  max-width: 480px;
+  margin-inline: auto;
 }
-.online > .entry-head {
-  padding-bottom: 4px;
+.online-body,
+.room-body,
+.room-lobby,
+.room-play,
+.room-end {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
 }
-
+.online a.btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.online .btn {
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
 .btn-sm {
   min-height: 34px;
   padding: 5px 14px;
   font-size: var(--step--1);
 }
-
-/* ── 내 이름 ───────────────────────────── */
-.online-me {
-  display: grid;
-  gap: 8px;
+.btn-big {
+  width: 100%;
+  min-height: 52px;
+  padding: 13px 16px;
+  font-size: 1rem;
 }
-.name-row {
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+}
+.btn-quiet:hover {
+  color: var(--ink);
+}
+.online a.btn[aria-disabled] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ── 글 ───────────────────────────── */
+.o-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.o-back {
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+a.o-back:hover {
+  color: var(--ink);
+}
+.o-top-right {
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.o-top-right b {
+  color: var(--ink);
+}
+.o-h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.875rem;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+.o-h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.4rem;
+  line-height: 1.15;
+}
+.o-h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.tone-win {
+  color: var(--win);
+}
+.tone-lose {
+  color: var(--lose);
+}
+.o-p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.o-small {
+  font-size: 0.8125rem;
+}
+.o-center {
+  text-align: center;
+}
+.o-strong {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+.o-ell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.o-label {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.o-link {
+  flex: none;
+  font-size: 0.875rem;
+  color: var(--ink);
+  text-decoration: underline;
+}
+.o-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--sunk);
+  font-size: 0.875rem;
+}
+.o-verb {
+  margin-top: -6px;
+  color: var(--ink-2);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── 카드·줄 ───────────────────────────── */
+.o-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.o-card-center {
+  align-items: center;
+  text-align: center;
+}
+.o-card-center > .btn-big {
+  align-self: stretch;
+}
+.o-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.o-grow {
+  flex: 1;
+  min-width: 0;
+}
+.o-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
-.text-input {
-  flex: 1 1 160px;
-  min-width: 0;
-  max-width: 360px;
-  min-height: 42px;
-  padding: 8px 14px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-ctl);
-  background: var(--surface);
+.o-actions.two > .btn {
+  flex: 1 1 140px;
+  width: auto;
 }
-.text-input:hover {
-  border-color: var(--ink-2);
+.o-actions.two > .btn[hidden] {
+  display: none;
 }
-.online-note {
-  margin: 0;
-  color: var(--muted);
-  font-size: var(--step--1);
+.o-bottom {
+  margin-top: 4px;
+}
+.o-center-row {
+  justify-content: center;
 }
 
-/* ── 세 가지 놀이 ───────────────────────────── */
-.modes {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-}
-.mode {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
-  gap: 6px 14px;
-  align-items: start;
-  padding: 18px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-tile);
-}
-.mode-art {
-  grid-row: 1 / span 2;
-  width: 52px;
-  height: 52px;
-  display: grid;
+/* 사람 그림(동물·로봇·첫 글자) */
+.av {
+  flex: none;
+  width: var(--av, 44px);
+  height: var(--av, 44px);
+  display: inline-grid;
   place-items: center;
   border-radius: 50%;
   background: var(--sunk);
-  font-size: 1.6rem;
-  line-height: 1;
+  overflow: hidden;
 }
-.mode-body {
-  grid-column: 2;
-  min-width: 0;
+.av img {
+  width: 78%;
+  height: 78%;
+  display: block;
 }
-.mode-title {
-  margin: 0;
-  font-size: var(--step-1);
+.av-text {
   font-weight: 700;
-  line-height: 1.3;
-}
-.mode-desc {
-  margin: 4px 0 0;
+  font-size: calc(var(--av, 44px) * 0.42);
+  line-height: 1;
   color: var(--ink-2);
-  font-size: 0.9375rem;
-  line-height: 1.5;
 }
-.mode-soon {
-  grid-column: 2;
-  justify-self: start;
-  align-self: end;
-  padding: 2px 10px;
+
+/* 칩(내 도전장 결과) */
+.chip {
+  flex: none;
+  padding: 3px 9px;
   border-radius: 999px;
   background: var(--sunk);
   color: var(--muted);
   font-size: 0.75rem;
-  font-weight: 500;
+  white-space: nowrap;
+}
+.chip.ok {
+  background: color-mix(in srgb, var(--win) 16%, transparent);
+  color: var(--win);
+  font-weight: 700;
+}
+.chip.no {
+  background: color-mix(in srgb, var(--lose) 14%, transparent);
+  color: var(--lose);
+  font-weight: 700;
 }
 
-/* ── 서버 상태 ───────────────────────────── */
-.online-status {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 10px;
-  margin: 0;
-  color: var(--ink-2);
-  font-size: var(--step--1);
+/* ── 알림 자리(맨 위 한 자리) ───────────────────────────── */
+.notice-slot:empty {
+  display: none;
 }
-.status-dot {
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 0.875rem;
+}
+.notice-body {
+  flex: 1;
+  min-width: 0;
+}
+.notice-body b {
+  display: block;
+}
+.notice-body small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+.notice-drop {
+  border-color: color-mix(in srgb, var(--lose) 45%, transparent);
+  background: color-mix(in srgb, var(--lose) 9%, var(--surface));
+}
+.notice-limit {
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+  background: var(--warnbg);
+}
+.notice-dot {
   flex: none;
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: var(--muted);
 }
-.online-status[data-kind="ok"] .status-dot {
-  background: var(--win);
-}
-.online-status[data-kind="bad"] .status-dot {
+.notice-drop .notice-dot {
   background: var(--lose);
 }
-.online-status[data-kind="wait"] .status-dot {
-  animation: online-blink 1.2s ease-in-out infinite;
+.notice-limit .notice-dot {
+  background: var(--warn);
 }
-.online-status-text {
-  flex: 1 1 240px;
-  min-width: 0;
+.notice-update .notice-dot {
+  background: var(--focus);
 }
-.online-status-act:empty {
-  display: none;
+.spin {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line);
+  border-top-color: var(--ink);
+  animation: o-spin 0.9s linear infinite;
 }
-@keyframes online-blink {
-  50% {
-    opacity: 0.3;
+@keyframes o-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-/* ── 도전장(#/c/new, #/c/번호) ───────────────────────────── */
-.online-wide {
-  max-width: none;
+/* ── 첫 화면 ───────────────────────────── */
+.name-input {
+  width: 100%;
+  min-width: 0;
+  padding: 2px 6px;
+  margin-left: -6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  font-size: 1rem;
 }
-.online > .note {
-  margin: 0;
+.name-input:hover {
+  border-color: var(--line);
 }
-.challenge-form {
-  display: grid;
-  gap: 14px;
-  align-content: start;
+.name-input:focus {
+  border-color: var(--line-2);
+  background: var(--surface);
 }
-/* 게임 고르기: 칸이 패널 폭으로 늘면 화살표만 오른쪽 끝에 떨어진다. 고른 이름 폭에 맞춘다 */
-.challenge-form > .field {
-  justify-self: start;
+.text-input {
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-ctl);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
 }
-.challenge-lead {
-  margin: 0;
-  font-weight: 500;
+.text-input:hover {
+  border-color: var(--line-2);
 }
-.form-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-.ring-more {
-  font-size: var(--step--1);
-}
-.online .stage {
-  margin-bottom: 0;
-}
-.online .stage-who {
-  overflow-wrap: anywhere;
-}
-.online .stage-msg.tone-named {
-  font-size: var(--step-2);
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-.online a.btn {
-  text-decoration: none;
-}
-.mode-go {
-  grid-column: 2;
-  justify-self: start;
-  align-self: end;
-}
-
-.linkbox {
-  display: grid;
+.room-actions {
   gap: 8px;
 }
-.link-input {
-  width: 100%;
-  max-width: none;
-  font-size: 0.9375rem;
-  color: var(--ink-2);
+.room-actions > .btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: 12px;
 }
-.linkbox-act {
+.code-form {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 10px;
+  gap: 8px;
   align-items: center;
-}
-.copy-done {
-  color: var(--muted);
-  font-size: var(--step--1);
-}
-
-.my-hand {
-  --c: var(--cl);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: color-mix(in oklab, var(--c) 14%, var(--sunk));
-  color: var(--ink-2);
-  font-size: 0.9375rem;
-}
-:root[data-scheme="dark"] .my-hand {
-  --c: var(--cd);
-}
-.my-hand-art {
   flex: none;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  font-size: 2rem;
-  line-height: 1;
 }
-
-/* 내 도전장 */
+.code-input {
+  flex: none;
+  width: 78px;
+  padding-inline: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.code-form > .btn {
+  padding-inline: 12px;
+}
+.code-input[aria-invalid="true"] {
+  border-color: var(--lose);
+}
 .mine {
   display: grid;
-  gap: 10px;
-}
-.mine-title {
-  margin: 0;
-  font-size: var(--step-1);
-  font-weight: 700;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
 }
 .mine-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
 }
 .mine-list a {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 4px 12px;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
   color: inherit;
   text-decoration: none;
+  font-size: 0.875rem;
 }
-.mine-list a:hover {
-  border-color: var(--ink-2);
+.mine-list a:hover .mine-what {
+  text-decoration: underline;
 }
-.mine-game {
+.mine-what {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 변종 줄(도전장 1단계, 랜덤 고르기) ───────────────────────────── */
+.var-list {
+  display: grid;
+  gap: 8px;
+}
+.varrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+}
+a.varrow:hover,
+button.varrow:hover {
+  border-color: var(--line-2);
+}
+.varrow.on {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 18%, transparent);
+}
+button.varrow {
+  cursor: pointer;
+}
+.varrow-body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+.varrow-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.varrow-sub {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.mini-hands {
+  flex: none;
+  display: inline-flex;
+  padding-left: 4px;
+}
+.mini-hand {
+  width: 24px;
+  height: 24px;
+  margin-left: -5px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 13px;
+  line-height: 1;
+  overflow: hidden;
+}
+.mini-hand img {
+  width: 76%;
+  height: 76%;
+}
+
+/* ── 손 고리(도전장) ───────────────────────────── */
+.hand-ring-box {
+  display: grid;
+  justify-items: center;
+  padding-bottom: 14px;
+}
+.hand-ring {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+}
+.hand-ring-labels text {
+  fill: var(--muted);
+  font-size: 12px;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.o-card .hand-ring-labels text {
+  stroke: var(--surface);
+}
+/* 고른 손은 채우지 않고 바깥 빛과 ✓ 로만(시안) */
+.hand-ring .node.on > circle:not(.pick-glow) {
+  fill: var(--surface);
+}
+.hand-ring-labels text.who {
+  fill: var(--ink);
+  font-weight: 700;
+}
+.hand-ring.pickable .node {
+  cursor: pointer;
+}
+.hand-ring .pick-glow {
+  fill: none;
+  stroke: color-mix(in srgb, var(--focus) 28%, transparent);
+  stroke-width: 6;
+}
+.hand-ring .node.picked > circle:not(.pick-glow) {
+  stroke-width: 3.5;
+}
+.hand-ring .pick-check circle {
+  fill: var(--win);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.hand-ring .pick-check path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.online .hand.picked {
+  outline: 3px solid var(--focus);
+  outline-offset: -1px;
+}
+.from-emote {
+  flex: none;
+  width: 36px;
+  height: 36px;
+}
+.from-emote .emote-img,
+.from-emote img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 링크 상자 */
+.linkbox {
+  display: grid;
+  gap: 8px;
+}
+.link-input {
+  width: 100%;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+.linkbox-act {
+  display: flex;
+  gap: 8px;
+}
+.linkbox-act > .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.copy-done {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+.copy-done:empty {
+  display: none;
+}
+.pring-game {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* ── 이모트 줄 ───────────────────────────── */
+.emote-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--sunk);
+  transition: opacity 0.2s;
+}
+.emote {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.emote:hover:not(:disabled) {
+  background: var(--surface);
+}
+.emote[aria-pressed="true"] {
+  outline: 2.5px solid var(--focus);
+  outline-offset: -2px;
+  background: var(--surface);
+}
+.emote:disabled {
+  cursor: default;
+}
+.emote-img {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  line-height: 1;
+}
+.emote-img img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.emote-row.resting,
+.emote-row.off {
+  opacity: 0.45;
+}
+
+/* ── 사람 고리 ───────────────────────────── */
+.pring {
+  --s: 56px;
+  --lbw: 104px;
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto 18px;
+}
+.pring-lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+.pring-chords {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.4;
+}
+.pring-chords.faded {
+  opacity: 0.35;
+}
+.pring-arrow {
+  --c: var(--cl);
+}
+:root[data-scheme="dark"] .pring-arrow {
+  --c: var(--cd);
+}
+.pring-arrow line {
+  stroke: var(--c);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.pring-arrow path {
+  fill: var(--c);
+}
+.pring-mid {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  max-width: 170px;
+}
+.pring-nodes {
+  position: absolute;
+  inset: 0;
+}
+.pring-node {
+  --b: var(--line);
+  --c: var(--cl);
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+:root[data-scheme="dark"] .pring-node {
+  --c: var(--cd);
+}
+.pring-av {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--s);
+  height: var(--s);
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--b);
+  border-radius: 50%;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.2s, opacity 0.2s;
+}
+.pring-av img {
+  width: 76%;
+  height: 76%;
+  display: block;
+}
+.pring-av .av-text {
+  font-size: calc(var(--s) * 0.4);
+}
+.pring-node.me {
+  --b: var(--focus);
+}
+.pring-node.me .pring-av {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 22%, transparent);
+}
+.pring-node.shown {
+  --b: var(--c);
+}
+.pring-node.empty .pring-av {
+  border-style: dashed;
+  border-width: 2px;
+  background: transparent;
+}
+.pring-empty {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  line-height: 1.15;
+  text-align: center;
+  padding: 0 4px;
+}
+.pring-node.dim .pring-av,
+.pring-node.dim .pring-hand {
+  opacity: 0.35;
+}
+.pring-badges {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.pring-badge {
+  position: absolute;
+  top: calc(var(--s) / -2 - 6px);
+  left: calc(var(--s) / 2 - 14px);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--win);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  z-index: 2;
+}
+.pring-badge.host {
+  left: calc(var(--s) / -2 - 8px);
+  background: var(--ink);
+  color: var(--paper);
+}
+.pring-badge.away {
+  background: var(--lose);
+}
+.pring-badge.crown {
+  background: var(--win);
+  font-size: 0.75rem;
+}
+:root[data-scheme="dark"] .pring-badge.ok,
+:root[data-scheme="dark"] .pring-badge.plus,
+:root[data-scheme="dark"] .pring-badge.crown,
+:root[data-scheme="dark"] .pring-badge.away {
+  color: #0f1126;
+}
+.pring-hand {
+  position: absolute;
+  left: calc(var(--s) / 2 - 20px);
+  top: calc(var(--s) / 2 - 22px);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--c);
+  border-radius: 50%;
+  background: var(--surface);
+  z-index: 1;
+  animation: o-pop 0.25s ease-out;
+}
+.pring-hand[hidden] {
+  display: none;
+}
+.pring-hand-art {
+  width: 80%;
+  height: 80%;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+}
+.pring-hand-art img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.pring-label {
+  /* 고리 선·화살표 위에서도 읽히게 바탕색 테두리 */
+  text-shadow:
+    0 0 3px var(--paper),
+    0 0 3px var(--paper),
+    0 0 2px var(--paper);
+  position: absolute;
+  left: 0;
+  top: calc(var(--s) / 2 + 4px);
+  transform: translateX(-50%);
+  width: var(--lbw);
+  display: grid;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--muted);
+  pointer-events: none;
+}
+.pring-name,
+.pring-sub {
+  justify-self: center;
+  max-width: 100%;
+  padding: 0 4px;
+  border-radius: 6px;
+  background: var(--paper);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pring-name:empty,
+.pring-sub:empty {
+  display: none;
+}
+.o-card .pring-name,
+.o-card .pring-sub {
+  background: var(--surface);
+}
+.pring-node.shown .pring-label {
+  top: calc(var(--s) / 2 + 12px);
+}
+.pring-node.me .pring-name,
+.pring-node.strong .pring-name {
+  color: var(--ink);
+  font-weight: 700;
+}
+.pring-sub {
+  font-size: 0.6875rem;
+}
+.pring-node.away .pring-sub {
+  color: var(--lose);
+}
+.pring.small .pring-label {
+  font-size: 0.6875rem;
+}
+.pring-bubble {
+  position: absolute;
+  left: calc(var(--s) / 2 - 12px);
+  top: calc(var(--s) / -2 - 40px);
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-radius: 14px 14px 14px 4px;
+  background: var(--surface);
+  box-shadow: 0 2px 6px rgba(26, 30, 58, 0.14);
+  z-index: 3;
+}
+/* 맨 위쪽 사람은 말풍선을 오른쪽 옆에(위 줄과 겹치지 않게) */
+.pring-bubble.side {
+  left: calc(var(--s) / 2 + 6px);
+  top: calc(var(--s) / -2 - 8px);
+}
+.pring-bubble.pop {
+  animation: o-pop 0.25s ease-out;
+}
+.pring-bubble-art {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  line-height: 1;
+}
+.pring-bubble-art img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+@keyframes o-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* 가운데: 남은 시간 원, 글 */
+.dial {
+  position: relative;
+  width: var(--dial);
+  height: var(--dial);
+}
+.dial svg {
+  display: block;
+}
+.dial-bg {
+  fill: var(--paper);
+  stroke: var(--sunk);
+}
+.dial-bar {
+  fill: none;
+  stroke: var(--ink);
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s linear;
+}
+.dial-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+.dial-num {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 2.6rem;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+.dial-text small {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.dial.hurry .dial-bar {
+  stroke: var(--lose);
+}
+.dial.hurry .dial-num {
+  color: var(--lose);
+}
+.pring-say {
+  display: grid;
+  gap: 2px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: var(--paper);
+}
+.o-card .pring-say {
+  background: var(--surface);
+}
+.o-card .pring-label {
+  text-shadow:
+    0 0 3px var(--surface),
+    0 0 3px var(--surface),
+    0 0 2px var(--surface);
+}
+.pring-say b {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.6rem;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+.pring-say small {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.pring-say.tone-chant b {
+  font-size: 1.9rem;
+}
+.pring-say.tone-win b {
+  color: var(--win);
+}
+.pring-say.tone-lose b {
+  color: var(--lose);
+}
+
+/* ── 아래 시트(랜덤 20초 뒤) ───────────────────────────── */
+.o-sheet-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+.o-sheet-wrap[hidden] {
+  display: none;
+}
+.o-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 17, 38, 0.45);
+}
+.o-sheet {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(100%, 480px);
+  display: grid;
+  gap: 10px;
+  padding: 18px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
+  background: var(--surface);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+  animation: o-rise 0.25s ease-out;
+}
+@keyframes o-rise {
+  from {
+    transform: translate(-50%, 30px);
+    opacity: 0;
+  }
+}
+
+/* 랜덤: 판 수, 찾기 단추는 긴 목록 아래에 붙어 있게 */
+.o-kv-card .field {
+  gap: 6px;
+}
+.o-sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to bottom, transparent, var(--paper) 35%);
+}
+.o-kv-card .seg {
+  display: flex;
+}
+.o-kv-card .seg-btn {
+  flex: 1;
+}
+
+/* ── 방 ───────────────────────────── */
+.code-card .room-code {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.9rem;
+  letter-spacing: 0.14em;
+  line-height: 1.1;
+}
+.rules-card summary {
+  cursor: pointer;
+}
+.rules-editor {
+  display: grid;
+  gap: 8px;
+}
+.rules-editor .field {
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+.rules-editor .field > label,
+.rules-editor .field-label {
+  font-size: 0.8125rem;
+}
+.rules-editor .seg {
+  display: flex;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.rules-editor .seg-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 5px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rules-editor .select select {
+  width: 100%;
+}
+@media (max-width: 420px) {
+  /* 좁은 화면: 고르기 칸을 이름 아래로(판 수 넷·시간 다섯이 한 줄에 다 보이게) */
+  .rules-editor .field {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+}
+.rules-rows {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 6px 10px;
+  margin: 0;
+  font-size: 0.875rem;
+}
+.rules-rows dt {
+  color: var(--muted);
+}
+.rules-rows dd {
+  margin: 0;
+  font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.room-line {
+  margin-top: -6px;
+  font-variant-numeric: tabular-nums;
+}
+.room-away {
+  color: var(--lose);
+}
+.reclaim {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--sunk);
+  font-size: 0.875rem;
+}
+.reclaim[hidden] {
+  display: none;
+}
+.online-room.offline .hands,
+.online-room.offline .emote-row {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.btn.ready-all {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 30%, transparent);
+  animation: o-breathe 1.6s ease-in-out infinite;
+}
+@keyframes o-breathe {
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--focus) 12%, transparent);
+  }
+}
+.end-head:empty {
+  display: none;
+}
+.rank-card {
+  padding: 4px 14px;
+}
+.rank-card[hidden] {
+  display: none;
+}
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rank {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+}
+.rank:first-child {
+  border-top: 0;
+}
+.rank-n {
+  flex: none;
+  width: 20px;
+  text-align: center;
+  font-family: var(--display);
+}
+.rank-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rank.me .rank-name {
+  font-weight: 700;
+}
+.rank-v {
+  flex: none;
+  font-size: 0.875rem;
+}
+.room-hist-box {
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+.room-hist-box summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.room-hist {
+  margin: 8px 0 0;
+  padding-left: 2.2em;
+  display: grid;
+  gap: 4px;
+  max-height: 240px;
+  overflow: auto;
+}
+.hist-art {
+  display: inline-grid;
+  width: 1.4em;
+  height: 1.4em;
+  place-items: center;
+  margin: 0 4px;
+  vertical-align: middle;
+}
+.hist-word {
+  margin-left: 6px;
   font-weight: 500;
 }
-.mine-meta {
-  color: var(--muted);
-  font-size: var(--step--1);
+.room-hist .win .hist-word {
+  color: var(--win);
+}
+.room-hist .lose .hist-word {
+  color: var(--lose);
 }
 
-/* 좁은 화면: 고르기·결과 칸을 먼저, 고리 그림은 작게 그 아래에 */
-@media (max-width: 900px) {
-  .online .challenge-form {
-    order: -1;
-  }
-  .online .ring-panel .ring-box {
-    width: min(100%, 280px);
-  }
-}
-
-@media (max-width: 560px) {
-  .mode {
-    padding: 14px;
-    gap: 4px 12px;
-  }
-  .mode-art {
-    width: 44px;
-    height: 44px;
-    font-size: 1.35rem;
+@media (prefers-reduced-motion: reduce) {
+  .spin,
+  .btn.ready-all,
+  .pring-hand,
+  .pring-bubble.pop,
+  .o-sheet {
+    animation: none;
   }
 }

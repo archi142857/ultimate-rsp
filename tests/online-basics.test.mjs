@@ -40,7 +40,7 @@ test("시험 서버는 이 기기 안 주소만 받는다", () => {
 test("이름: 다듬기", () => {
   assert.equal(cleanName("  날쌘\n\t여우  "), "날쌘 여우");
   assert.equal(cleanName("a\u202Eb\u200Bc"), "a b c", "글 방향 뒤집기·보이지 않는 빈칸");
-  assert.equal(cleanName("👨‍👩‍👧 가족"), "👨‍👩‍👧 가족", "이모지 잇는 글자는 남긴다");
+  assert.equal(cleanName("👨\u200D👩\u200D👧 가족"), "👨\u200D👩\u200D👧 가족", "이모지 잇는 글자는 남긴다");
   assert.equal([...cleanName("가".repeat(30))].length, NAME_MAX);
   assert.equal(cleanName("   "), "");
   assert.equal(cleanName(null), "");
@@ -54,7 +54,7 @@ test("이름: 무작위 이름은 두 언어로, 다듬어도 그대로", () => 
     return () => xs[i++ % xs.length];
   };
   assert.equal(randomName("ko", seq([0])), "날쌘 여우 10");
-  assert.equal(randomName("en", seq([0.999])), "Gentle Dolphin 99");
+  assert.equal(randomName("en", seq([0.999])), "Gentle Dragon 99");
   for (const l of ["ko", "en"]) {
     for (let i = 0; i < 300; i++) {
       const n = randomName(l);

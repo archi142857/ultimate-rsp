@@ -3,6 +3,7 @@
 // offline(인터넷 없음), timeout(답 없음), network(닿지 않음: 서버 꺼짐·하루 한도·CORS), bad_reply(답을 못 읽음)
 
 import { t, lang } from "../i18n.js";
+import { CLOSE } from "./protocol.js";
 
 /** 하루 무료 한도가 풀리는 때(UTC 0시, 한국 오전 9시)를 보는 사람의 시각으로 */
 export function resetTime(now = new Date()) {
@@ -34,6 +35,8 @@ export function errorText(code) {
       return t("내가 만든 도전장에는 답할 수 없다.");
     case "bad_game":
       return t("이 게임은 아직 온라인에서 할 수 없다.");
+    case "bad_rules":
+      return t("그 규칙은 쓸 수 없다.");
     case "bad_hand":
       return t("그 손은 이 게임에 없다.");
     case "too_fast":
@@ -41,5 +44,71 @@ export function errorText(code) {
     default:
       // network·busy·server·http_5xx: 서버가 꺼졌거나 하루 한도에 닿았다(규약 5장: 모두 busy 처럼 안내)
       return t("서버에 닿지 않는다. 잠시 뒤에 다시 해 보세요. 하루 무료 한도를 넘었다면 {time}에 풀린다.", { time: resetTime() });
+  }
+}
+
+/**
+ * 맨 위 알림 자리(notice.js)에 띄울 꼴: { kind, title, text }.
+ * 네트워크 오류·CORS 오류·5xx·busy 는 모두 한도처럼 안내한다(규약 5장: 무료 한도가 차면 Cloudflare 오류 페이지가 와서 CORS 오류로 보인다)
+ */
+export function noticeFor(code) {
+  switch (code) {
+    case "offline":
+      return { kind: "drop", title: t("인터넷에 이어져 있지 않다"), text: t("연결을 확인해 주세요.") };
+    case "version":
+      return { kind: "update", title: t("새 판이 나왔다"), text: t("새로고침하면 바뀐다.") };
+    case "timeout":
+    case "network":
+    case "busy":
+    case "server":
+      return limitNotice();
+    default:
+      return /^http_5\d\d$/.test(code) || !code ? limitNotice() : { kind: "note", title: errorText(code), text: "" };
+  }
+}
+
+const limitNotice = () => ({
+  kind: "limit",
+  title: t("지금은 서버에 닿지 않는다"),
+  text: t("오늘 한도가 찼거나 잠깐 쉬는 중이다. 한도는 {time}에 풀린다. 혼자 하기는 된다.", { time: resetTime() }),
+});
+
+/** 방 WebSocket 의 {t:"error"} (연결은 그대로) */
+export function wsErrorText(code) {
+  switch (code) {
+    case "not_host":
+      return t("방장만 할 수 있다.");
+    case "phase":
+      return t("지금은 할 수 없다.");
+    case "stale":
+      return t("지난 판이라 받지 않았다.");
+    case "already":
+      return t("이번 판에는 이미 냈다.");
+    case "full":
+      return t("앉을 자리가 없다.");
+    default:
+      return errorText(code);
+  }
+}
+
+/** 다시 붙지 않는 닫는 코드(규약 5장)의 안내 */
+export function closeText(code) {
+  switch (code) {
+    case CLOSE.not_found:
+      return t("방을 찾지 못했다. 코드가 틀렸거나 방이 지워졌다.");
+    case CLOSE.replaced:
+      return t("다른 창에서 같은 방에 들어가서 여기는 닫았다.");
+    case CLOSE.deleted:
+      return t("방이 지워졌다.");
+    case CLOSE.full:
+      return t("방에 사람이 너무 많다. 잠시 뒤에 다시 해 보세요.");
+    case CLOSE.version:
+      return errorText("version");
+    case CLOSE.origin:
+      return errorText("origin");
+    case CLOSE.bad_request:
+      return t("이름이나 주소가 맞지 않아 들어가지 못했다. 온라인 첫 화면에서 이름을 확인해 주세요.");
+    default:
+      return errorText("network");
   }
 }

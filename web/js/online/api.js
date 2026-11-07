@@ -1,4 +1,5 @@
-// 서버 주소마다 주고받는 꼴. 온라인 규약(세션소통\자료\온라인_규약.md, 규약 번호 1) 2장 도전장.
+// 서버 주소마다 주고받는 꼴. 온라인 규약(세션소통\자료\온라인_규약.md, 규약 번호 1) 2장 도전장, 3.1 방 만들기.
+// 방 안의 주고받기(WebSocket)는 room.js, 랜덤 매칭은 match.js.
 //   POST /api/c              { v, pid, name, game, custom?, hands: [손 id], e? }  → 201 { code, expires }
 //   GET  /api/c/<코드>?v=1                                                       → 보기 꼴
 //   POST /api/c/<코드>/answer { v, pid, name, hands }                              → 200 닫힘 꼴
@@ -85,4 +86,11 @@ export function readChallenge(d) {
     c.winner = d.winner;
   }
   return c;
+}
+
+/** 방 만들기(규약 3.1): 만든 사람이 방장·0번 자리. 돌려주는 값은 4자 코드 */
+export async function createRoom({ rules, name, pid }, opts = {}) {
+  const d = await api("/api/rooms", { ...opts, body: { v: PROTOCOL, pid, name, rules } });
+  if (typeof d.code !== "string" || !d.code) throw new OnlineError("bad_reply", d);
+  return d.code;
 }
