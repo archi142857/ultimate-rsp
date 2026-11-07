@@ -48,10 +48,13 @@ jobs:
           wranglerVersion: "4.158.0"
           command: deploy
       - name: Check
-        # 처음 배포한 직후에는 주소가 열리기까지 몇 초 걸릴 수 있다
+        # 새 워커 주소는 DNS 에 뜨기까지 잠깐 걸린다. 너무 일찍 물으면 러너의 DNS 가 '없음'을 한동안 기억하므로
+        # 조금 기다렸다가 Cloudflare DNS(DoH)로 직접 물어 본다
         run: |
-          for i in 1 2 3 4 5 6; do
-            if curl -fsS "https://ultimate-rsp.sanger-lee138.workers.dev/api/hello?v=1"; then exit 0; fi
+          sleep 15
+          for i in $(seq 1 12); do
+            if curl -fsS --max-time 10 --doh-url https://cloudflare-dns.com/dns-query \
+              "https://ultimate-rsp.sanger-lee138.workers.dev/api/hello?v=1"; then echo; exit 0; fi
             sleep 10
           done
           exit 1

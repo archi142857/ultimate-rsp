@@ -28,6 +28,12 @@ export default {
       if (path === "/" && request.method === "GET") {
         return new Response("Ultimate RSP server\n", { headers: { "Content-Type": "text/plain; charset=utf-8" } });
       }
+      if (path === "/robots.txt" && request.method === "GET") {
+        // 검색 로봇은 hello 만 보게 한다(다른 주소는 출처 검사로 403 이라, 없으면 로봇이 전부 막힌 것으로 본다)
+        return new Response("User-agent: *\nAllow: /api/hello\nDisallow: /\n", {
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
+      }
       if ((path === "/api/hello" || path === "/hello") && request.method === "GET") {
         // 규약 번호는 있을 때만 본다. 없으면 서버 번호를 알려 주고 화면이 맞춰 본다
         const v = url.searchParams.get("v");
