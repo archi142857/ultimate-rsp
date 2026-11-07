@@ -1,0 +1,4 @@
+# wrangler dev 가 만드는 로컬 상태와 비밀 값
+.wrangler/
+.dev.vars
+dist/

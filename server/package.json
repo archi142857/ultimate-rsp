@@ -1,0 +1,17 @@
+{
+  "name": "ultimate-rsp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ultimate RSP 온라인 대전 서버 (Cloudflare Workers + Durable Objects)",
+  "author": "서울대학교 동물생명공학전공 25학번 이영표",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node --test \"tests/*.test.mjs\""
+  },
+  "devDependencies": {
+    "wrangler": "4.158.0"
+  }
+}

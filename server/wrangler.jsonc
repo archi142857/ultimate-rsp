@@ -1,0 +1,19 @@
+// Cloudflare Worker 설정. 배포는 .github/workflows/server.yml 이 한다(계정 ID 와 토큰은 GitHub Secrets).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ultimate-rsp",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": true },
+  "vars": {
+    // 받는 출처(쉼표로 여럿). 로컬 시험 주소(localhost, 127.0.0.1)는 코드가 따로 받는다
+    "ORIGINS": "https://archi142857.github.io"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "CHALLENGES", "class_name": "Challenge" }]
+  },
+  // Durable Object 를 더하거나 이름을 바꿀 때는 아래에 새 tag 를 덧붙인다(지난 것은 고치지 않는다)
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Challenge"] }]
+}
