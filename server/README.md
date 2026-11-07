@@ -2,7 +2,7 @@
 
 궁극의 가위바위보의 온라인 대전 서버입니다. Cloudflare Workers 와 Durable Objects(무료 플랜)로 돌고, 화면(`web/`)은 지금처럼 GitHub Pages 에 있습니다.
 
-- 주소: `https://ultimate-rsp.sanger-lee138.workers.dev`
+- 주소: `https://ultimate-rsp.youngpyo.workers.dev`
 - 판정과 봇은 서버가 합니다. `web/js/core`·`data`·`games` 를 그대로 import 해서, 혼자 할 때와 같은 판정을 씁니다.
 - 로그인 없이 닉네임만 씁니다. 손은 모두 낼 때까지 서버만 압니다. 공유 링크에는 번호만 들어갑니다.
 

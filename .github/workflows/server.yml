@@ -54,7 +54,7 @@ jobs:
           sleep 15
           for i in $(seq 1 12); do
             if curl -fsS --max-time 10 --doh-url https://cloudflare-dns.com/dns-query \
-              "https://ultimate-rsp.sanger-lee138.workers.dev/api/hello?v=1"; then echo; exit 0; fi
+              "https://ultimate-rsp.youngpyo.workers.dev/api/hello?v=1"; then echo; exit 0; fi
             sleep 10
           done
           exit 1
