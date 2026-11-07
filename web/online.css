@@ -1,0 +1,158 @@
+/* Ultimate RSP — 온라인 대전 화면(#/play, #/c/번호, #/room/코드).
+   style.css 의 색 변수·글꼴·단추를 그대로 쓴다. 디자인 시안이 오면 이 파일을 그 모습으로 바꾼다. */
+
+.online {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  max-width: 880px;
+}
+.online > .entry-head {
+  padding-bottom: 4px;
+}
+
+.btn-sm {
+  min-height: 34px;
+  padding: 5px 14px;
+  font-size: var(--step--1);
+}
+
+/* ── 내 이름 ───────────────────────────── */
+.online-me {
+  display: grid;
+  gap: 8px;
+}
+.name-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.text-input {
+  flex: 1 1 160px;
+  min-width: 0;
+  max-width: 360px;
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-ctl);
+  background: var(--surface);
+}
+.text-input:hover {
+  border-color: var(--ink-2);
+}
+.online-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+/* ── 세 가지 놀이 ───────────────────────────── */
+.modes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.mode {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 6px 14px;
+  align-items: start;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-tile);
+}
+.mode-art {
+  grid-row: 1 / span 2;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sunk);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.mode-body {
+  grid-column: 2;
+  min-width: 0;
+}
+.mode-title {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.mode-desc {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.mode-soon {
+  grid-column: 2;
+  justify-self: start;
+  align-self: end;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--sunk);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ── 서버 상태 ───────────────────────────── */
+.online-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}
+.status-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.online-status[data-kind="ok"] .status-dot {
+  background: var(--win);
+}
+.online-status[data-kind="bad"] .status-dot {
+  background: var(--lose);
+}
+.online-status[data-kind="wait"] .status-dot {
+  animation: online-blink 1.2s ease-in-out infinite;
+}
+.online-status-text {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.online-status-act:empty {
+  display: none;
+}
+@keyframes online-blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (max-width: 560px) {
+  .mode {
+    padding: 14px;
+    gap: 4px 12px;
+  }
+  .mode-art {
+    width: 44px;
+    height: 44px;
+    font-size: 1.35rem;
+  }
+}

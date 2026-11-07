@@ -22,6 +22,38 @@ export const EN = {
   "어둡게": "Dark",
   "화면 밝기: {s}. 눌러서 바꾸기": "Theme: {s}. Click to change",
   "화면 밝기: {s}": "Theme: {s}",
+  "온라인": "Online",
+
+  // ── 온라인 대전(online/) ──
+  "온라인 대전": "Online play",
+  "도전장을 보내거나, 방을 만들어 친구와, 아니면 아무나와 겨룬다.": "Send a challenge, open a room for friends, or play someone at random.",
+  "내 이름": "Your name",
+  "새 이름": "New name",
+  "가입은 없다. 겨루는 상대에게 이 이름이 보이고, 이름은 이 브라우저에만 남는다.": "No sign-up. Opponents see this name, and it stays in this browser.",
+  "도전장": "Challenge",
+  "게임과 손을 골라 링크를 보낸다. 받은 사람은 내 손을 모른 채 손을 고르고, 결과는 둘 다 본다.":
+    "Pick a game and a hand, then send the link. Your friend picks a hand without seeing yours, and you both see the result.",
+  "방": "Room",
+  "방을 만들어 코드를 알려 주면 같이 겨룬다. 빈자리는 컴퓨터가 채운다.": "Open a room and share its code to play together. The computer fills empty seats.",
+  "랜덤 매칭": "Random match",
+  "게임을 고르면 기다리는 사람과 짝을 지어 준다. 아무도 없으면 컴퓨터와 겨룰 수 있다.":
+    "Pick a game and get paired with someone who's waiting. If nobody is, you can play the computer.",
+  "준비 중": "Coming soon",
+  "서버 확인 중…": "Checking the server…",
+  "서버와 이어졌다.": "Connected to the server.",
+  "새로고침": "Reload",
+  "다시 확인": "Check again",
+  "번호 {id}": "Code {id}",
+  "도전장은 곧 열린다.": "Challenges are coming soon.",
+  "방 {code}": "Room {code}",
+  "방은 곧 열린다.": "Rooms are coming soon.",
+  "방 코드가 맞지 않는다. 코드를 다시 확인해 주세요.": "That room code doesn't look right. Please check it.",
+  "링크가 맞지 않는다. 받은 링크를 다시 확인해 주세요.": "This link doesn't look right. Please check the link you got.",
+  "인터넷에 이어져 있지 않다. 연결을 확인해 주세요.": "You're offline. Check your connection.",
+  "서버가 답하지 않는다. 잠시 뒤에 다시 해 보세요.": "The server isn't answering. Try again in a moment.",
+  "화면과 서버의 버전이 다르다. 새로고침해 주세요.": "This page and the server are on different versions. Please reload.",
+  "서버에 닿지 않는다. 잠시 뒤에 다시 해 보세요. 하루 무료 한도를 넘었다면 {time}에 풀린다.":
+    "Can't reach the server. Try again in a moment. If today's free limit ran out, it resets at {time}.",
 
   // ── 컴퓨터 전략(core/bots.js) ──
   "주사위": "Dice",

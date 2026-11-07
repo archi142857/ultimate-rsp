@@ -1,12 +1,13 @@
 // 화면 이동(주소의 # 뒤를 본다)과 밝기·언어 설정.
 
-import { clear, h } from "./ui/dom.js";
+import { clear, h, setTitle } from "./ui/dom.js";
 import { t, lang, setLang } from "./i18n.js";
 import { setting, setSetting } from "./ui/store.js";
 import { findEntry } from "./data/catalog.js";
 import { homeView } from "./views/home.js";
 import { aboutView } from "./views/about.js";
 import { entryView } from "./views/entry.js";
+import { onlineView, parseOnline } from "./online/index.js";
 
 const main = document.getElementById("main");
 let current = null;
@@ -47,10 +48,18 @@ function route() {
         nav = entry.cat === "sim" ? "sims" : "home";
         current = entryView(main, entry, params);
       }
-    } else notFound();
+    } else {
+      // 온라인: #/play, #/c/번호, #/room/코드
+      const online = parseOnline(path);
+      if (online) {
+        nav = "online";
+        current = onlineView(main, online, params);
+      } else notFound();
+    }
   } catch (e) {
     console.error(e);
     clear(main);
+    setTitle(t("화면을 그리지 못했다"));
     main.append(
       h("div", { class: "entry-head" }, h("h1", { class: "entry-title" }, t("화면을 그리지 못했다")), h("p", {}, String(e && e.message))),
     );
@@ -67,6 +76,7 @@ function route() {
 }
 
 function notFound() {
+  setTitle(t("없는 화면"));
   main.append(
     h(
       "div",

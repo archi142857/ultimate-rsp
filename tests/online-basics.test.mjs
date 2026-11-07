@@ -1,0 +1,90 @@
+// node --test 로 돈다. 온라인 화면의 바탕: 주소 읽기, 시험 서버 주소, 이름과 pid, 연결 실패 문구.
+
+import test from "node:test";
+import assert from "node:assert/strict";
+import { parseOnline, normalizeRoomCode } from "../web/js/online/ids.js";
+import { pickServer, DEFAULT_SERVER, PROTOCOL } from "../web/js/online/config.js";
+import { cleanName, randomName, newId, playerId, NAME_MAX } from "../web/js/online/identity.js";
+import { NICK_WORDS } from "../web/js/i18n/nicknames.js";
+import { resetTime, errorText } from "../web/js/online/messages.js";
+import { setLang } from "../web/js/i18n.js";
+
+const HANGUL = /[ㄱ-ㆎ가-힣]/;
+
+test("온라인 주소를 읽는다", () => {
+  assert.deepEqual(parseOnline("/play"), { kind: "home" });
+  assert.deepEqual(parseOnline("/play/"), { kind: "home" });
+  assert.deepEqual(parseOnline("/c/Ab3_x-9Z"), { kind: "challenge", id: "Ab3_x-9Z" });
+  assert.deepEqual(parseOnline("/room/k7q2"), { kind: "room", code: "K7Q2" });
+  assert.deepEqual(parseOnline("/room/K7%20Q2"), { kind: "room", code: "K7Q2" });
+  assert.equal(normalizeRoomCode(" k7-q2 "), "K7Q2");
+  assert.deepEqual(parseOnline("/c/"), { kind: "bad", what: "challenge" });
+  assert.deepEqual(parseOnline("/c/%E0%A4%A"), { kind: "bad", what: "challenge" }, "깨진 % 글자");
+  assert.deepEqual(parseOnline("/c/<script>"), { kind: "bad", what: "challenge" });
+  assert.deepEqual(parseOnline("/room/!!"), { kind: "bad", what: "room" });
+  for (const p of ["/", "", "/sims", "/about", "/v/classic", "/cards", "/rooms/K7Q2", "/c/a/b"]) assert.equal(parseOnline(p), null, p);
+});
+
+test("시험 서버는 이 기기 안 주소만 받는다", () => {
+  assert.equal(pickServer(""), DEFAULT_SERVER);
+  assert.equal(pickServer("?server=http://localhost:8787"), "http://localhost:8787");
+  assert.equal(pickServer("?server=http://127.0.0.1:8787/"), "http://127.0.0.1:8787");
+  for (const bad of ["https://evil.example", "http://localhost.evil.example", "http://localhost:8787/x", "javascript:alert(1)"])
+    assert.equal(pickServer("?server=" + encodeURIComponent(bad)), DEFAULT_SERVER, bad);
+  assert.match(DEFAULT_SERVER, /^https:\/\//);
+  assert.ok(Number.isInteger(PROTOCOL) && PROTOCOL > 0);
+});
+
+test("이름: 다듬기", () => {
+  assert.equal(cleanName("  날쌘\n\t여우  "), "날쌘 여우");
+  assert.equal(cleanName("a\u202Eb\u200Bc"), "a b c", "글 방향 뒤집기·보이지 않는 빈칸");
+  assert.equal(cleanName("👨‍👩‍👧 가족"), "👨‍👩‍👧 가족", "이모지 잇는 글자는 남긴다");
+  assert.equal([...cleanName("가".repeat(30))].length, NAME_MAX);
+  assert.equal(cleanName("   "), "");
+  assert.equal(cleanName(null), "");
+});
+
+test("이름: 무작위 이름은 두 언어로, 다듬어도 그대로", () => {
+  const seq = (xs) => {
+    let i = 0;
+    return () => xs[i++ % xs.length];
+  };
+  assert.equal(randomName("ko", seq([0])), "날쌘 여우 10");
+  assert.equal(randomName("en", seq([0.999])), "Gentle Dolphin 99");
+  for (const l of ["ko", "en"]) {
+    for (let i = 0; i < 300; i++) {
+      const n = randomName(l);
+      assert.equal(cleanName(n), n);
+      assert.ok([...n].length <= NAME_MAX, n);
+      assert.equal(HANGUL.test(n), l === "ko", n);
+    }
+  }
+  for (const l of ["ko", "en"]) {
+    const w = NICK_WORDS[l];
+    // 가장 긴 꾸밈말 + 이름말 + 두 자리 수도 20글자 안
+    const longest = (list) => Math.max(...list.map((x) => [...x].length));
+    assert.ok(longest(w.adj) + longest(w.noun) + 4 <= NAME_MAX, `${l} 이름이 20글자를 넘을 수 있다`);
+    assert.equal(new Set(w.adj).size, w.adj.length, `${l} 꾸밈말이 겹친다`);
+    assert.equal(new Set(w.noun).size, w.noun.length, `${l} 이름말이 겹친다`);
+  }
+});
+
+test("pid 는 22자 무작위이고 한 번 정하면 그대로", () => {
+  const a = newId();
+  assert.match(a, /^[A-Za-z0-9_-]{22}$/);
+  assert.notEqual(a, newId());
+  assert.match(playerId(), /^[A-Za-z0-9_-]{22}$/);
+  assert.equal(playerId(), playerId());
+});
+
+test("연결 실패 문구와 한도가 풀리는 시각", () => {
+  assert.match(errorText("network"), /풀린다/);
+  assert.match(errorText("anything_else"), /서버에 닿지 않는다/);
+  setLang("en", { persist: false });
+  try {
+    assert.match(resetTime(new Date("2026-11-07T05:00:00Z")), /^\d{1,2}:00\s?(AM|PM)$/);
+    for (const c of ["offline", "timeout", "version", "network"]) assert.ok(!HANGUL.test(errorText(c)), c);
+  } finally {
+    setLang("ko", { persist: false });
+  }
+});

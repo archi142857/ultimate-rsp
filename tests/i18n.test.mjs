@@ -54,6 +54,15 @@ test("index.html 의 data-i18n 글도 영어 사전에 있다", () => {
   assert.deepEqual(keys.filter((k) => !(k in EN)), []);
 });
 
+test("영어 사전에 같은 열쇠가 두 번 없다(뒤의 것이 앞의 것을 말없이 덮는다)", () => {
+  const src = readFileSync(join(ROOT, "web/js/i18n/en.js"), "utf8");
+  const keys = [...src.matchAll(/^\s*("(?:[^"\\]|\\.)*")\s*:/gm)].map((m) => JSON.parse(m[1]));
+  assert.ok(keys.length >= Object.keys(EN).length * 0.9, "열쇠를 거의 다 읽어야 한다");
+  const seen = new Set();
+  const dup = keys.filter((k) => (seen.has(k) ? true : (seen.add(k), false)));
+  assert.deepEqual(dup, []);
+});
+
 test("영어 사전: 자리표가 한국어 틀과 맞고 한글이 없다", () => {
   for (const [ko, en] of Object.entries(EN)) {
     if (typeof en !== "string") continue;
