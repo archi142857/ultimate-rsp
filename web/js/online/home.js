@@ -3,7 +3,9 @@
 
 import { h, setTitle } from "../ui/dom.js";
 import { t } from "../i18n.js";
-import { onlineHead, statusLine } from "./common.js";
+import { onlineHead, statusLine, ago } from "./common.js";
+import { myChallenges } from "./mine.js";
+import { challengeGame } from "./games.js";
 import { myName, setMyName, randomName, NAME_MAX } from "./identity.js";
 import { hello } from "./net.js";
 import { errorText } from "./messages.js";
@@ -14,6 +16,7 @@ const MODES = [
     art: "✉️",
     name: () => t("도전장"),
     desc: () => t("게임과 손을 골라 링크를 보낸다. 받은 사람은 내 손을 모른 채 손을 고르고, 결과는 둘 다 본다."),
+    go: () => ({ href: "#/c/new", label: t("도전장 만들기") }),
   },
   {
     id: "room",
@@ -61,6 +64,7 @@ export function onlineHomeView(main) {
     h("p", { class: "online-note", id: "online-name-note" }, t("가입은 없다. 겨루는 상대에게 이 이름이 보이고, 이름은 이 브라우저에만 남는다.")),
   );
 
+  const slots = {};
   const modes = h(
     "ul",
     { class: "modes" },
@@ -70,10 +74,21 @@ export function onlineHomeView(main) {
         { class: "mode", "data-mode": m.id },
         h("span", { class: "mode-art", "aria-hidden": "true" }, m.art),
         h("div", { class: "mode-body" }, h("h2", { class: "mode-title" }, m.name()), h("p", { class: "mode-desc" }, m.desc())),
-        h("span", { class: "mode-soon" }, t("준비 중")),
+        (slots[m.id] = h("span", { class: "mode-soon" }, m.go ? t("확인 중…") : t("준비 중"))),
       ),
     ),
   );
+
+  // 열린 놀이는 서버가 답할 때만 단추를 보여 준다(서버가 아직 없거나 한도를 넘었을 때 만들다가 막히지 않게)
+  function setReady(ok) {
+    for (const m of MODES) {
+      if (!m.go) continue;
+      const go = m.go();
+      const next = ok ? h("a", { class: "btn btn-ink btn-sm mode-go", href: go.href }, go.label) : h("span", { class: "mode-soon" }, t("지금은 쓸 수 없다"));
+      slots[m.id].replaceWith(next);
+      slots[m.id] = next;
+    }
+  }
 
   const status = statusLine();
   async function check() {
@@ -81,8 +96,10 @@ export function onlineHomeView(main) {
     try {
       await hello({ signal: ctl.signal });
       status.set("ok", t("서버와 이어졌다."));
+      setReady(true);
     } catch (e) {
       if (ctl.signal.aborted) return;
+      setReady(false);
       if (e.code === "version") status.set("bad", errorText(e.code), { label: t("새로고침"), run: () => location.reload() });
       else status.set("bad", errorText(e.code), { label: t("다시 확인"), run: check });
     }
@@ -95,6 +112,7 @@ export function onlineHomeView(main) {
       onlineHead(t("온라인 대전"), t("도전장을 보내거나, 방을 만들어 친구와, 아니면 아무나와 겨룬다."), { back: false }),
       nameBox,
       modes,
+      mineList(),
       status.el,
     ),
   );
@@ -104,4 +122,32 @@ export function onlineHomeView(main) {
       ctl.abort();
     },
   };
+}
+
+/** 이 브라우저에서 만들거나 답한 도전장(최근 5개) */
+function mineList() {
+  const list = myChallenges().slice(0, 5);
+  if (!list.length) return null;
+  return h(
+    "section",
+    { class: "mine", "aria-labelledby": "mine-title" },
+    h("h2", { class: "mine-title", id: "mine-title" }, t("내 도전장")),
+    h(
+      "ul",
+      { class: "mine-list" },
+      list.map((r) => {
+        const e = challengeGame(r.game);
+        return h(
+          "li",
+          {},
+          h(
+            "a",
+            { href: `#/c/${encodeURIComponent(r.id)}` },
+            h("span", { class: "mine-game" }, r.label || (e ? e.name : r.game)),
+            h("span", { class: "mine-meta" }, `${r.role === "maker" ? t("보냄") : t("받음")} · ${ago(r.at)}`),
+          ),
+        );
+      }),
+    ),
+  );
 }

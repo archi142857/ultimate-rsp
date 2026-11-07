@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseOnline, normalizeRoomCode } from "../web/js/online/ids.js";
+import { parseOnline, normalizeCode, checkCode } from "../web/js/online/ids.js";
 import { pickServer, DEFAULT_SERVER, PROTOCOL } from "../web/js/online/config.js";
 import { cleanName, randomName, newId, playerId, NAME_MAX } from "../web/js/online/identity.js";
 import { NICK_WORDS } from "../web/js/i18n/nicknames.js";
@@ -14,14 +14,16 @@ const HANGUL = /[ㄱ-ㆎ가-힣]/;
 test("온라인 주소를 읽는다", () => {
   assert.deepEqual(parseOnline("/play"), { kind: "home" });
   assert.deepEqual(parseOnline("/play/"), { kind: "home" });
-  assert.deepEqual(parseOnline("/c/Ab3_x-9Z"), { kind: "challenge", id: "Ab3_x-9Z" });
+  assert.deepEqual(parseOnline("/c/new"), { kind: "new-challenge" });
+  assert.deepEqual(parseOnline("/c/7KQ2M9XA"), { kind: "challenge", code: "7KQ2M9XA" });
+  assert.deepEqual(parseOnline("/c/7kq2m9xa"), { kind: "challenge", code: "7KQ2M9XA" }, "소문자도 받는다");
   assert.deepEqual(parseOnline("/room/k7q2"), { kind: "room", code: "K7Q2" });
   assert.deepEqual(parseOnline("/room/K7%20Q2"), { kind: "room", code: "K7Q2" });
-  assert.equal(normalizeRoomCode(" k7-q2 "), "K7Q2");
-  assert.deepEqual(parseOnline("/c/"), { kind: "bad", what: "challenge" });
-  assert.deepEqual(parseOnline("/c/%E0%A4%A"), { kind: "bad", what: "challenge" }, "깨진 % 글자");
-  assert.deepEqual(parseOnline("/c/<script>"), { kind: "bad", what: "challenge" });
-  assert.deepEqual(parseOnline("/room/!!"), { kind: "bad", what: "room" });
+  assert.equal(normalizeCode(" k7-q2 "), "K7Q2");
+  assert.equal(checkCode("K7Q0", "room"), null, "0 은 코드 글자가 아니다");
+  assert.equal(checkCode("7KQ2M9X", "challenge"), null, "도전장 코드는 8자");
+  for (const p of ["/c/", "/c/%E0%A4%A", "/c/<script>", "/c/7KQ2M9XAB", "/c/7KQ2M9XI"]) assert.deepEqual(parseOnline(p), { kind: "bad", what: "challenge" }, p);
+  for (const p of ["/room/!!", "/room/K7Q", "/room/K7Q2Z", "/room/O0O0"]) assert.deepEqual(parseOnline(p), { kind: "bad", what: "room" }, p);
   for (const p of ["/", "", "/sims", "/about", "/v/classic", "/cards", "/rooms/K7Q2", "/c/a/b"]) assert.equal(parseOnline(p), null, p);
 });
 
@@ -42,6 +44,8 @@ test("이름: 다듬기", () => {
   assert.equal([...cleanName("가".repeat(30))].length, NAME_MAX);
   assert.equal(cleanName("   "), "");
   assert.equal(cleanName(null), "");
+  assert.equal(cleanName("\u0301\u0301"), "", "보이는 글자가 없으면 빈 이름");
+  assert.equal(cleanName("e\u0301"), "\u00e9", "NFC 로 맞춘다");
 });
 
 test("이름: 무작위 이름은 두 언어로, 다듬어도 그대로", () => {

@@ -5,7 +5,7 @@
 /** 화면이 아는 규약 번호. 서버의 번호와 다르면 새로고침을 안내한다 */
 export const PROTOCOL = 1;
 
-export const DEFAULT_SERVER = "https://ultimate-rsp.sanger-lee138.workers.dev";
+export const DEFAULT_SERVER = "https://ultimate-rsp.youngpyo.workers.dev";
 
 const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
 
@@ -31,4 +31,16 @@ export function serverUrl() {
 /** WebSocket 주소(http → ws, https → wss) */
 export function socketUrl(path) {
   return serverUrl().replace(/^http/, "ws") + path;
+}
+
+/** 시험 서버를 쓰는 중이면 링크에도 ?server= 를 붙여 받는 쪽도 같은 서버를 보게 한다. 아니면 빈 글자 */
+export function testServerQuery() {
+  const s = serverUrl();
+  return s === DEFAULT_SERVER ? "" : `?server=${encodeURIComponent(s)}`;
+}
+
+/** 이 화면의 #/… 주소를 남에게 보낼 링크로 */
+export function shareLink(hashPath) {
+  if (typeof location === "undefined") return `#${hashPath}`;
+  return `${location.origin}${location.pathname}${testServerQuery()}#${hashPath}`;
 }

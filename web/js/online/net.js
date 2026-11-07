@@ -73,7 +73,7 @@ export async function api(path, { body, signal, timeout = 8000 } = {}) {
 
 /** 서버가 살아 있고 규약 번호가 같은지 본다 */
 export async function hello(opts) {
-  const data = await api("/hello", opts);
+  const data = await api(`/api/hello?v=${PROTOCOL}`, opts);
   if (typeof data.v !== "number") throw new OnlineError("bad_reply", data);
   if (data.v !== PROTOCOL) throw new OnlineError("version", data);
   return data;

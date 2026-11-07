@@ -1,0 +1,78 @@
+// node --test 로 돈다. 화면 쪽 사본이 서버 규약(server/src/protocol.js, 세션소통\자료\온라인_규약.md)과 맞는지 본다.
+// 서버 모듈은 순수 모듈이라 그대로 import 한다. 어긋나면 규약 문서를 보고 둘 중 하나를 고친다.
+
+import test from "node:test";
+import assert from "node:assert/strict";
+import * as P from "../server/src/protocol.js";
+import { checkName, normCode, makeCode } from "../server/src/check.js";
+import { matrixIds } from "../server/src/games.js";
+import { readFileSync, existsSync } from "node:fs";
+import { PROTOCOL, DEFAULT_SERVER } from "../web/js/online/config.js";
+import { CODE_ABC, CODE_LEN, checkCode } from "../web/js/online/ids.js";
+import { NAME_MAX, cleanName, randomName, newId } from "../web/js/online/identity.js";
+import { errorText } from "../web/js/online/messages.js";
+import { challengeGames } from "../web/js/online/games.js";
+
+test("규약 번호·코드 글자와 길이·이름 길이가 서버와 같다", () => {
+  assert.equal(PROTOCOL, P.PROTOCOL);
+  assert.equal(CODE_ABC, P.CODE_ABC);
+  assert.deepEqual(CODE_LEN, P.CODE_LEN);
+  assert.equal(NAME_MAX, P.NAME_MAX);
+});
+
+test("서버가 만든 코드를 화면 주소가 받는다(방 코드는 소문자도)", () => {
+  for (let i = 0; i < 300; i++) {
+    const c = makeCode(P.CODE_LEN.challenge);
+    assert.equal(checkCode(c, "challenge"), c);
+    const r = makeCode(P.CODE_LEN.room);
+    assert.equal(checkCode(r.toLowerCase(), "room"), r);
+    assert.equal(normCode(r.toLowerCase(), P.CODE_LEN.room), r);
+  }
+});
+
+test("pid 꼴이 서버와 맞는다", () => {
+  for (let i = 0; i < 50; i++) assert.match(newId(), /^[A-Za-z0-9_-]{16,64}$/);
+});
+
+test("화면이 다듬은 이름은 서버가 받는다", () => {
+  for (let i = 0; i < 300; i++)
+    for (const l of ["ko", "en"]) {
+      const n = randomName(l);
+      assert.equal(checkName(n), n);
+    }
+  const nasty = ["a‮b", "줄\n바꿈", "  띄어   쓰기  ", "x​y", "é", "\u{1F468}‍\u{1F469}‍\u{1F467} 가족", "가".repeat(30), "　전각　빈칸　"];
+  for (const raw of nasty) {
+    const c = cleanName(raw);
+    assert.ok(c, JSON.stringify(raw));
+    assert.equal(checkName(c), c, `서버가 받아야 한다: ${JSON.stringify(c)}`);
+  }
+  // 보이는 글자가 없으면 화면은 빈 이름으로 보고(바꾸지 않는다), 서버도 안 받는다
+  for (const raw of ["́", "   ", "​"]) {
+    assert.equal(cleanName(raw), "");
+    assert.throws(() => checkName(raw));
+  }
+});
+
+test("서버 오류 코드마다 화면 문구가 있다", () => {
+  const unreachable = errorText("network");
+  for (const code of Object.keys(P.ERRORS)) {
+    const msg = errorText(code);
+    assert.ok(msg, code);
+    // busy·server 는 '닿지 않는다'와 같은 안내(규약 5장). bad_rules 는 방(4단계)에서 문구를 붙인다
+    if (!["busy", "server", "bad_rules"].includes(code)) assert.notEqual(msg, unreachable, code);
+  }
+});
+
+test("도전장으로 보낼 수 있는 도감 변종이 서버와 같다", () => {
+  assert.deepEqual(
+    challengeGames().map((e) => e.id),
+    matrixIds(),
+  );
+});
+
+test("화면의 기본 서버 주소가 서버 README 의 주소와 같다", () => {
+  const readme = new URL("../server/README.md", import.meta.url);
+  if (!existsSync(readme)) return;
+  const found = readFileSync(readme, "utf8").match(/https:\/\/ultimate-rsp\.[a-z0-9-]+\.workers\.dev/);
+  if (found) assert.equal(DEFAULT_SERVER, found[0]);
+});

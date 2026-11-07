@@ -33,13 +33,18 @@ export function playerId() {
 // 이모지를 잇는 글자(U+200D)는 남긴다(👨‍👩‍👧 같은 이모지가 깨지지 않게)
 const HIDDEN = /[\p{Cc}\u2028\u2029\u200B\u2060\uFEFF\u202A-\u202E\u2066-\u2069]/gu;
 
-/** 이름 다듬기: 보이지 않는 글자·줄바꿈을 빼고, 빈칸을 하나로, 20글자까지 */
+// 글자·숫자·기호·문장 부호가 하나는 있어야 한다(서버 checkName 과 같다)
+const VISIBLE = /[\p{L}\p{N}\p{S}\p{P}]/u;
+
+/** 이름 다듬기: 보이지 않는 글자·줄바꿈을 빼고, 빈칸을 하나로, 20글자까지. 보이는 글자가 없으면 빈 이름 */
 export function cleanName(s) {
   const flat = String(s || "")
+    .normalize("NFC")
     .replace(HIDDEN, " ")
     .replace(/\s+/g, " ")
     .trim();
-  return [...flat].slice(0, NAME_MAX).join("").trim();
+  const name = [...flat].slice(0, NAME_MAX).join("").trim();
+  return VISIBLE.test(name) ? name : "";
 }
 
 /** "날쌘 여우 42" 같은 이름. rnd 는 0 이상 1 미만 수를 주는 함수 */

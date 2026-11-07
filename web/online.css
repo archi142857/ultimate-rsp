@@ -145,6 +145,151 @@
   }
 }
 
+/* ── 도전장(#/c/new, #/c/번호) ───────────────────────────── */
+.online-wide {
+  max-width: none;
+}
+.online > .note {
+  margin: 0;
+}
+.challenge-form {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+/* 게임 고르기: 칸이 패널 폭으로 늘면 화살표만 오른쪽 끝에 떨어진다. 고른 이름 폭에 맞춘다 */
+.challenge-form > .field {
+  justify-self: start;
+}
+.challenge-lead {
+  margin: 0;
+  font-weight: 500;
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.ring-more {
+  font-size: var(--step--1);
+}
+.online .stage {
+  margin-bottom: 0;
+}
+.online .stage-who {
+  overflow-wrap: anywhere;
+}
+.online .stage-msg.tone-named {
+  font-size: var(--step-2);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.online a.btn {
+  text-decoration: none;
+}
+.mode-go {
+  grid-column: 2;
+  justify-self: start;
+  align-self: end;
+}
+
+.linkbox {
+  display: grid;
+  gap: 8px;
+}
+.link-input {
+  width: 100%;
+  max-width: none;
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+}
+.linkbox-act {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+}
+.copy-done {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+.my-hand {
+  --c: var(--cl);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--c) 14%, var(--sunk));
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+}
+:root[data-scheme="dark"] .my-hand {
+  --c: var(--cd);
+}
+.my-hand-art {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+/* 내 도전장 */
+.mine {
+  display: grid;
+  gap: 10px;
+}
+.mine-title {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: 700;
+}
+.mine-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.mine-list a {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+}
+.mine-list a:hover {
+  border-color: var(--ink-2);
+}
+.mine-game {
+  font-weight: 500;
+}
+.mine-meta {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+
+/* 좁은 화면: 고르기·결과 칸을 먼저, 고리 그림은 작게 그 아래에 */
+@media (max-width: 900px) {
+  .online .challenge-form {
+    order: -1;
+  }
+  .online .ring-panel .ring-box {
+    width: min(100%, 280px);
+  }
+}
+
 @media (max-width: 560px) {
   .mode {
     padding: 14px;

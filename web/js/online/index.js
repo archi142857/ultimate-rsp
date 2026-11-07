@@ -5,13 +5,15 @@ import { t } from "../i18n.js";
 import { onlineHead } from "./common.js";
 import { onlineHomeView } from "./home.js";
 import { challengeView } from "./challenge.js";
+import { newChallengeView } from "./challenge-new.js";
 import { roomView } from "./room.js";
 
 export { parseOnline } from "./ids.js";
 
 export function onlineView(main, route, params) {
   if (route.kind === "home") return onlineHomeView(main, params);
-  if (route.kind === "challenge") return challengeView(main, route.id, params);
+  if (route.kind === "new-challenge") return newChallengeView(main, params);
+  if (route.kind === "challenge") return challengeView(main, route.code, params);
   if (route.kind === "room") return roomView(main, route.code, params);
   return badLinkView(main, route.what);
 }

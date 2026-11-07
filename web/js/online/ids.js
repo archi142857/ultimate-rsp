@@ -1,8 +1,9 @@
-// 온라인 주소 읽기: #/play(첫 화면), #/c/번호(도전장), #/room/코드(방).
-// 번호와 코드의 꼴은 서버 규약을 따른다(규약이 정해지면 여기를 맞춘다).
+// 온라인 주소 읽기: #/play(첫 화면), #/c/new(도전장 만들기), #/c/코드(도전장), #/room/코드(방).
+// 코드의 꼴은 서버 규약(server/src/protocol.js 의 CODE_ABC·CODE_LEN)과 같다. tests/online-protocol.test.mjs 가 맞춰 본다.
 
-export const CHALLENGE_ID = /^[A-Za-z0-9_-]{4,32}$/;
-export const ROOM_CODE = /^[A-Z0-9]{4,8}$/;
+/** 코드 글자(헷갈리는 0·1·I·L·O 뺌) */
+export const CODE_ABC = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+export const CODE_LEN = { challenge: 8, room: 4 };
 
 function decode(s) {
   try {
@@ -12,28 +13,37 @@ function decode(s) {
   }
 }
 
-/** 방 코드를 입력받은 꼴 그대로 고친다: 앞뒤 빈칸·가운데 빈칸·줄표를 빼고 대문자로 */
-export function normalizeRoomCode(s) {
+/** 사람이 친 코드를 고친다: 빈칸·줄표를 빼고 대문자로 */
+export function normalizeCode(s) {
   return String(s || "")
     .replace(/[\s-]+/g, "")
     .toUpperCase();
 }
 
+/** 코드 꼴이 맞으면 고친 코드, 아니면 null */
+export function checkCode(s, kind) {
+  const c = normalizeCode(s);
+  if (c.length !== CODE_LEN[kind]) return null;
+  for (const ch of c) if (!CODE_ABC.includes(ch)) return null;
+  return c;
+}
+
 /**
  * 온라인 주소면 { kind } 를 돌려준다. 아니면 null.
- *   { kind: "home" } | { kind: "challenge", id } | { kind: "room", code } | { kind: "bad", what }
+ *   { kind: "home" } | { kind: "new-challenge" } | { kind: "challenge", code } | { kind: "room", code } | { kind: "bad", what }
  */
 export function parseOnline(path) {
   if (path === "/play" || path === "/play/") return { kind: "home" };
+  if (path === "/c/new" || path === "/c/new/") return { kind: "new-challenge" };
   let m = /^\/c\/([^/]*)\/?$/.exec(path);
   if (m) {
-    const id = decode(m[1]);
-    return id && CHALLENGE_ID.test(id) ? { kind: "challenge", id } : { kind: "bad", what: "challenge" };
+    const code = checkCode(decode(m[1]), "challenge");
+    return code ? { kind: "challenge", code } : { kind: "bad", what: "challenge" };
   }
   m = /^\/room\/([^/]*)\/?$/.exec(path);
   if (m) {
-    const code = normalizeRoomCode(decode(m[1]));
-    return ROOM_CODE.test(code) ? { kind: "room", code } : { kind: "bad", what: "room" };
+    const code = checkCode(decode(m[1]), "room");
+    return code ? { kind: "room", code } : { kind: "bad", what: "room" };
   }
   return null;
 }
