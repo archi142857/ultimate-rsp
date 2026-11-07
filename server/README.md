@@ -17,6 +17,10 @@
 | `POST /api/rooms` | 방 만들기: 규칙(변종·판 수·인원·봇·제한 시간)을 정하고 4자 코드를 받는다 |
 | `GET /api/rooms/<코드>/ws` | 방 WebSocket. 자리, 대기실 준비, 손 내기, 공개, 이모트, 다시 하기 |
 | `GET /api/match/ws` | 랜덤 매칭 WebSocket. 게임·판 수마다 대기열, 짝이 없으면 봇과 |
+| `GET /api/rank/<게임>?v=1` | 게임마다 순위표(5경기 이상, 상위 50) |
+| `POST /api/rank` | 순위표와 내 기록·순위(pid 는 본문으로) |
+
+랭킹은 랜덤 매칭으로 만난 사람끼리 한 첫 경기만 셉니다(같은 방에서 다시 하기, 봇 대전, 보통 방은 안 셈). 점수 계산은 `web/js/core/rating.js`(Elo) 그대로이고, 끝날 때 봇이 잇던 자리는 진 것으로 칩니다.
 
 POST 본문은 JSON 이고, CORS 미리 묻기를 줄이려고 `Content-Type: text/plain` 으로 받습니다. WebSocket 은 `ping` 글자를 보내면 서버를 깨우지 않고 `pong` 으로 답합니다.
 
@@ -27,6 +31,7 @@ POST 본문은 JSON 이고, CORS 미리 묻기를 줄이려고 `Content-Type: te
 - `src/challenge.js` 도전장 규칙(순수 모듈), `src/challenge-do.js` 도전장 저장(Durable Object, 링크 하나에 하나, 30일 뒤 지움).
 - `src/room.js` 방 규칙(순수 모듈): 자리·방장, 손 내기와 공개, 시간 초과, 끊김과 봇 이음, 사람마다 보내는 방 꼴. `src/room-do.js` 방 Durable Object(WebSocket Hibernation, 저장 한 줄, 알람 하나).
 - `src/match-do.js` 랜덤 매칭 Durable Object(기다리는 사람은 연결 첨부로만 두어 저장소를 안 쓴다).
+- `src/rank.js` 랭킹 순수 함수(pid 해시 열쇠, 줄 꼴), `src/rank-do.js` 랭킹 Durable Object(게임마다 하나, SQLite 표 하나, 경기 하나에 두 줄).
 - `src/games.js` 온라인에서 고를 수 있는 게임·방 규칙과 판정 자료, `src/check.js` 코드·pid·닉네임 검사, `src/http.js` 응답과 오류.
 - `tests/` Cloudflare 없이 도는 시험. 레포 루트의 `node --test` 가 같이 돌린다.
 

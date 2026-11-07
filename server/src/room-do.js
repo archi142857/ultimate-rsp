@@ -161,9 +161,11 @@ export class RoomHost extends DurableObject {
     await this.#commit(this.room.tick(now));
   }
 
-  /** 알람을 가장 이른 할 일에 맞추고, 상태를 저장하고, 모두에게 알린다 */
+  /** 알람을 가장 이른 할 일에 맞추고, 상태를 저장하고, 모두에게 알린다. 랭킹 경기가 막 끝났으면 기록하러 간다 */
   async #commit(evs = [], except = null) {
     const r = this.room;
+    const due = r.takeRank();
+    const game = r.s.game;
     const next = r.nextWake();
     if (next !== r.s.alarm) {
       if (next === null) await this.ctx.storage.deleteAlarm();
@@ -171,15 +173,30 @@ export class RoomHost extends DurableObject {
       r.s.alarm = next;
     }
     await this.ctx.storage.put(KEY, r.s);
-    if (!evs.length) return;
-    const now = Date.now();
-    const watchers = this.#watchers();
-    for (const ws of this.#sockets(except)) {
-      const seat = r.seatOf(att(ws).pid);
-      const you = seat < 0 ? null : seat;
-      const room = r.view(you, watchers);
-      for (const ev of evs) send(ws, { t: "state", now, you, room, ev });
+    if (evs.length) {
+      const now = Date.now();
+      const watchers = this.#watchers();
+      for (const ws of this.#sockets(except)) {
+        const seat = r.seatOf(att(ws).pid);
+        const you = seat < 0 ? null : seat;
+        const room = r.view(you, watchers);
+        for (const ev of evs) send(ws, { t: "state", now, you, room, ev });
+      }
     }
+    if (due) await this.#rate(game, due);
+  }
+
+  /** 랭킹 경기 결과를 그 게임의 랭킹 DO 에 넣고, 바뀐 점수를 방에 싣는다(ev rated). 한 번만 간다(실패하면 안 센다) */
+  async #rate(game, due) {
+    let out = null;
+    try {
+      out = await this.env.RANKS.get(this.env.RANKS.idFromName(due.game)).record(due);
+    } catch (e) {
+      console.error("rank error", (e && e.stack) || e);
+    }
+    if (!out || !this.room) return;
+    game.rank.after = [out.a, out.b];
+    await this.#commit([{ k: "rated" }]);
   }
 
   #sockets(except = null) {

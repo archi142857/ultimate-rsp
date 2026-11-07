@@ -55,6 +55,10 @@ export const MATCH_BOT_OFFER_MS = 20_000;
 /** 짝이 정해진 뒤 이 안에 안 들어온 자리는 봇이 앉는다 */
 export const MATCH_SHOW_MS = 15_000;
 
+// 랭킹(게임마다 따로, 랜덤 방 첫 경기만 센다. 점수 계산은 web/js/core/rating.js)
+/** 순위표에 보이는 사람 수 */
+export const RANK_TOP = 50;
+
 // 연결 유지: 화면이 PING 글자를 보내면 서버가 PONG 으로 바로 답한다(서버를 깨우지 않는다)
 export const PING = "ping";
 export const PONG = "pong";

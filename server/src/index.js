@@ -4,6 +4,7 @@
 import { Challenge } from "./challenge-do.js";
 import { RoomHost, refuse } from "./room-do.js";
 import { MatchQueue } from "./match-do.js";
+import { Ranking } from "./rank-do.js";
 import { makeChallenge } from "./challenge.js";
 import { checkName, checkPid, makeCode, normCode } from "./check.js";
 import { normRules, warmUp } from "./games.js";
@@ -11,7 +12,7 @@ import { isOnlineGame } from "../../web/js/data/online.js";
 import { Fail, allowedOrigin, checkVersion, json, originList, preflight, readBody } from "./http.js";
 import { CLOSE, CODE_LEN, MATCH_FORMATS, PROTOCOL } from "./protocol.js";
 
-export { Challenge, RoomHost, MatchQueue };
+export { Challenge, RoomHost, MatchQueue, Ranking };
 
 // 시작할 때(전역) 도감 변종을 컴파일해 둔다. 요청 안에서는 꺼내 쓰기만 한다(무료 플랜 CPU 10ms)
 warmUp();
@@ -51,6 +52,7 @@ export default {
       if (parts[0] === "api" && parts[1] === "rooms" && parts.length === 2 && request.method === "POST") {
         return await createRoom(request, env, now, okOrigin);
       }
+      if (parts[0] === "api" && parts[1] === "rank") return await rankRoute(request, env, parts.slice(2), url, now, okOrigin);
       throw new Fail("not_found");
     } catch (e) {
       if (e instanceof Fail) return json({ error: e.code, ...(e.extra || {}), now }, e.status, okOrigin);
@@ -118,6 +120,31 @@ async function createRoom(request, env, now, origin) {
     if (!r.taken) return json({ code, now }, 201, origin);
   }
   throw new Fail("busy");
+}
+
+// GET /api/rank/<게임>: 순위표 · POST /api/rank {v, game, pid}: 순위표와 내 기록(pid 는 주소에 안 싣는다)
+async function rankRoute(request, env, rest, url, now, origin) {
+  const m = request.method;
+  if (rest.length === 1 && m === "GET") {
+    checkVersion(url.searchParams.get("v"));
+    const game = rankGame(rest[0]);
+    const r = await callDO(() => stub(env.RANKS, game).board());
+    return json({ game, ...r, now }, 200, origin);
+  }
+  if (rest.length === 0 && m === "POST") {
+    const body = await readBody(request);
+    const game = rankGame(body.game);
+    const pid = checkPid(body.pid);
+    const r = await callDO(() => stub(env.RANKS, game).board({ pid }));
+    return json({ game, ...r, now }, 200, origin);
+  }
+  throw new Fail("not_found");
+}
+
+/** 랭킹이 있는 게임(랜덤 매칭 게임)만 받는다 */
+function rankGame(game) {
+  if (!isOnlineGame("random", game)) throw new Fail("bad_game");
+  return game;
 }
 
 // GET /api/rooms/<코드>/ws · GET /api/match/ws (WebSocket)

@@ -368,3 +368,60 @@ test("시간 초과로 봇에게 넘어간 자리는 그 사람이 무언가 보
   assert.equal(room.view(1).seats[1].kind, "human");
   assert.deepEqual(evKinds(thr(room, B, "paper", now).evs), ["throw"]);
 });
+
+const pair = [{ pid: A, name: "여우" }, { pid: B, name: "곰" }];
+/** A·B 가 랜덤 매칭으로 잡혀 둘 다 들어온(바로 시작한) 방 */
+function randomPair(rules = {}, seed = 9) {
+  const room = Room.create({ code: "R2D9", rules: { game: "classic", format: "single", ...rules }, now: T0, seed, reserve: pair, random: true });
+  room.join(A, "여우", T0);
+  room.join(B, "곰", T0);
+  return room;
+}
+
+test("랭킹: 랜덤 방 첫 경기만 센다. 이긴 쪽 1, 이름은 끝날 때 이름, 다시 하기는 안 센다", () => {
+  const room = randomPair();
+  assert.equal(room.s.phase, "play");
+  assert.deepEqual(room.view(0).rank, { after: null, skip: false });
+  assert.equal(room.takeRank(), null, "끝나기 전엔 없다");
+  room.join(A, "붉은여우", T0);
+  thr(room, A, "rock");
+  thr(room, B, "scissors");
+  assert.equal(room.s.phase, "end");
+  assert.deepEqual(room.takeRank(), { game: "classic", a: { pid: A, name: "붉은여우" }, b: { pid: B, name: "곰" }, score: 1 });
+  assert.equal(room.takeRank(), null, "한 번만");
+  for (const you of [0, 1, null]) assert.ok(!JSON.stringify(room.view(you)).includes("player"), "방 꼴에 pid 는 안 실린다");
+  room.handle(A, "붉은여우", { t: "start" }, T0);
+  assert.equal(room.s.phase, "play");
+  assert.equal(room.view(0).rank, null, "다시 하기는 랭킹 경기가 아니다");
+  assert.equal(twoPlayers().view(0).rank, null, "보통 방도 아니다");
+});
+
+test("랭킹: 끝날 때 봇이 잇던 자리(나감·안 옴)는 진다. 둘 다면 안 센다. 봇 대전은 안 센다", () => {
+  const left = randomPair({ format: "bo3" });
+  left.leave(A, T0, true);
+  assert.equal(left.view(1).seats[0].kind, "bot");
+  for (let k = 0; k < 60 && left.s.phase === "play"; k++) thr(left, B, "rock");
+  assert.equal(left.s.phase, "end");
+  assert.deepEqual(left.takeRank(), { game: "classic", a: { pid: A, name: "여우" }, b: { pid: B, name: "곰" }, score: 0 }, "봇이 이겨도 나간 사람이 진다");
+
+  const noShow = Room.create({ code: "R2D5", rules: { game: "rps101", format: "single" }, now: T0, seed: 5, reserve: pair, random: true });
+  noShow.join(A, "여우", T0);
+  noShow.tick(T0 + MATCH_SHOW_MS);
+  for (let k = 0; k < 60 && noShow.s.phase === "play"; k++) thr(noShow, A, "rock", T0 + MATCH_SHOW_MS);
+  const due = noShow.takeRank();
+  assert.equal(due.game, "rps101");
+  assert.equal(due.score, 1, "안 온 사람이 진다");
+  assert.equal(due.b.pid, B);
+
+  const both = randomPair({}, 11);
+  thr(both, A, "rock");
+  thr(both, B, "scissors");
+  both.s.seats = both.s.seats.map((x) => ({ kind: "bot", bot: "human", pid: null, name: x.name, why: "left" }));
+  assert.equal(both.takeRank(), null);
+  assert.deepEqual(both.view(null).rank, { after: null, skip: true });
+
+  const solo = Room.create({ code: "R2D6", rules: { game: "classic", format: "single" }, now: T0, seed: 6, reserve: [pair[0]], random: true });
+  solo.join(A, "여우", T0);
+  assert.equal(solo.s.phase, "play");
+  assert.equal(solo.view(0).rank, null, "봇 대전");
+});

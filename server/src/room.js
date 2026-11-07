@@ -53,6 +53,8 @@ export class Room {
       code,
       random,
       seed: seed >>> 0,
+      // 랜덤 방은 첫 경기만 랭킹에 넣는다(다시 하기는 안 센다)
+      ranked: random,
       rules: r,
       phase: "lobby",
       host: null,
@@ -292,10 +294,17 @@ export class Room {
       return x;
     });
     for (const x of s.seats) if (x.kind === "human") x.ready = false;
+    // 랭킹: 랜덤 방 첫 경기이고 두 자리 다 사람 몫일 때(안 온 사람 자리도 그 사람 몫). 봇 대전은 안 센다
+    let rank = null;
+    if (s.ranked && !this.group) {
+      const who = s.seats.map((x) => (x.kind === "human" || (x.kind === "bot" && x.why !== "fill" && x.pid) ? { pid: x.pid, name: x.name } : null));
+      if (who.every(Boolean)) rank = { who, done: false, skip: false, after: null };
+    }
+    s.ranked = false;
     s.reserve = null;
     s.startAt = null;
     s.phase = "play";
-    s.game = { r: 0, rounds: [], pend: [], acted: [], deadline: null, paused: false, idle: 0, winner: null };
+    s.game = { r: 0, rounds: [], pend: [], acted: [], deadline: null, paused: false, idle: 0, winner: null, rank };
     this._e = null;
     if (s.host === null || s.seats[s.host].kind !== "human") this.#newHost();
     const evs = [{ k: "start" }];
@@ -447,6 +456,26 @@ export class Room {
     return evs;
   }
 
+  /**
+   * 랭킹에 넣을 결과. 랭킹 경기가 끝났을 때 한 번만 주고(부르면 done) 그 뒤엔 null.
+   * 끝날 때 봇이 잇던 자리(나감·시간 초과·안 옴)는 진 것, 둘 다 그러면 안 센다(skip).
+   * 돌려주는 값: { game, a: {pid, name}, b: {pid, name}, score }(score 는 0번 자리 쪽 1·0.5·0)
+   */
+  takeRank() {
+    const s = this.s;
+    const g = s.game;
+    if (s.phase !== "end" || !g || !g.rank || g.rank.done) return null;
+    g.rank.done = true;
+    const out = s.seats.map((x) => x.kind !== "human");
+    if (out[0] && out[1]) {
+      g.rank.skip = true;
+      return null;
+    }
+    const [a, b] = g.rank.who.map((w, i) => ({ pid: w.pid, name: s.seats[i].kind === "human" ? s.seats[i].name : w.name }));
+    const score = out[0] ? 0 : out[1] ? 1 : g.winner === 0 ? 1 : g.winner === 1 ? 0 : 0.5;
+    return { game: s.rules.game, a, b, score };
+  }
+
   /** 다음에 깨어나야 할 때(ms). 없으면 null. room-do.js 가 알람을 이 시각에 맞춘다 */
   nextWake() {
     const s = this.s;
@@ -505,6 +534,8 @@ export class Room {
       alive,
       last: this.group && e && e.done ? e.last : null,
       hist,
+      // 랭킹 경기면 { after, skip }. after 는 끝나고 기록이 오면 자리마다 { rating, delta, games, wins, losses, draws }
+      rank: g && g.rank ? { after: g.rank.after, skip: g.rank.skip } : null,
     };
   }
 }
