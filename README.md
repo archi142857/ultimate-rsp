@@ -106,20 +106,23 @@ node scripts/variants_doc.mjs > docs/variants.md   # 변종 목록 문서 다시
 
 ```
 web/                          웹 앱 (GitHub Pages)
-  index.html, style.css
+  index.html, style.css, online.css
   icons/                      파비콘
   art/                        손 그림 SVG (Fluent UI Emoji, 없는 손은 이모지)
   js/app.js                   주소(#/…)에 따라 화면을 고른다
   js/i18n.js, js/i18n/en.js   화면 언어(한국어·영어)와 영어 사전
   js/core/                    판정(engine), 최적 섞기(lp), 컴퓨터 전략(bots), 난수(rng), 조사(josa)
   js/data/                    도감(catalog), 도감 영어(catalog-en), RPS 확장판 판정 문장(verbs),
-                              직접 만들기 손 모음(custom), 손 그림 목록(art-files)
+                              직접 만들기 손 모음(custom), 손 그림 목록(art-files),
+                              온라인 대전 게임 목록(online)
   js/games/                   놀이 규칙: 판(match), 묵찌빠, 아치무이테호이, 하나빼기, 글리코,
                               한정 가위바위보, 다이너마이트와 물풍선, 명령, 여럿이·기차·진화(group)
   js/sims/                    전략 리그, 격자 생태계, 가위바위보 전쟁
   js/ui/                      DOM 도구, 색, 고리 그림, 손 그림(art), 저장, 공통 위젯
   js/views/                   화면
-tests/                        node --test (판정, 최적 섞기, 놀이 규칙, 시뮬레이션, 손 그림, 영어판)
+  js/online/                  온라인 대전 화면 (도전장, 방, 랜덤 매칭)
+server/                       온라인 대전 서버 (Cloudflare Workers + Durable Objects)
+tests/                        node --test (판정, 최적 섞기, 놀이 규칙, 시뮬레이션, 손 그림, 영어판, 온라인)
 scripts/
   stamp.py                    배포할 때 스크립트·스타일 주소에 판(?v=)을 붙인다
   variants_doc.mjs            catalog.js → docs/variants.md
@@ -128,6 +131,7 @@ docs/
   variants.md                 변종마다 규칙과 출처
   screenshots/                이 README 의 화면 캡처
 .github/workflows/pages.yml   테스트하고 GitHub Pages 로 올린다
+.github/workflows/server.yml  서버를 Cloudflare 에 올린다
 ```
 
 </details>
