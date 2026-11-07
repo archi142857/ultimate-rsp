@@ -4,7 +4,9 @@
 import { compileVariant } from "../../web/js/core/engine.js";
 import { CATALOG, findEntry } from "../../web/js/data/catalog.js";
 import { makeCustomDef, maxWins, CUSTOM_MIN, CUSTOM_MAX } from "../../web/js/data/custom.js";
+import { BOTS } from "../../web/js/core/bots.js";
 import { Fail } from "./http.js";
+import { FORMATS, GROUP_MODES, GROUP_SEATS, ROOM_DEFAULTS, TIMERS } from "./protocol.js";
 
 const MAX_SEED = 0xffffffff;
 // 도감 변종은 다 들고 있고(19가지), 직접 만들기는 최근 것만 든다
@@ -69,4 +71,38 @@ export function handIndex(V, id) {
   const i = typeof id === "string" ? V.index[id] : undefined;
   if (i === undefined) throw new Fail("bad_hand");
   return i;
+}
+
+/**
+ * 방 규칙 정리. 빠진 값은 기본값, 틀린 값은 bad_game(게임) 또는 bad_rules(나머지).
+ * 돌려주는 값: { game, custom, base, mode, format, seats, bot, timer }
+ *  - 손 하나짜리 변종·직접 만들기: 둘이서(seats 2), base·mode 는 null
+ *  - group(여럿이 가위바위보): base 는 손 셋인 변종, mode survive·loser, seats 3–10, format 은 single
+ */
+export function normRules(input) {
+  const r = input && typeof input === "object" && !Array.isArray(input) ? input : {};
+  const game = r.game === undefined ? ROOM_DEFAULTS.game : r.game;
+  const bot = r.bot === undefined ? ROOM_DEFAULTS.bot : r.bot;
+  const timer = r.timer === undefined ? ROOM_DEFAULTS.timer : r.timer;
+  if (!BOTS.some((b) => b.id === bot)) throw new Fail("bad_rules");
+  if (!TIMERS.includes(timer)) throw new Fail("bad_rules");
+  if (game === "group") {
+    const base = r.base === undefined ? "classic" : r.base;
+    if (!groupBaseIds().includes(base)) throw new Fail("bad_game");
+    const mode = r.mode === undefined ? GROUP_MODES[0] : r.mode;
+    if (!GROUP_MODES.includes(mode)) throw new Fail("bad_rules");
+    const seats = r.seats === undefined ? GROUP_SEATS.default : r.seats;
+    if (!Number.isInteger(seats) || seats < GROUP_SEATS.min || seats > GROUP_SEATS.max) throw new Fail("bad_rules");
+    return { game, custom: null, base, mode, format: "single", seats, bot, timer };
+  }
+  const { game: id, custom } = resolveVariant(game, r.custom);
+  const format = r.format === undefined ? ROOM_DEFAULTS.format : r.format;
+  if (!FORMATS.includes(format)) throw new Fail("bad_rules");
+  if (r.seats !== undefined && r.seats !== 2) throw new Fail("bad_rules");
+  return { game: id, custom, base: null, mode: null, format, seats: 2, bot, timer };
+}
+
+/** 정리된 방 규칙의 판정 자료(group 이면 바탕 변종) */
+export function rulesVariant(rules) {
+  return rules.game === "group" ? resolveVariant(rules.base).V : resolveVariant(rules.game, rules.custom).V;
 }

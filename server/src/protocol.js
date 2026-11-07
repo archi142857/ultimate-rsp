@@ -94,6 +94,7 @@ export const CLOSE = {
   too_fast: 4013,
   full: 4029,
   matched: 4100,
+  busy: 4503,
 };
-/** 이 코드로 닫히면 다시 붙지 않는다(too_fast 는 30초 뒤, matched 는 방으로) */
+/** 이 코드로 닫히면 다시 붙지 않는다(too_fast 는 30초 뒤, matched 는 방으로, busy 는 보통 간격으로 다시) */
 export const NO_RETRY = [4000, 4001, 4003, 4004, 4008, 4009, 4010, 4029];

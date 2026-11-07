@@ -12,8 +12,15 @@
     "ORIGINS": "https://archi142857.github.io"
   },
   "durable_objects": {
-    "bindings": [{ "name": "CHALLENGES", "class_name": "Challenge" }]
+    "bindings": [
+      { "name": "CHALLENGES", "class_name": "Challenge" },
+      { "name": "ROOMS", "class_name": "RoomHost" },
+      { "name": "MATCH", "class_name": "MatchQueue" }
+    ]
   },
   // Durable Object 를 더하거나 이름을 바꿀 때는 아래에 새 tag 를 덧붙인다(지난 것은 고치지 않는다)
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Challenge"] }]
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Challenge"] },
+    { "tag": "v2", "new_sqlite_classes": ["RoomHost", "MatchQueue"] }
+  ]
 }
