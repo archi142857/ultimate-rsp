@@ -41,6 +41,9 @@ export function roomView(main, code) {
   // ev 가 아니라 hist 가 늘었는지로 공개 연출을 정한다. 처음 들어올 때는 지난 판을 다시 보이지 않는다
   let seenR = 0;
   const lastR = (r) => (r && r.hist && r.hist.length ? r.hist[r.hist.length - 1].r : 0);
+  // 세 번 연달아 시간을 넘겨 컴퓨터가 내 자리를 이으면 서버는 나를 구경꾼(you null)으로 본다.
+  // 그 자리를 기억해 두고 내 자리처럼 그린다. 손을 내거나 무엇이든 보내면 서버가 자리를 돌려준다(규약 3.5)
+  let ghostSeat = null;
 
   const notices = noticeSlot();
   const body = h("div", { class: "room-body" });
@@ -81,7 +84,15 @@ export function roomView(main, code) {
   function onMessage(m) {
     if (m.t === "hello" || m.t === "state") {
       if (!m.room || !Array.isArray(m.room.seats)) return;
-      you = Number.isInteger(m.you) ? m.you : null;
+      const seated = Number.isInteger(m.you) ? m.you : null;
+      if (seated !== null) ghostSeat = null;
+      else {
+        const ev = m.ev;
+        if (ev && ev.k === "bot" && ev.why === "afk" && you !== null && ev.s === you) ghostSeat = you;
+        const g = ghostSeat !== null ? m.room.seats[ghostSeat] : null;
+        if (!g || g.kind !== "bot") ghostSeat = null;
+      }
+      you = seated !== null ? seated : ghostSeat;
       // 처음 들어오면 지난 판은 다시 보이지 않는다. 다시 하기로 hist 가 비면 처음부터 센다
       if (!room || lastR(m.room) < seenR) seenR = lastR(m.room);
       room = m.room;
@@ -130,7 +141,7 @@ export function roomView(main, code) {
   }
 
   /** 내 자리를 컴퓨터가 잇고 있나 */
-  const botHasMe = () => you !== null && room && room.seats[you] && room.seats[you].kind === "bot";
+  const botHasMe = () => ghostSeat !== null && you === ghostSeat;
   const send = (msg) => {
     if (sock.send(msg)) return true;
     notices.set("note", { title: t("연결이 끊겨 보내지 못했다.") });
@@ -224,8 +235,9 @@ export function roomView(main, code) {
       } else if (phase === "play" && r && r.done[i] === true && !shown) {
         p.badge = { text: "✓", kind: "ok", say: t("냈다") };
       }
-      if (seat.kind === "bot" && !group && phase === "lobby") subs.push(seatBot(seat));
-      if (!group && phase !== "lobby") subs.push(t("{n}승", { n: (room.score && room.score[i]) || 0 }));
+      if (me && seat.kind === "bot") subs.push(t("컴퓨터가 잇는 중"));
+      else if (seat.kind === "bot" && !group && phase === "lobby") subs.push(seatBot(seat));
+      if (!group && phase !== "lobby" && !(me && seat.kind === "bot")) subs.push(t("{n}승", { n: (room.score && room.score[i]) || 0 }));
       if (out && !shown) {
         p.dim = true;
         subs.push(room.rules.mode === "loser" ? t("빠져나감") : t("빠짐"));
@@ -431,7 +443,7 @@ export function roomView(main, code) {
     const grid = watcher ? null : handGrid(V, { onPick: throwHand });
     const emotes = emoteBar();
     const reclaimBtn = h("button", { type: "button", class: "btn btn-ink btn-sm", onclick: () => sock.reconnect() }, t("자리 되찾기"));
-    const reclaim = h("p", { class: "reclaim", hidden: true }, h("span", {}, t("컴퓨터가 내 자리를 잇고 있다.")), reclaimBtn);
+    const reclaim = h("p", { class: "reclaim", hidden: true }, h("span", {}, t("컴퓨터가 내 자리를 잇고 있다. 손을 내면 돌아온다.")), reclaimBtn);
     const hist = histBox();
     const leave = h("button", { type: "button", class: "btn btn-sm btn-quiet", onclick: leaveRoom }, t("방 나가기"));
     let revealing = false;
@@ -440,7 +452,7 @@ export function roomView(main, code) {
 
     function throwHand(i) {
       const r = room.round;
-      if (!r || room.mine || revealing || botHasMe() || (group && !(room.alive || []).includes(you))) return;
+      if (!r || room.mine || revealing || (group && !(room.alive || []).includes(you))) return;
       if (!send({ t: "throw", r: r.r, h: V.hands[i].id })) return;
       localPick = { r: r.r, i };
       markPicked(i);
@@ -486,7 +498,7 @@ export function roomView(main, code) {
       const mine = mineNow();
       markPicked(mine);
       const alive = !group || (room.alive || []).includes(you);
-      if (grid) grid.lock(!r || mine !== null || botHasMe() || !alive);
+      if (grid) grid.lock(!r || mine !== null || !alive);
       reclaim.hidden = !botHasMe();
       drawRing();
       tick();
