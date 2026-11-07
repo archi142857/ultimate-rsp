@@ -1,0 +1,142 @@
+// 방 규칙(온라인 규약 3.2): 방장이 고르는 칸(rulesEditor)과 모두에게 보이는 한 줄(rulesLine).
+// 서버가 규칙을 다듬어 state 로 돌려주므로, 화면은 받은 규칙을 그대로 보여 주고 바꿀 때만 통째로 보낸다.
+
+import { h, clear } from "../ui/dom.js";
+import { t } from "../i18n.js";
+import { selectBox } from "../ui/widgets.js";
+import { BOTS } from "../core/bots.js";
+import { formatById } from "../games/match.js";
+import { findEntry } from "../data/catalog.js";
+import { variantOf, roomGameIds } from "./games.js";
+import { groupBases as groupBaseIds, isOnlineGame } from "../data/online.js";
+import { FORMATS, TIMERS, GROUP_SEATS, GROUP_MODES, ROOM_DEFAULTS } from "./protocol.js";
+
+/** 여럿이 가위바위보의 바탕이 될 수 있는 도감 변종(data/online.js 의 groupBases, 맨 앞 classic) */
+export function groupBases() {
+  return groupBaseIds().map(findEntry).filter(Boolean);
+}
+
+export const isGroup = (rules) => !!rules && rules.game === "group";
+
+/** 보낼 규칙 꼴로 다듬기(서버 normRules 와 같은 기본값). 둘이서면 seats 2, 여럿이면 format 을 빼고 base·mode 를 넣는다 */
+export function cleanRules(r = {}) {
+  const bot = BOTS.some((b) => b.id === r.bot) ? r.bot : ROOM_DEFAULTS.bot;
+  const timer = TIMERS.includes(r.timer) ? r.timer : ROOM_DEFAULTS.timer;
+  if (r.game === "group") {
+    const base = groupBases().some((e) => e.id === r.base) ? r.base : "classic";
+    const mode = GROUP_MODES.includes(r.mode) ? r.mode : GROUP_MODES[0];
+    const seats = Number.isInteger(r.seats) && r.seats >= GROUP_SEATS.min && r.seats <= GROUP_SEATS.max ? r.seats : GROUP_SEATS.default;
+    return { game: "group", base, mode, seats, bot, timer };
+  }
+  const custom = r.game === "custom" && r.custom ? { n: r.custom.n, k: r.custom.k, seed: r.custom.seed } : null;
+  const game = custom || (isOnlineGame("room", r.game) && r.game !== "custom" && r.game !== "group") ? r.game : ROOM_DEFAULTS.game;
+  const format = FORMATS.includes(r.format) ? r.format : ROOM_DEFAULTS.format;
+  const out = { game, format, seats: 2, bot, timer };
+  if (custom) out.custom = custom;
+  return out;
+}
+
+export function gameName(rules) {
+  if (isGroup(rules)) {
+    const g = findEntry("group");
+    const b = findEntry(rules.base || "classic");
+    const name = g ? g.name : t("여럿이 가위바위보");
+    return rules.base && rules.base !== "classic" && b ? `${name} (${b.name})` : name;
+  }
+  if (rules.game === "custom") {
+    const V = variantOf("custom", rules.custom);
+    return V ? V.name : "RPS-n";
+  }
+  const e = findEntry(rules.game);
+  return e ? e.name : rules.game;
+}
+
+export const modeName = (mode) => (mode === "loser" ? t("술래 한 명") : t("마지막 한 명"));
+export const timerName = (s) => (s ? t("{n}초", { n: s }) : t("시간 제한 없음"));
+
+/** "가위바위보 · 삼세판 · 20초", "여럿이 가위바위보 · 마지막 한 명 · 5명 · 20초" */
+export function rulesLine(rules) {
+  const parts = [gameName(rules)];
+  if (isGroup(rules)) parts.push(modeName(rules.mode), t("@seats:{n}명", { n: rules.seats }));
+  else parts.push(formatById(rules.format).name);
+  parts.push(timerName(rules.timer));
+  return parts.join(" · ");
+}
+
+/**
+ * 방장이 규칙을 고르는 칸. onChange(rules) 는 바뀐 규칙 전체(cleanRules 꼴).
+ * set(rules) 로 서버가 돌려준 규칙에 맞춘다(고르던 칸을 다시 만들지 않아 초점이 그대로다).
+ */
+export function rulesEditor(initial, { onChange }) {
+  let rules = cleanRules(initial);
+  const el = h("div", { class: "rules-editor" });
+  const emit = (patch) => {
+    rules = cleanRules({ ...rules, ...patch });
+    onChange(rules);
+  };
+  const gameSel = selectBox({
+    label: t("게임"),
+    value: rules.game,
+    options: roomGameIds().map((id) => ({ id, name: gameName({ game: id, base: "classic" }) })),
+    onChange: (id) => emit(id === "group" ? { game: "group", custom: null } : { game: id, custom: null }),
+  });
+  const formatSel = selectBox({
+    label: t("판 수"),
+    value: rules.format,
+    options: FORMATS.map((id) => ({ id, name: formatById(id).name })),
+    onChange: (id) => emit({ format: id }),
+  });
+  const baseSel = selectBox({
+    label: t("바탕 게임"),
+    value: rules.base || "classic",
+    options: groupBases().map((e) => ({ id: e.id, name: e.name })),
+    onChange: (id) => emit({ base: id }),
+  });
+  const modeSel = selectBox({
+    label: t("무엇을 정하나"),
+    value: rules.mode || GROUP_MODES[0],
+    options: GROUP_MODES.map((id) => ({ id, name: modeName(id) })),
+    onChange: (id) => emit({ mode: id }),
+  });
+  const seatsSel = selectBox({
+    label: t("사람 수"),
+    value: String(rules.seats),
+    options: Array.from({ length: GROUP_SEATS.max - GROUP_SEATS.min + 1 }, (_, k) => {
+      const n = GROUP_SEATS.min + k;
+      return { id: String(n), name: t("@seats:{n}명", { n }) };
+    }),
+    onChange: (id) => emit({ seats: Number(id) }),
+  });
+  const botSel = selectBox({
+    label: t("빈자리 컴퓨터"),
+    value: rules.bot,
+    options: BOTS.map((b) => ({ id: b.id, name: b.name })),
+    onChange: (id) => emit({ bot: id }),
+  });
+  const timerSel = selectBox({
+    label: t("손 낼 시간"),
+    value: String(rules.timer),
+    options: TIMERS.map((s) => ({ id: String(s), name: timerName(s) })),
+    onChange: (id) => emit({ timer: Number(id) }),
+  });
+
+  function layout() {
+    const group = isGroup(rules);
+    // 여럿이 할 때 컴퓨터는 늘 아무 손이나 낸다(규약 3.2)
+    clear(el).append(gameSel.el, ...(group ? [baseSel.el, modeSel.el, seatsSel.el] : [formatSel.el, botSel.el]), timerSel.el);
+  }
+  function set(next) {
+    const wasGroup = isGroup(rules);
+    rules = cleanRules(next);
+    gameSel.sel.value = rules.game === "custom" ? gameSel.sel.value : rules.game;
+    if (rules.format) formatSel.sel.value = rules.format;
+    if (rules.base) baseSel.sel.value = rules.base;
+    if (rules.mode) modeSel.sel.value = rules.mode;
+    seatsSel.sel.value = String(rules.seats);
+    botSel.sel.value = rules.bot;
+    timerSel.sel.value = String(rules.timer);
+    if (wasGroup !== isGroup(rules)) layout();
+  }
+  layout();
+  return { el, set, get rules() { return rules; } };
+}
