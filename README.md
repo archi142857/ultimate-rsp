@@ -111,7 +111,8 @@ web/                          웹 앱 (GitHub Pages)
   art/                        손 그림 SVG (Fluent UI Emoji, 없는 손은 이모지)
   js/app.js                   주소(#/…)에 따라 화면을 고른다
   js/i18n.js, js/i18n/en.js   화면 언어(한국어·영어)와 영어 사전
-  js/core/                    판정(engine), 최적 섞기(lp), 컴퓨터 전략(bots), 난수(rng), 조사(josa)
+  js/core/                    판정(engine), 최적 섞기(lp), 컴퓨터 전략(bots), 난수(rng), 조사(josa),
+                              온라인 랭킹 점수(rating)
   js/data/                    도감(catalog), 도감 영어(catalog-en), RPS 확장판 판정 문장(verbs),
                               직접 만들기 손 모음(custom), 손 그림 목록(art-files),
                               온라인 대전 게임 목록(online)
