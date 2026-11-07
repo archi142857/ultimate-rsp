@@ -2,7 +2,7 @@
 // 만든 사람의 손과 pid 는 기록에만 있고, 보여 주는 꼴(viewChallenge)에는 답이 오기 전까지 손이 없다.
 
 import { createMatch } from "../../web/js/games/match.js";
-import { resolveVariant, handIndex } from "./games.js";
+import { checkOnlineGame, resolveVariant, handIndex } from "./games.js";
 import { checkPid, checkName, checkEmote } from "./check.js";
 import { Fail } from "./http.js";
 import { CHALLENGE_KEEP_MS, CHALLENGE_ROUNDS } from "./protocol.js";
@@ -27,7 +27,7 @@ export function judge(V, from, to) {
 export function makeChallenge(body, now) {
   const pid = checkPid(body.pid);
   const name = checkName(body.name);
-  const { game, custom, V } = resolveVariant(body.game, body.custom);
+  const { game, custom, V } = resolveVariant(checkOnlineGame("challenge", body.game), body.custom);
   const hands = checkHands(V, body.hands, null);
   const e = checkEmote(body.e, true);
   return { code: null, game, custom, from: { pid, name }, e, hands, made: now, expires: now + CHALLENGE_KEEP_MS, answer: null };

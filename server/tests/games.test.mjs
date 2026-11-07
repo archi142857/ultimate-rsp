@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CATALOG } from "../../web/js/data/catalog.js";
-import { matrixIds, groupBaseIds, resolveVariant, handIndex, normCustom, warmUp } from "../src/games.js";
+import { matrixIds, groupBaseIds, resolveVariant, handIndex, normCustom, normRules, warmUp } from "../src/games.js";
 import { Fail } from "../src/http.js";
 
 const failCode = (fn) => {
@@ -69,4 +69,16 @@ test("여럿이 가위바위보 바탕은 손이 셋인 변종", () => {
   const ids = groupBaseIds();
   assert.ok(ids.includes("classic"));
   for (const id of ids) assert.equal(resolveVariant(id).V.n, 3);
+});
+
+test("게임 목록은 공용 목록(web/js/data/online.js)을 따른다", async () => {
+  const { onlineGames, groupBases } = await import("../../web/js/data/online.js");
+  assert.deepEqual(matrixIds(), onlineGames("random"));
+  assert.deepEqual(groupBaseIds(), groupBases());
+  assert.equal(groupBaseIds().length, 8);
+  for (const id of onlineGames("room")) {
+    const rules = id === "custom" ? { game: id, custom: { n: 5, k: 2, seed: 1 } } : { game: id };
+    assert.equal(normRules(rules).game, id);
+  }
+  for (const id of onlineGames("challenge")) assert.ok(id === "custom" || matrixIds().includes(id));
 });

@@ -97,6 +97,9 @@ export class RoomHost extends DurableObject {
     }
     const { pid, name } = att(ws);
     if (msg && msg.t === "emote" && now - m.emoteAt < EMOTE_GAP_MS) return;
+    // 시간 초과로 봇에게 넘어간 자리의 임자가 무언가 보내면 먼저 자리를 돌려준다
+    const back = this.room.reclaim(pid, name, now);
+    if (back.length) await this.#commit(back);
     let out;
     try {
       out = this.room.handle(pid, name, msg, now);

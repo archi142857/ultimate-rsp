@@ -45,15 +45,15 @@ test("만들기와 들어오기: 방장 0번, 빈자리, 꽉 차면 구경꾼", 
   let v = room.view(null);
   assert.equal(v.phase, "lobby");
   assert.equal(v.host, 0);
-  assert.deepEqual(v.seats[0], { kind: "human", name: "여우", on: false, until: T0 + GRACE_MS });
+  assert.deepEqual(v.seats[0], { kind: "human", name: "여우", on: false, until: T0 + GRACE_MS, ready: false });
   assert.deepEqual(room.join(A, "여우", T0), { seat: 0, evs: [{ k: "back", s: 0 }] });
   assert.equal(room.s.cleanupAt, null);
   assert.deepEqual(room.join(B, "곰", T0), { seat: 1, evs: [{ k: "join", s: 1 }] });
   assert.deepEqual(room.join(C, "새", T0), { seat: null, evs: [{ k: "watch" }] });
   v = room.view(1, 1);
   assert.deepEqual(v.seats, [
-    { kind: "human", name: "여우", on: true, until: null },
-    { kind: "human", name: "곰", on: true, until: null },
+    { kind: "human", name: "여우", on: true, until: null, ready: false },
+    { kind: "human", name: "곰", on: true, until: null, ready: false },
   ]);
   assert.equal(v.watchers, 1);
   assert.equal(v.round, null);
@@ -185,7 +185,7 @@ test("둘 중 한 사람이 3번 연달아 넘기면 봇이 잇고, 돌아오면
 test("끊기면 60초 지키고 봇이 잇는다(다른 사람이 있을 때만). 돌아오면 되찾는다", () => {
   const room = twoPlayers({ timer: 0 });
   assert.deepEqual(room.leave(B, T0), [{ k: "off", s: 1 }]);
-  assert.deepEqual(room.view(0).seats[1], { kind: "human", name: "곰", on: false, until: T0 + GRACE_MS });
+  assert.deepEqual(room.view(0).seats[1], { kind: "human", name: "곰", on: false, until: T0 + GRACE_MS, ready: false });
   assert.equal(room.nextWake(), T0 + GRACE_MS);
   assert.deepEqual(room.tick(T0 + GRACE_MS - 1), []);
   assert.deepEqual(room.tick(T0 + GRACE_MS), [{ k: "bot", s: 1, why: "left" }]);
@@ -310,4 +310,61 @@ test("끝없이도 999판에서 끝난다", () => {
   assert.equal(room.s.game.rounds.length, ENDLESS_MAX);
   const [a, b] = v.score;
   assert.equal(v.winner, a > b ? 0 : b > a ? 1 : null);
+});
+
+test("대기실 준비: 자리 임자만, 대기실·끝에서만. 규칙 바뀜·시작·끝·끊김·다시 들어옴에 풀린다", () => {
+  const room = make({ timer: 0, format: "single" });
+  room.join(A, "여우", T0);
+  room.join(B, "곰", T0);
+  room.join(C, "새", T0);
+  assert.deepEqual(room.handle(B, "곰", { t: "ready", on: true }, T0).evs, [{ k: "ready", s: 1, on: true }]);
+  assert.deepEqual(room.handle(B, "곰", { t: "ready", on: true }, T0).evs, [], "같은 값이면 알림 없음");
+  assert.equal(room.view(0).seats[1].ready, true);
+  assert.equal(failCode(() => room.handle(C, "새", { t: "ready", on: true }, T0)), "phase", "구경꾼은 못 한다");
+  assert.equal(failCode(() => room.handle(B, "곰", { t: "ready", on: "yes" }, T0)), "bad_request");
+  room.handle(A, "여우", { t: "rules", rules: { format: "bo3" } }, T0);
+  assert.equal(room.view(0).seats[1].ready, false, "규칙이 바뀌면 풀린다");
+
+  room.handle(B, "곰", { t: "ready", on: true }, T0);
+  room.leave(B, T0);
+  assert.equal(room.view(0).seats[1].ready, false, "끊기면 풀린다");
+  room.join(B, "곰", T0);
+  room.handle(B, "곰", { t: "ready", on: true }, T0);
+  room.join(B, "곰", T0);
+  assert.equal(room.view(0).seats[1].ready, false, "다시 들어오면 풀린다");
+
+  room.handle(B, "곰", { t: "ready", on: true }, T0);
+  room.handle(A, "여우", { t: "start" }, T0);
+  assert.equal(room.view(0).seats[1].ready, false, "시작하면 풀린다");
+  assert.equal(failCode(() => room.handle(B, "곰", { t: "ready", on: true }, T0)), "phase", "경기 중에는 못 한다");
+  for (let k = 0; k < 20 && room.s.phase === "play"; k++) {
+    thr(room, A, "rock");
+    thr(room, B, "scissors");
+  }
+  assert.equal(room.s.phase, "end");
+  room.handle(B, "곰", { t: "ready", on: true }, T0);
+  assert.equal(room.view(0).seats[1].ready, true, "끝 화면에서 다시 준비");
+  room.handle(A, "여우", { t: "start" }, T0);
+  for (let k = 0; k < 20 && room.s.phase === "play"; k++) {
+    thr(room, A, "rock");
+    thr(room, B, "scissors");
+  }
+  assert.equal(room.view(0).seats[1].ready, false, "끝나면 풀린다");
+});
+
+test("시간 초과로 봇에게 넘어간 자리는 그 사람이 무언가 보내면 돌아온다", () => {
+  const room = twoPlayers({ timer: 10, format: "endless" });
+  let now = T0;
+  for (let k = 0; k < 3; k++) {
+    thr(room, A, "rock", now);
+    now = room.nextWake();
+    room.tick(now);
+  }
+  assert.equal(room.view(0).seats[1].kind, "bot");
+  assert.equal(failCode(() => thr(room, B, "rock", now)), "phase", "돌려받기 전에는 못 낸다");
+  assert.deepEqual(room.reclaim(B, "곰", now), [{ k: "back", s: 1 }]);
+  assert.deepEqual(room.reclaim(B, "곰", now), [], "두 번은 없다");
+  assert.deepEqual(room.reclaim(C, "새", now), [], "남의 자리는 안 된다");
+  assert.equal(room.view(1).seats[1].kind, "human");
+  assert.deepEqual(evKinds(thr(room, B, "paper", now).evs), ["throw"]);
 });

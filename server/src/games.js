@@ -3,6 +3,7 @@
 
 import { compileVariant } from "../../web/js/core/engine.js";
 import { CATALOG, findEntry } from "../../web/js/data/catalog.js";
+import { groupBases, isOneHand, isOnlineGame } from "../../web/js/data/online.js";
 import { makeCustomDef, maxWins, CUSTOM_MIN, CUSTOM_MAX } from "../../web/js/data/custom.js";
 import { BOTS } from "../../web/js/core/bots.js";
 import { Fail } from "./http.js";
@@ -31,14 +32,20 @@ export function warmUp() {
   for (const id of matrixIds()) resolveVariant(id);
 }
 
-/** 손 하나 내고 바로 판정하는 변종(도감 kind matrix)의 id */
+/** 손 하나 내고 바로 판정하는 변종(도감 kind matrix)의 id. 목록의 기준은 web/js/data/online.js(컨셉) */
 export function matrixIds() {
-  return CATALOG.filter((e) => e.kind === "matrix").map((e) => e.id);
+  return CATALOG.filter(isOneHand).map((e) => e.id);
 }
 
-/** 여럿이 가위바위보의 바탕이 될 수 있는 변종(손이 셋) */
+/** 여럿이 가위바위보의 바탕이 될 수 있는 변종(손 셋 고리 8가지) */
 export function groupBaseIds() {
-  return CATALOG.filter((e) => e.kind === "matrix" && e.hands.length === 3).map((e) => e.id);
+  return groupBases();
+}
+
+/** kind(challenge·room·random)에서 고를 수 있는 게임인지. 아니면 bad_game */
+export function checkOnlineGame(kind, game) {
+  if (!isOnlineGame(kind, game)) throw new Fail("bad_game");
+  return game;
 }
 
 /** 직접 만들기 값 검사. 틀리면 bad_game */
@@ -86,6 +93,7 @@ export function normRules(input) {
   const timer = r.timer === undefined ? ROOM_DEFAULTS.timer : r.timer;
   if (!BOTS.some((b) => b.id === bot)) throw new Fail("bad_rules");
   if (!TIMERS.includes(timer)) throw new Fail("bad_rules");
+  checkOnlineGame("room", game);
   if (game === "group") {
     const base = r.base === undefined ? "classic" : r.base;
     if (!groupBaseIds().includes(base)) throw new Fail("bad_game");

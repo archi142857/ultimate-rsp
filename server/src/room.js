@@ -31,7 +31,7 @@ function mix(...xs) {
 const rngFor = (...xs) => makeRng(mix(...xs));
 
 function human(pid, name, now, on) {
-  return { kind: "human", pid, name, on, off: on ? null : now, afk: 0 };
+  return { kind: "human", pid, name, on, off: on ? null : now, afk: 0, ready: false };
 }
 
 export class Room {
@@ -122,13 +122,10 @@ export class Room {
       const seat = s.seats[i];
       if (seat.kind === "human") {
         const was = seat.on;
-        Object.assign(seat, { on: true, off: null, name });
+        Object.assign(seat, { on: true, off: null, name, ready: false });
         if (!was) evs.push({ k: "back", s: i });
       } else {
-        // 봇이 잇던 자리를 되찾는다. 봇이 이번 판에 낸 손은 지워서 사람이 고르게 한다
-        s.seats[i] = human(pid, name, now, true);
-        if (s.phase === "play") s.game.pend[i] = null;
-        evs.push({ k: "back", s: i });
+        evs.push(...this.#takeBack(i, pid, name, now));
       }
     } else if (!s.reserve && (s.phase === "lobby" || s.phase === "end")) {
       i = freeSeat(s.seats);
@@ -147,12 +144,30 @@ export class Room {
     return { seat: i, evs };
   }
 
+  /** 봇이 잇던 자리를 되찾는다. 봇이 이번 판에 낸 손은 지워서 사람이 고르게 한다 */
+  #takeBack(i, pid, name, now) {
+    const s = this.s;
+    s.seats[i] = human(pid, name, now, true);
+    if (s.phase === "play") s.game.pend[i] = null;
+    return [{ k: "back", s: i }];
+  }
+
+  /**
+   * 연결된 채로 봇에게 자리를 넘긴 사람(3번 연달아 시간 초과)이 다시 무언가 보내면 자리를 돌려준다.
+   * 화면은 메시지를 처리하기 전에 이것부터 부른다. 돌려줄 자리가 없으면 []
+   */
+  reclaim(pid, name, now) {
+    if (this.seatOf(pid) >= 0) return [];
+    const i = this.s.seats.findIndex((x) => x.kind === "bot" && x.pid === pid);
+    return i < 0 ? [] : this.#takeBack(i, pid, name, now);
+  }
+
   /** pid 의 연결이 끊겼다. explicit 이면 스스로 나간 것(자리를 바로 비운다) */
   leave(pid, now, explicit = false) {
     const i = this.seatOf(pid);
     if (i < 0) return [{ k: "watch" }];
     if (explicit) return this.#vacate(i, now, "left", false);
-    Object.assign(this.s.seats[i], { on: false, off: now });
+    Object.assign(this.s.seats[i], { on: false, off: now, ready: false });
     return [{ k: "off", s: i }];
   }
 
@@ -206,6 +221,8 @@ export class Room {
         return { evs: this.start(now) };
       case "sit":
         return { evs: this.#sit(i, pid, name, now) };
+      case "ready":
+        return { evs: this.#ready(i, msg.on) };
       default:
         throw new Fail("bad_request");
     }
@@ -214,6 +231,16 @@ export class Room {
   #hostOnly(i) {
     if (i < 0 || this.s.host !== i) throw new Fail("not_host");
     if (this.s.phase === "play") throw new Fail("phase");
+  }
+
+  /** 대기실 '준비'. 알림용이라 시작은 지금처럼 방장이 아무 때나 한다 */
+  #ready(i, on) {
+    const s = this.s;
+    if (i < 0 || s.phase === "play") throw new Fail("phase");
+    if (typeof on !== "boolean") throw new Fail("bad_request");
+    if (s.seats[i].ready === on) return [];
+    s.seats[i].ready = on;
+    return [{ k: "ready", s: i, on }];
   }
 
   #sit(i, pid, name, now) {
@@ -246,6 +273,7 @@ export class Room {
       seats[j] = x;
       moved.set(i, j);
     }
+    for (const x of seats) if (x.kind === "human") x.ready = false;
     Object.assign(s, { rules: r, seats, phase: "lobby", game: null, host: moved.has(s.host) ? moved.get(s.host) : null });
     this._V = null;
     this._e = null;
@@ -263,6 +291,7 @@ export class Room {
       if (auto && x.kind === "human" && !x.on) return { kind: "bot", bot: botId, pid: x.pid, name: x.name, why: "left" };
       return x;
     });
+    for (const x of s.seats) if (x.kind === "human") x.ready = false;
     s.reserve = null;
     s.startAt = null;
     s.phase = "play";
@@ -339,6 +368,7 @@ export class Room {
       n += 1;
       if (e.done || g.r >= ENDLESS_MAX) {
         s.phase = "end";
+        for (const x of s.seats) if (x.kind === "human") x.ready = false;
         g.deadline = null;
         g.paused = false;
         if (!this.group) g.winner = e.score[0] > e.score[1] ? 0 : e.score[1] > e.score[0] ? 1 : null;
@@ -442,7 +472,7 @@ export class Room {
     const id = (h) => (h === null || h === undefined ? null : V.hands[h].id);
     const alive = this.group && e ? e.alive.slice() : null;
     const seats = s.seats.map((x) => {
-      if (x.kind === "human") return { kind: "human", name: x.name, on: x.on, until: x.on ? null : x.off + GRACE_MS };
+      if (x.kind === "human") return { kind: "human", name: x.name, on: x.on, until: x.on ? null : x.off + GRACE_MS, ready: !!x.ready };
       if (x.kind === "bot") return { kind: "bot", bot: this.group ? "random" : x.bot, name: x.name };
       return { kind: "empty" };
     });

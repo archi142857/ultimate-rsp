@@ -6,7 +6,8 @@ import { RoomHost, refuse } from "./room-do.js";
 import { MatchQueue } from "./match-do.js";
 import { makeChallenge } from "./challenge.js";
 import { checkName, checkPid, makeCode, normCode } from "./check.js";
-import { matrixIds, normRules, warmUp } from "./games.js";
+import { normRules, warmUp } from "./games.js";
+import { isOnlineGame } from "../../web/js/data/online.js";
 import { Fail, allowedOrigin, checkVersion, json, originList, preflight, readBody } from "./http.js";
 import { CLOSE, CODE_LEN, MATCH_FORMATS, PROTOCOL } from "./protocol.js";
 
@@ -144,7 +145,7 @@ async function socketRoute(request, env, url, parts, okOrigin) {
   } else if (parts[0] === "api" && parts[1] === "match" && parts[2] === "ws" && parts.length === 3) {
     const game = q.get("game");
     const format = q.get("format");
-    if (!matrixIds().includes(game)) return refuse("bad_game", CLOSE.bad_request);
+    if (!isOnlineGame("random", game)) return refuse("bad_game", CLOSE.bad_request);
     if (!MATCH_FORMATS.includes(format)) return refuse("bad_rules", CLOSE.bad_request);
     ns = env.MATCH;
     id = `${game}:${format}`;

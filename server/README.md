@@ -15,7 +15,7 @@
 | `GET /api/c/<코드>?v=1` | 도전장 보기. 답이 오기 전에는 만든 사람 손이 안 보인다 |
 | `POST /api/c/<코드>/answer` | 도전장 답하기. 처음 한 사람만 받고 닫는다 |
 | `POST /api/rooms` | 방 만들기: 규칙(변종·판 수·인원·봇·제한 시간)을 정하고 4자 코드를 받는다 |
-| `GET /api/rooms/<코드>/ws` | 방 WebSocket. 자리, 손 내기, 공개, 이모트, 다시 하기 |
+| `GET /api/rooms/<코드>/ws` | 방 WebSocket. 자리, 대기실 준비, 손 내기, 공개, 이모트, 다시 하기 |
 | `GET /api/match/ws` | 랜덤 매칭 WebSocket. 게임·판 수마다 대기열, 짝이 없으면 봇과 |
 
 POST 본문은 JSON 이고, CORS 미리 묻기를 줄이려고 `Content-Type: text/plain` 으로 받습니다. WebSocket 은 `ping` 글자를 보내면 서버를 깨우지 않고 `pong` 으로 답합니다.
