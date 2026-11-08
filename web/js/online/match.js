@@ -169,7 +169,7 @@ export function matchView(main, params = {}) {
       if (!since) notices.set("wait", { title: t("서버에 연결하는 중…"), text: t("잠깐이면 된다."), spin: true });
     } else if (st.state === "retrying") {
       notices.clear("wait");
-      if (since) notices.set("drop", { title: t("연결이 끊겼다"), text: t("다시 잇는 중… 화면을 닫지 마세요."), spin: true });
+      if (since) notices.set("drop", { title: t("연결이 끊겼다"), text: t("다시 연결하는 중… 화면을 열어 두자."), spin: true });
       else {
         const n = noticeFor("network");
         notices.set(n.kind, n);

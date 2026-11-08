@@ -71,7 +71,7 @@ export function challengeView(main, code) {
     fill(
       topBar({ href: "#/play", label: t("온라인") }).el,
       bigTitle(t("도전장")),
-      h("p", { class: "o-p" }, unsupported ? t("이 도전장은 이 화면에서 아직 열 수 없다. 새로고침해 주세요.") : errorText(why)),
+      h("p", { class: "o-p" }, unsupported ? t("이 도전장은 이 화면에서 아직 열 수 없다. 새로고침하면 된다.") : errorText(why)),
       h(
         "div",
         { class: "o-actions" },
@@ -101,7 +101,7 @@ export function challengeView(main, code) {
   function answerView(c, V) {
     setTitle(t("{name}의 도전장", { name: c.from }));
     let picked = null;
-    const go = h("button", { type: "button", class: "btn btn-ink btn-big", disabled: true }, t("손을 고르세요"));
+    const go = h("button", { type: "button", class: "btn btn-ink btn-big", disabled: true }, t("손 고르기"));
     const ring = handRing(V, { size: 260, pickable: true, onPick: (i) => choose(i, "ring") });
     const grid = V.n > 7 ? handGrid(V, { onPick: (i) => choose(i, "grid") }) : null;
     if (grid) grid.buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
@@ -191,7 +191,7 @@ export function challengeView(main, code) {
     const handName = hi !== undefined ? V.hands[hi].name : null;
     const share = {
       title: t("가위바위보 도전장"),
-      text: t("{name}의 {game} 도전장이 왔다. 손을 골라 겨뤄 보세요.", { name: c.from, game: V.name }),
+      text: t("{name}의 {game} 도전장이 왔다. 손을 골라 겨뤄 보자.", { name: c.from, game: V.name }),
     };
     const url = shareLink(`/c/${c.code}`);
     const check = h("button", { type: "button", class: "btn btn-sm" }, t("결과 확인"));

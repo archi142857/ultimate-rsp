@@ -107,7 +107,7 @@ function handStep(main, entry) {
       variantRow(V, { right: h("a", { class: "o-link", href: "#/c/new" }, t("바꾸기")) }),
       h("h1", { class: "o-h2" }, t("무엇을 낼까?")),
       h("div", { class: "hand-ring-box" }, ring.el),
-      h("p", { class: "o-p o-center" }, t("상대는 내 손을 못 본다. 화살표는 이기는 쪽이다.")),
+      h("p", { class: "o-p o-center" }, t("상대는 내 손을 못 본다. 화살표는 이기는 손에서 지는 손으로 간다.")),
       grid ? grid.el : null,
       h("p", { class: "o-label" }, t("같이 보낼 이모트(안 골라도 된다)")),
       emotes.el,

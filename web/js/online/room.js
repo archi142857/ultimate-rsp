@@ -76,7 +76,7 @@ export function roomView(main, code) {
       const again = { label: t("다시"), run: () => sock.reconnect() };
       if (room) {
         root.classList.add("offline");
-        notices.set("drop", { title: t("연결이 끊겼다"), text: t("다시 잇는 중… 화면을 닫지 마세요."), spin: true, action: again });
+        notices.set("drop", { title: t("연결이 끊겼다"), text: t("다시 연결하는 중… 화면을 열어 두자."), spin: true, action: again });
       } else {
         const n = noticeFor(st.code === CLOSE.busy ? "busy" : "network");
         notices.set(n.kind, { ...n, action: again });
@@ -166,7 +166,7 @@ export function roomView(main, code) {
     if (pk !== panelKey || !panel) {
       if (panel && panel.destroy) panel.destroy();
       panelKey = pk;
-      panel = !V ? messagePanel(t("이 방의 게임을 이 화면이 아직 모른다. 새로고침해 주세요.")) : room.phase === "play" ? playPanel() : room.phase === "end" ? endPanel() : lobbyPanel();
+      panel = !V ? messagePanel(t("이 방의 게임은 이 화면에서 아직 열 수 없다. 새로고침하면 된다.")) : room.phase === "play" ? playPanel() : room.phase === "end" ? endPanel() : lobbyPanel();
       fill(panel.el);
     }
     panel.update(ev);
@@ -181,12 +181,12 @@ export function roomView(main, code) {
       back: () => t("{name} 돌아옴", { name: who(ev.s) }),
       off: () => t("{name} 연결 끊김", { name: who(ev.s) }),
       gone: () => t("{name} 나감", { name: who(ev.s) }),
-      bot: () => t("컴퓨터가 {n}번 자리를 이음", { n: ev.s + 1 }),
+      bot: () => t("컴퓨터가 {n}번 자리를 맡음", { n: ev.s + 1 }),
       host: () => t("방장이 {name}(으)로 바뀜", { name: who(ev.s) }),
       start: () => t("경기 시작"),
     };
     if (lines[ev.k]) announce.textContent = lines[ev.k]();
-    if (ev.k === "bot" && ev.why === "afk" && ev.s === you) notices.set("note", { title: t("세 번 연달아 시간을 넘겨 컴퓨터가 내 자리를 이었다.") });
+    if (ev.k === "bot" && ev.why === "afk" && ev.s === you) notices.set("note", { title: t("세 번 연달아 시간을 넘겨서 컴퓨터가 내 자리를 맡았다.") });
   }
 
   // ── 이모트 ─────────────────
@@ -246,7 +246,7 @@ export function roomView(main, code) {
       } else if (phase === "play" && r && r.done[i] === true && !shown) {
         p.badge = { text: "✓", kind: "ok", say: t("냈다") };
       }
-      if (me && seat.kind === "bot") subs.push(t("컴퓨터가 잇는 중"));
+      if (me && seat.kind === "bot") subs.push(t("컴퓨터가 대신 내는 중"));
       else if (seat.kind === "bot" && !group && phase === "lobby") subs.push(seatBot(seat));
       if (!group && phase !== "lobby" && !(me && seat.kind === "bot")) subs.push(t("{n}승", { n: (room.score && room.score[i]) || 0 }));
       if (out && !shown) {
@@ -426,11 +426,11 @@ export function roomView(main, code) {
             : host
               ? ri.supported && ri.total > 1
                 ? ri.all
-                  ? t("다 준비했다. 시작해 보세요.")
-                  : t("준비한 사람이 {a}명, 아직 {b}명.", { a: ri.ready, b: ri.total - ri.ready })
+                  ? t("다 준비했다. 이제 시작하면 된다.")
+                  : t("준비한 사람이 {a}명, 아직 {b}명이다.", { a: ri.ready, b: ri.total - ri.ready })
                 : hc.empty
-                  ? t("친구에게 코드를 알려 주세요. 빈자리 {n}곳은 시작하면 컴퓨터가 앉는다.", { n: hc.empty })
-                  : t("다 모였다. 시작해 보세요.")
+                  ? t("친구에게 코드를 알려 주자. 빈자리 {n}곳은 시작하면 컴퓨터가 앉는다.", { n: hc.empty })
+                  : t("다 모였다. 이제 시작하면 된다.")
               : t("방장이 시작하기를 기다린다."), room.watchers ? t("구경 {n}명", { n: room.watchers }) : ""].filter(Boolean).join(" ");
       },
       bubble: (s, e) => ring.bubble(s, e),
@@ -448,7 +448,7 @@ export function roomView(main, code) {
     const done = h("span", { class: "copy-done", role: "status" });
     const copy = h("button", { type: "button", class: "btn btn-sm" }, t("복사"));
     copy.addEventListener("click", async () => {
-      done.textContent = (await copyText(url)) ? t("방 링크를 복사했다.") : t("복사하지 못했다. 코드를 알려 주세요.");
+      done.textContent = (await copyText(url)) ? t("방 링크를 복사했다.") : t("복사하지 못했다. 코드를 직접 알려 주자.");
       setTimeout(() => (done.textContent = ""), 3000);
     });
     const canShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
@@ -473,7 +473,7 @@ export function roomView(main, code) {
     const grid = watcher ? null : handGrid(V, { onPick: throwHand });
     const emotes = emoteBar();
     const reclaimBtn = h("button", { type: "button", class: "btn btn-ink btn-sm", onclick: () => sock.reconnect() }, t("자리 되찾기"));
-    const reclaim = h("p", { class: "reclaim", hidden: true }, h("span", {}, t("컴퓨터가 내 자리를 잇고 있다. 손을 내면 돌아온다.")), reclaimBtn);
+    const reclaim = h("p", { class: "reclaim", hidden: true }, h("span", {}, t("컴퓨터가 내 자리에서 대신 내고 있다. 손을 내면 돌아온다.")), reclaimBtn);
     const hist = histBox();
     const leave = h("button", { type: "button", class: "btn btn-sm btn-quiet", onclick: leaveRoom }, t("방 나가기"));
     let revealing = false;
@@ -566,7 +566,7 @@ export function roomView(main, code) {
       awayLine.hidden = !away.length;
       if (away.length) {
         const [s] = away[0];
-        awayLine.textContent = t("{name:이가} 나갔다. {n}초 안에 안 오면 컴퓨터가 잇는다.", { name: s.name, n: secondsLeft(s.until, now) });
+        awayLine.textContent = t("{name:이가} 나갔다. {n}초 안에 돌아오지 않으면 컴퓨터가 대신 낸다.", { name: s.name, n: secondsLeft(s.until, now) });
         ring.set({ people: seatPeople("play").people });
       }
     }
