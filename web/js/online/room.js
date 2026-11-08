@@ -326,7 +326,7 @@ export function roomView(main, code) {
    *   서버는 공개 뒤 REVEAL_MS 만큼 다음 판 시간을 늘려 두므로 그 안에서 연출한다(결과는 적어도 SHOW_MS 보인다).
    * 빨리 하기·움직임 줄이기면 세지 않고 바로 보인다. 더 새 공개가 시작되면(isLive 가 거짓) 그만둔다
    */
-  async function revealOn(ring, entry, { hold = REVEAL_MS, isLive = () => true } = {}) {
+  async function revealOn(ring, entry, { hold = REVEAL_MS, isLive = () => true, onShow = null } = {}) {
     const shown = shownOf(entry);
     if (!shown) return;
     const t0 = Date.now();
@@ -344,10 +344,55 @@ export function roomView(main, code) {
     ring.el.classList.add("revealing");
     ring.set({ people, arrows: shownArrows(order, shown) });
     ring.center(shownText(shown));
+    if (onShow) onShow();
     const rest = quick ? (fastMode() ? 1200 : hold) - (Date.now() - t0) : Math.max(hold - (Date.now() - t0), SHOW_MS);
     if (rest > 0) await sleep(rest);
     if (isLive()) ring.el.classList.remove("revealing");
   }
+  /**
+   * 둘이서 하는 경기의 점수판: 나 2 : 1 상대(11-08 사용자: 몇 대 몇인지 강조). 구경꾼은 자리 0 대 자리 1.
+   * set(bump): 점수가 바뀐 쪽 숫자를 튀게 한다(공개로 결과가 보이는 순간에 부른다).
+   */
+  function duelScore() {
+    const nums = [h("b", { class: "ds-num" }, "0"), h("b", { class: "ds-num" }, "0")];
+    const names = [h("span", { class: "ds-name" }), h("span", { class: "ds-name" })];
+    const note = h("p", { class: "ds-note" });
+    const el = h(
+      "div",
+      { class: "duel-score", role: "group" },
+      h("div", { class: "ds-side me" }, names[0], nums[0]),
+      h("span", { class: "ds-colon", "aria-hidden": "true" }, ":"),
+      h("div", { class: "ds-side op" }, nums[1], names[1]),
+      note,
+    );
+    let shownScore = null;
+    /** k 쪽 숫자를 튀게(내 쪽은 초록, 상대 쪽은 빨강, 구경꾼은 둘 다 초록) */
+    function pop(k) {
+      nums[k].classList.remove("bump", "tone-win", "tone-lose");
+      void nums[k].offsetWidth; // 다시 튀게
+      nums[k].classList.add("bump", you === null || k === 0 ? "tone-win" : "tone-lose");
+    }
+    return {
+      el,
+      pop,
+      set(bump = false) {
+        const { me, op } = sidesOf(you);
+        const sc = [me, op].map((i) => (room.score && room.score[i]) || 0);
+        const label = [you === null ? nameOf(me) : t("나"), nameOf(op)];
+        sc.forEach((v, k) => {
+          nums[k].textContent = String(v);
+          names[k].textContent = label[k];
+          if (bump && shownScore && v > shownScore[k]) pop(k);
+          else if (!bump) nums[k].classList.remove("bump", "tone-win", "tone-lose");
+        });
+        shownScore = sc;
+        const f = formatById(room.rules.format);
+        note.textContent = Number.isFinite(f.target) && f.target > 1 ? t("{f} · {n}승 먼저", { f: f.name, n: f.target }) : f.name;
+        el.setAttribute("aria-label", t("점수: {a} {x}, {b} {y}", { a: label[0], x: sc[0], b: label[1], y: sc[1] }));
+      },
+    };
+  }
+
   /** 세는 말: 가위바위보 셋이면 가위! 바위! 보!(영어는 Rock! Paper! Scissors!), 아니면 3 2 1 */
   function countWords() {
     return chantWords(V).slice(0, 3);
@@ -467,6 +512,7 @@ export function roomView(main, code) {
     const watcher = you === null;
     const top = topBar({ href: "#/play", label: t("방 {code}", { code }) });
     const ring = peopleRing({ height: ringHeight(room.seats.length, "play") });
+    const score = group ? null : duelScore();
     const dial = timerDial();
     const line = h("p", { class: "o-p o-center room-line" });
     const awayLine = h("p", { class: "o-p o-center room-away", hidden: true });
@@ -512,7 +558,7 @@ export function roomView(main, code) {
       revealing = true;
       if (grid) grid.lock(true);
       line.textContent = "";
-      await revealOn(ring, entry, { isLive: () => live && my === revealSeq });
+      await revealOn(ring, entry, { isLive: () => live && my === revealSeq, onShow: () => score && score.set(true) });
       if (!live || my !== revealSeq) return;
       revealing = false;
       update(null);
@@ -533,6 +579,7 @@ export function roomView(main, code) {
       const alive = !group || (room.alive || []).includes(you);
       if (grid) grid.lock(!r || mine !== null || !alive);
       reclaim.hidden = !botHasMe();
+      if (score) score.set();
       drawRing();
       tick();
     }
@@ -574,6 +621,7 @@ export function roomView(main, code) {
       "div",
       { class: "room-play" + (group ? " group" : "") },
       top.el,
+      score ? score.el : null,
       ring.el,
       line,
       awayLine,
@@ -605,6 +653,8 @@ export function roomView(main, code) {
     const host = you !== null && room.host === you;
     const top = topBar({ href: "#/play", label: t("방 {code}", { code }) }, group ? t("경기 끝") : t("{format} 끝", { format: formatById(room.rules.format).name }));
     const head = h("div", { class: "end-head" });
+    const finalScore = group ? null : duelScore();
+    if (finalScore) finalScore.el.hidden = true;
     const ring = peopleRing({ height: ringHeight(room.seats.length, "end") });
     const ranks = h("ol", { class: "rank-list" });
     const rankCard = h("section", { class: "o-card rank-card", hidden: true }, ranks);
@@ -633,6 +683,7 @@ export function roomView(main, code) {
       { class: "room-end" },
       top.el,
       head,
+      finalScore ? finalScore.el : null,
       rated,
       ring.el,
       rankCard,
@@ -658,6 +709,13 @@ export function roomView(main, code) {
       ring.set({ people });
       ring.center();
       head.replaceChildren(bigTitle(...finalTitle()));
+      if (finalScore) {
+        const first = finalScore.el.hidden;
+        finalScore.el.hidden = false;
+        finalScore.set();
+        const fin = finalFor(room, sidesOf(you).me);
+        if (first && fin !== 0) finalScore.pop(fin > 0 ? 0 : 1); // 이긴 쪽 숫자를 한 번 튀게
+      }
       showRated();
       // 순위
       const list = ranking(room);

@@ -1,4 +1,4 @@
-// 순위표(#/rank/게임, 디자인 시안2 ①)와 첫 화면 랜덤 칸의 '이 게임 순위'.
+// 순위표(#/rank/게임, 디자인 시안2 ①)와 첫 화면 랜덤 칸의 '(게임) 순위'.
 // 넓은 화면: 왼쪽 250px 에 게임 찾기와 게임 목록, 오른쪽 표(순위 · 이름 · 점수 · 경기 · 승률, 50위까지, 내 줄은 맨 아래에 붙인다).
 // 좁은 화면: 게임 고르기(select), '내 순위' 카드, 그 아래 목록. 한 벌의 줄을 CSS 가 두 꼴로 놓는다.
 // 1–3위 순위 숫자는 금·은·동. 내가 50위 안이면 그 줄을 칠하고 아래 내 줄은 뺀다. 5경기 전이면 순위 대신 'N경기 더 하면 오른다'.
@@ -242,17 +242,18 @@ function myRow(me) {
   );
 }
 
-// ── 첫 화면 랜덤 칸의 '이 게임 순위' ─────────────────
+// ── 첫 화면 랜덤 칸의 '(게임) 순위' ─────────────────
 /** 1–3위와 내 줄. 서버가 순위를 줄 때만 보인다(처음엔 숨김). load(게임) 로 바꾼다 */
 export function rankBox({ onMissing = null } = {}) {
   const ctl = new AbortController();
   const link = h("a", { class: "o-link o-small" }, t("@page:순위표"), arrow());
+  const title = h("h3", { class: "rkbox-title" });
   const list = h("ul", { class: "rk-list" });
   const msg = h("p", { class: "o-p o-small", hidden: true });
   const el = h(
     "div",
     { class: "rkbox", hidden: true },
-    h("div", { class: "rkbox-head" }, h("h3", { class: "rkbox-title" }, t("이 게임 순위")), link),
+    h("div", { class: "rkbox-head" }, title, link),
     list,
     msg,
   );
@@ -265,7 +266,7 @@ export function rankBox({ onMissing = null } = {}) {
       { class: "rk" + (me ? " me" : "") },
       h("b", { class: "rk-n" }, n),
       avatar(who, { size: 22 }),
-      h("span", { class: "rk-name" }, label || who.name),
+      h("span", { class: "rk-name" + (label ? " rk-name-me" : "") }, label || who.name),
       right,
     );
   }
@@ -289,6 +290,8 @@ export function rankBox({ onMissing = null } = {}) {
 
   async function load(id) {
     game = id;
+    const e = randomGame(id);
+    title.textContent = t("{g} 순위", { g: e ? e.name : id });
     link.href = `#/rank/${encodeURIComponent(id)}`;
     el.hidden = false;
     const my = ++loading;

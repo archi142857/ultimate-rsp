@@ -464,14 +464,6 @@ a.o-back:hover {
 .pring-deco .pring-label {
   display: none;
 }
-.o-pick {
-  gap: 8px;
-}
-.o-pick > .btn {
-  flex: none;
-  min-height: 44px;
-  padding-inline: 18px;
-}
 .o-select select {
   width: 100%;
   min-height: 44px;
@@ -561,7 +553,7 @@ a.o-back:hover {
   text-overflow: ellipsis;
 }
 
-/* 이 게임 순위(랜덤 칸 아래) */
+/* 게임 순위(랜덤 칸 아래) */
 .rkbox {
   display: grid;
   gap: 2px;
@@ -625,8 +617,14 @@ a.o-back:hover {
   flex: none;
   font-variant-numeric: tabular-nums;
 }
+/* '나' 줄: 이름(나·You)은 다 보이고, 좁으면 '순위표까지 N경기'가 두 줄로 */
+.rk-name-me {
+  flex: 1 0 auto;
+}
 .rk-left {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  text-align: right;
   color: var(--muted);
   font-size: 0.75rem;
 }
@@ -1442,6 +1440,74 @@ button.varrow {
 .pring-say.tone-count {
   padding: 0 14px;
 }
+/* 둘이서 하는 경기의 점수판(나 2 : 1 상대) */
+.duel-score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 12px;
+  margin: 2px 0 4px;
+}
+.duel-score[hidden] {
+  display: none;
+}
+.ds-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.ds-side.me {
+  justify-content: flex-end;
+}
+.ds-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--muted);
+}
+.ds-num {
+  min-width: 1ch;
+  font: 400 clamp(2.4rem, 9vw, 3.4rem) / 1 var(--display);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--ink);
+}
+.ds-num.tone-win {
+  color: var(--win);
+}
+.ds-num.tone-lose {
+  color: var(--lose);
+}
+.ds-num.bump {
+  animation: ds-bump 0.7s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+.ds-colon {
+  font: 400 clamp(1.6rem, 6vw, 2.2rem) / 1 var(--display);
+  color: var(--muted);
+}
+.ds-note {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  text-align: center;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+@keyframes ds-bump {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.6);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .pring-say.tone-count b {
   font-size: 3.4rem;
   animation: o-count 0.34s cubic-bezier(0.2, 1.4, 0.4, 1) both;
