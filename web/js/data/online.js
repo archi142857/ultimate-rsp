@@ -41,9 +41,13 @@ export function groupRuleOf(id) {
   return e.hands.length === 3 ? "rps" : "score";
 }
 
-/** 여럿이 한 방에 앉을 수 있는 사람 수의 바닥과 천장(둘이면 보통 대전이다. 천장은 여럿이 도전장 max 와 같은 50) */
+/**
+ * 여럿이 한 방에 앉을 수 있는 사람 수의 바닥과 천장(둘이면 보통 대전이다).
+ * 천장 20: 백엔드가 재 보니 50명 방은 손 하나 낼 때마다 14KB 방 꼴을 56곳에 보내 폰에 무거웠다(20명이면 6.4KB, 11-08 23:47).
+ * 판정은 50명도 금방 끝난다. 여럿이 도전장 max(50)는 서버가 따로 정한다
+ */
 export const GROUP_SEATS_MIN = 3;
-export const GROUP_SEATS_MAX = 50;
+export const GROUP_SEATS_MAX = 20;
 /** 모두 아무렇게나 낼 때 한 경기가 평균 이만큼 안에 끝나는 인원까지 연다(한 번 내는 데 5초쯤이면 1분 남짓) */
 export const GROUP_THROWS_MAX = 15;
 
@@ -51,7 +55,7 @@ export const GROUP_THROWS_MAX = 15;
  * 여럿이 바탕 id 마다 앉을 수 있는 사람 수 { min, max }. 바탕이 될 수 없는 id 면 null.
  *  - 손 셋(보통 규칙): 세 가지가 다 나오면 다시라 사람이 늘면 끝이 안 난다. 평균 판 수(groupThrows)가 GROUP_THROWS_MAX 안인 8명까지
  *    (8명 평균 12.1번, 9명 17.1번, 10명 24.4번)
- *  - 손이 더 많음(점수 규칙): 50명이 해도 평균 5번 안에 끝나서 GROUP_SEATS_MAX 까지(tests/group-score.test.mjs 가 본다)
+ *  - 손이 더 많음(점수 규칙): 50명이 해도 평균 5번 안에 끝난다(tests/group-score.test.mjs 가 본다). 그래서 방 무게로 정한 GROUP_SEATS_MAX 까지
  */
 export function seatRange(id) {
   const rule = groupRuleOf(id);

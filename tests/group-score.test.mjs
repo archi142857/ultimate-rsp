@@ -138,18 +138,19 @@ test("손 셋 여럿이 평균 판 수(groupThrows)", () => {
   assert.ok(Math.abs(sum / T - groupThrows(n)) < 0.35, `${sum / T} ≈ ${groupThrows(n)}`);
 });
 
-test("손이 많은 바탕은 50명이 해도 금방 끝난다(seatRange 천장의 까닭)", () => {
+test("손이 많은 바탕은 50명이 해도 금방 끝난다(인원 천장은 판정이 아니라 방 무게로 정한다)", () => {
   const rng = makeRng(2026);
   const many = groupBases({ manyHands: true }).filter((id) => groupRuleOf(id) === "score");
   assert.ok(many.length >= 12 && many.includes("rpsls") && many.includes("rps101"));
   for (const id of many) {
     assert.equal(seatRange(id).max, GROUP_SEATS_MAX, id);
+    assert.equal(GROUP_SEATS_MAX, 20);
     const W = V(id);
     for (const mode of ["survive", "loser"]) {
       let sum = 0;
       const T = 40;
       for (let t = 0; t < T; t++) {
-        const g = createGroup(W, { players: GROUP_SEATS_MAX, mode });
+        const g = createGroup(W, { players: 50, mode });
         while (!g.done && g.rounds.length < 500) g.play(Object.fromEntries(g.alive.map((p) => [p, rng.int(W.n)])));
         assert.ok(g.done, `${id} ${mode}: 끝난다`);
         sum += g.rounds.length;
