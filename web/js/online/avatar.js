@@ -5,6 +5,7 @@ import { h } from "../ui/dom.js";
 import { artUrl, hasArt } from "../ui/art.js";
 import { NICK_ART, NICK_WORDS } from "../i18n/nicknames.js";
 import { faceId } from "./identity.js";
+import { centerVars } from "./art-center.js";
 
 const WORDS = new Map(); // 낱말(소문자) → 그림 이름
 for (const words of Object.values(NICK_WORDS)) words.noun.forEach((w, k) => WORDS.set(w.toLowerCase(), NICK_ART[k]));
@@ -61,7 +62,7 @@ export function avatar(who, { size = 44, cls = "" } = {}) {
 export function fillFace(el, who) {
   const f = faceOf(who);
   if (f.art && hasArt({ id: f.art })) {
-    const img = h("img", { src: artUrl({ id: f.art }), alt: "", draggable: "false", decoding: "async" });
+    const img = h("img", { src: artUrl({ id: f.art }), alt: "", draggable: "false", decoding: "async", vars: centerVars(f.art) });
     img.addEventListener("error", () => el.replaceChildren(h("span", { class: "av-text" }, initialOf(who && who.name))));
     el.replaceChildren(img);
   } else {

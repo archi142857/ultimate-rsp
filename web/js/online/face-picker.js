@@ -10,6 +10,7 @@ import { CATALOG } from "../data/catalog.js";
 import { ART_FILES } from "../data/art-files.js";
 import { NICK_ART } from "../i18n/nicknames.js";
 import { avatar, fillFace } from "./avatar.js";
+import { centerVars } from "./art-center.js";
 
 const ANIMALS = [
   ...NICK_ART,
@@ -46,13 +47,13 @@ const PEOPLE = [
   "alien",
   "vampire",
   "medusa",
-  "spock",
   "watonai",
   "devil",
   "satan",
   "death",
 ];
-const HANDS = ["hand-rock", "hand-scissors", "hand-paper"];
+// 손: 가위바위보 손 셋과 손 모양 그림(스팍 🖖, 기도 🙏, 힘 💪. 11-08 사용자: "스팍은 손으로 들어가는 게 맞지 않나")
+const HANDS = ["hand-rock", "hand-scissors", "hand-paper", "spock", "prayer", "power"];
 const SKIP = new Set(["blood", "toilet"]);
 
 /** 묶음별 그림 이름. 그림 목록에 없는 이름은 뺀다 */
@@ -101,7 +102,7 @@ export function facePicker({ value = null, autoWho, onPick = null } = {}) {
           const el = h(
             "button",
             { type: "button", class: "fp-cell", role: "radio", "data-id": id, title: name, "aria-label": name },
-            h("img", { src: artUrl({ id }), alt: "", loading: "lazy", decoding: "async", draggable: "false" }),
+            h("img", { src: artUrl({ id }), alt: "", loading: "lazy", decoding: "async", draggable: "false", vars: centerVars(id) }),
           );
           cells.push({ id, el });
           return el;

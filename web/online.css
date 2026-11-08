@@ -240,6 +240,12 @@ a.o-back:hover {
   height: 78%;
   display: block;
 }
+/* 얼굴 그림을 동그라미 가운데로(art-center.js 가 그림마다 --fx·--fy 를 준다) */
+.av img,
+.pring-av img,
+.fp-cell img {
+  translate: var(--fx, 0) var(--fy, 0);
+}
 /* 어두운 화면: 검은 그림(거미·개미·바퀴벌레·닌자…)이 바탕에 묻히지 않게 가는 빛 테두리 */
 :root[data-scheme="dark"] .av img,
 :root[data-scheme="dark"] .fp-cell img {
