@@ -187,3 +187,26 @@ export function groupDecisiveChance(players) {
   // 정확히 두 가지 손만 나오는 경우: 3가지 가운데 2가지를 고르고, 그 둘로 모두를 채우되 한 가지만 나오는 경우를 뺀다
   return (3 * (Math.pow(2, players) - 2)) / Math.pow(3, players);
 }
+
+/**
+ * 세 손 고리 여럿이 가위바위보를 n 명이 모두 아무렇게나 낼 때, 한 명이 남을 때까지 평균 몇 번 내나(정확한 값).
+ * 두 가지 손이 나와 k 명이 이길 확률은 3·C(n,k)/3ⁿ(k = 1…n−1)이고, 마지막 한 명·술래 한 명 정하기가 같은 값이다.
+ * E(1) = 0, E(2) = 1.5, E(3) = 2.25, E(8) ≈ 12.1, E(10) ≈ 24.4
+ */
+export function groupThrows(players) {
+  const E = [0, 0];
+  for (let n = 2; n <= players; n++) {
+    const all = Math.pow(3, n);
+    let binom = 1; // C(n, k)
+    let go = 0; // 승부가 나는 확률
+    let rest = 1; // 1 + Σ P(n→k)·E(k)
+    for (let k = 1; k < n; k++) {
+      binom = (binom * (n - k + 1)) / k;
+      const p = (3 * binom) / all;
+      go += p;
+      rest += p * E[k];
+    }
+    E[n] = rest / go;
+  }
+  return E[Math.max(0, players)] ?? 0;
+}

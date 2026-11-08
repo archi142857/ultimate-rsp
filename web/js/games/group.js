@@ -3,17 +3,83 @@
 import { groupWinner } from "../core/engine.js";
 import { t } from "../i18n.js";
 
+/** 손이 셋이고 손마다 하나를 이기고 하나에 지는가(세 손 고리). 보통 규칙(rps)이 그대로 맞는 변종이다 */
+export function isThreeCycle(V) {
+  if (V.n !== 3) return false;
+  for (let a = 0; a < 3; a++) {
+    let w = 0;
+    let l = 0;
+    for (let b = 0; b < 3; b++) {
+      const c = V.cmp(a, b);
+      if (c > 0) w += 1;
+      else if (c < 0) l += 1;
+    }
+    if (w !== 1 || l !== 1) return false;
+  }
+  return true;
+}
+
+/**
+ * 여럿이 할 때의 기본 규칙. 세 손 고리는 보통 규칙(rps), 손이 셋보다 많거나 고리가 아니면 점수(score).
+ * 손이 많으면 두 가지 손만 나올 일이 드물어 보통 규칙으로는 끝이 안 난다(RPS-101 에 셋이면 3%쯤만 승부가 난다)
+ */
+export function defaultGroupRule(V) {
+  return isThreeCycle(V) ? "rps" : "score";
+}
+
+/**
+ * 점수 규칙(score)의 점수: 사람마다 자기가 이긴 사람 수에서 자기를 이긴 사람 수를 뺀다.
+ * 같은 손을 낸 사람은 점수가 같아서 손마다 센다. 돌려주는 값: Map(손 → 점수)
+ */
+export function handScores(V, hands) {
+  const count = new Map();
+  for (const x of hands) count.set(x, (count.get(x) || 0) + 1);
+  const score = new Map();
+  for (const a of count.keys()) {
+    let s = 0;
+    for (const [b, n] of count) {
+      if (a === b) continue;
+      const c = V.cmp(a, b);
+      if (c > 0) s += n;
+      else if (c < 0) s -= n;
+    }
+    score.set(a, s);
+  }
+  return score;
+}
+
+/** 점수가 가장 높은(top) 손과 가장 낮은(bottom) 손. 그 점수를 낸 손이 하나일 때만 그 손, 아니면 null */
+function scoreEnds(V, hands) {
+  const score = handScores(V, hands);
+  if (score.size < 2) return { top: null, bottom: null };
+  const vals = [...score.values()];
+  const hi = Math.max(...vals);
+  const lo = Math.min(...vals);
+  if (hi === lo) return { top: null, bottom: null };
+  const at = (v) => {
+    const ks = [...score.keys()].filter((k) => score.get(k) === v);
+    return ks.length === 1 ? ks[0] : null;
+  };
+  return { top: at(hi), bottom: at(lo) };
+}
+
 /**
  * 여럿이 가위바위보. 0번이 나.
  * mode "survive": 이긴 손을 낸 사람만 남는다(마지막 한 명이 이긴다)
  * mode "loser":   진 손을 낸 사람만 남는다(마지막 한 명이 술래)
+ * rule 은 비워 두면 defaultGroupRule(V)(세 손 고리는 rps, 그 밖은 score)
  * rule "rps":      두 가지 손만 나오면 이긴 손이 이긴다(보통 규칙)
+ * rule "score":    사람마다 이긴 사람 수 − 진 사람 수. 점수가 가장 높은 손이 하나면 그 손이 이긴다.
+ *                  survive 는 그 손을 낸 사람만 남고, loser 는 점수가 가장 낮은 손이 하나일 때 그 손을 낸 사람만 남는다.
+ *                  그런 손이 둘 이상이거나 모두 점수가 같으면 다시 한다
  * rule "majority": 가장 많이 나온 손이 이긴다(多い勝ち). 가장 많은 손이 둘 이상이면 다시 한다
  * rule "minority": 가장 적게 나온 손이 이긴다(少ない勝ち). 가장 적은 손이 둘 이상이면 다시 한다
- *   많은 손·적은 손 규칙도 둘만 남으면 보통 가위바위보로 겨룬다. 모두 같은 손이면 다시 한다.
+ *   rps 가 아닌 규칙도 둘만 남으면 보통 가위바위보로 겨룬다. 모두 같은 손이면 다시 한다.
  * tie3 "scissors": 보통 규칙에서 세 가지 손이 다 나와 비기면 가위를 낸 사람이 이긴다(チョキじゃんけん). 기본은 "redo"(다시)
+ * 판마다 winnerHand(이긴 손, 하나로 정해질 때)와 loserHand(진 손, 하나로 정해질 때), out(빠진 사람)을 남긴다.
+ * 승부가 안 난 판은 out 이 비어 있다
  */
-export function createGroup(V, { players = 5, mode = "survive", rule = "rps", tie3 = "redo" } = {}) {
+export function createGroup(V, { players = 5, mode = "survive", rule = defaultGroupRule(V), tie3 = "redo" } = {}) {
   const g = {
     mode,
     rule,
@@ -27,10 +93,18 @@ export function createGroup(V, { players = 5, mode = "survive", rule = "rps", ti
     play(throwsByPlayer) {
       if (g.done) throw new Error("이미 끝났다");
       const hands = g.alive.map((p) => throwsByPlayer[p]);
-      const w = winningHand(V, hands, g.alive.length === 2 ? "rps" : rule, tie3);
-      const r = { alive: g.alive.slice(), throws: { ...throwsByPlayer }, winnerHand: w, out: [] };
-      if (w !== null) {
-        const keep = g.alive.filter((p) => (mode === "survive" ? throwsByPlayer[p] === w : throwsByPlayer[p] !== w));
+      const R = g.alive.length === 2 ? "rps" : rule;
+      const w = winningHand(V, hands, R, tie3);
+      const lo = losingHand(V, hands, R);
+      const r = { alive: g.alive.slice(), throws: { ...throwsByPlayer }, winnerHand: w, loserHand: lo, out: [] };
+      let keep = null;
+      if (R === "score") {
+        if (mode === "survive" && w !== null) keep = g.alive.filter((p) => throwsByPlayer[p] === w);
+        if (mode !== "survive" && lo !== null) keep = g.alive.filter((p) => throwsByPlayer[p] === lo);
+      } else if (w !== null) {
+        keep = g.alive.filter((p) => (mode === "survive" ? throwsByPlayer[p] === w : throwsByPlayer[p] !== w));
+      }
+      if (keep) {
         r.out = g.alive.filter((p) => !keep.includes(p));
         g.alive = keep;
       }
@@ -49,6 +123,7 @@ export function createGroup(V, { players = 5, mode = "survive", rule = "rps", ti
 export function winningHand(V, hands, rule = "rps", tie3 = "redo") {
   const kinds = [...new Set(hands)];
   if (kinds.length < 2) return null;
+  if (rule === "score") return scoreEnds(V, hands).top;
   if (rule === "rps") {
     const w = groupWinner(V, hands);
     if (w !== null) return w;
@@ -56,10 +131,23 @@ export function winningHand(V, hands, rule = "rps", tie3 = "redo") {
     return null;
   }
   const count = new Map();
-  for (const h of hands) count.set(h, (count.get(h) || 0) + 1);
+  for (const x of hands) count.set(x, (count.get(x) || 0) + 1);
   const target = rule === "majority" ? Math.max(...count.values()) : Math.min(...count.values());
-  const at = kinds.filter((h) => count.get(h) === target);
+  const at = kinds.filter((x) => count.get(x) === target);
   return at.length === 1 ? at[0] : null;
+}
+
+/**
+ * 진 손(번호). score 는 점수가 가장 낮은 손이 하나일 때 그 손, rps 는 두 가지 손만 나와 승부가 났을 때 다른 손.
+ * 그 밖(승부가 안 남, 많은 손·적은 손 규칙)은 null
+ */
+export function losingHand(V, hands, rule = "rps") {
+  const kinds = [...new Set(hands)];
+  if (kinds.length < 2) return null;
+  if (rule === "score") return scoreEnds(V, hands).bottom;
+  if (rule !== "rps" || kinds.length !== 2) return null;
+  const w = groupWinner(V, hands);
+  return w === null ? null : kinds.find((x) => x !== w);
 }
 
 /** 한 판 승부(비기면 다시)를 아무렇게나 내서 끝낸다. 던진 횟수도 센다 */

@@ -5,7 +5,20 @@ import assert from "node:assert/strict";
 import { CATALOG, findEntry } from "../web/js/data/catalog.js";
 import { compileVariant, groupWinner } from "../web/js/core/engine.js";
 import { setLang } from "../web/js/i18n.js";
-import { ONLINE_KINDS, onlineGames, groupBases, isOnlineGame, isOneHand, isGroupBase } from "../web/js/data/online.js";
+import {
+  ONLINE_KINDS,
+  onlineGames,
+  groupBases,
+  isOnlineGame,
+  isOneHand,
+  isGroupBase,
+  groupRuleOf,
+  seatRange,
+  MANY_HAND_GROUP,
+  GROUP_SEATS_MIN,
+  GROUP_SEATS_MAX,
+} from "../web/js/data/online.js";
+import { defaultGroupRule } from "../web/js/games/group.js";
 
 const oneHand = () => CATALOG.filter((e) => e.kind === "matrix").map((e) => e.id);
 
@@ -26,11 +39,20 @@ test("목록의 id 는 모두 도감에 있다", () => {
   assert.equal(findEntry("group").kind, "game");
 });
 
-test("여럿이 가위바위보 바탕은 손 셋 고리", () => {
+test("여럿이 바탕: 손 셋은 고리, 손이 더 많은 변종은 MANY_HAND_GROUP 을 켜면 열린다", () => {
   const bases = groupBases();
   assert.equal(bases[0], "classic");
   assert.deepEqual(bases, CATALOG.filter(isGroupBase).map((e) => e.id));
-  for (const id of bases) {
+  const three = oneHand().filter((id) => findEntry(id).hands.length === 3);
+  assert.deepEqual(groupBases({ manyHands: false }), three);
+  assert.deepEqual(groupBases({ manyHands: true }), oneHand(), "손 하나짜리 변종은 모두 여럿이 바탕이 될 수 있다");
+  assert.deepEqual(bases, MANY_HAND_GROUP ? oneHand() : three);
+  for (const id of groupBases({ manyHands: true })) {
+    const V = compileVariant(findEntry(id));
+    assert.equal(groupRuleOf(id), defaultGroupRule(V), `${id}: 화면이 보는 규칙과 판정이 쓰는 규칙이 같다`);
+    assert.equal(groupRuleOf(id), V.n === 3 ? "rps" : "score", id);
+  }
+  for (const id of three) {
     const V = compileVariant(findEntry(id));
     assert.equal(V.n, 3, id);
     for (let a = 0; a < 3; a++) {
@@ -45,6 +67,20 @@ test("여럿이 가위바위보 바탕은 손 셋 고리", () => {
     assert.ok(w === 0 || w === 1, id);
     assert.ok(V.cmp(w, w === 0 ? 1 : 0) > 0, id);
   }
+});
+
+test("여럿이 인원(seatRange)", () => {
+  assert.deepEqual(seatRange("classic"), { min: 3, max: 8 }, "손 셋은 8명이면 평균 12.1번, 9명이면 17.1번");
+  for (const id of groupBases({ manyHands: true })) {
+    const r = seatRange(id);
+    assert.equal(r.min, GROUP_SEATS_MIN, id);
+    assert.equal(r.max, groupRuleOf(id) === "rps" ? 8 : GROUP_SEATS_MAX, id);
+  }
+  assert.equal(seatRange("group"), null);
+  assert.equal(seatRange("mukjjippa"), null);
+  assert.equal(seatRange("nope"), null);
+  assert.equal(seatRange(3), null);
+  assert.equal(groupRuleOf("custom"), null);
 });
 
 test("isOnlineGame·isOneHand", () => {
