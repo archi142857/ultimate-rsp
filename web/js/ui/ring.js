@@ -47,34 +47,69 @@ export function createRing(V, { size = 360, mini = false, emoji = !mini && V.n <
   const edges = [];
   const arrowLen = mini ? 0 : Math.max(5, Math.min(10, nr * 0.45));
   const arrowW = arrowLen * 0.55;
+  /** 이기는 손 a → 지는 손 b 선의 자리: 시작점, 선 끝, 화살촉 세 점 */
+  function geo(a, b) {
+    const [x1, y1] = pos[a];
+    const [x2, y2] = pos[b];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const d = Math.hypot(dx, dy);
+    const ux = dx / d;
+    const uy = dy / d;
+    const tx = x2 - ux * (nr + 2);
+    const ty = y2 - uy * (nr + 2);
+    const bx = tx - ux * arrowLen;
+    const by = ty - uy * arrowLen;
+    return {
+      sx: x1 + ux * (nr + 1.5),
+      sy: y1 + uy * (nr + 1.5),
+      ex: tx - ux * arrowLen * 0.6,
+      ey: ty - uy * arrowLen * 0.6,
+      head: [tx, ty, bx - uy * arrowW, by + ux * arrowW, bx + uy * arrowW, by - ux * arrowW],
+    };
+  }
+  const headD = ([x0, y0, x1, y1, x2, y2], k) => `M${x0.toFixed(k)},${y0.toFixed(k)} L${x1.toFixed(k)},${y1.toFixed(k)} L${x2.toFixed(k)},${y2.toFixed(k)} Z`;
+
+  // 손이 26개부터는(RPS-101 은 선 5,050개) 선을 하나씩 그리면 요소가 수만 개라 그리기도 짚기도 무겁다.
+  // 그때는 이기는 손마다 선을 path 하나로 묶어 옅게 깔고, 짚은 손·한 판의 선과 화살촉은 그때그때 위에 덧그린다.
+  const huge = n > 25;
   for (let a = 0; a < n; a++) {
+    let d = "";
     for (let b = 0; b < n; b++) {
       if (!V.win[a][b]) continue;
-      const [x1, y1] = pos[a];
-      const [x2, y2] = pos[b];
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      const d = Math.hypot(dx, dy);
-      const ux = dx / d;
-      const uy = dy / d;
-      const sx = x1 + ux * (nr + 1.5);
-      const sy = y1 + uy * (nr + 1.5);
-      const tx = x2 - ux * (nr + 2);
-      const ty = y2 - uy * (nr + 2);
-      const g = s("g", { class: "edge", "data-a": a, "data-b": b, style: varsToStyle(handVars(V, a)) });
-      g.append(s("line", { x1: sx, y1: sy, x2: tx - ux * arrowLen * 0.6, y2: ty - uy * arrowLen * 0.6 }));
-      if (!mini) {
-        const bx = tx - ux * arrowLen;
-        const by = ty - uy * arrowLen;
-        g.append(
-          s("path", {
-            d: `M${tx.toFixed(2)},${ty.toFixed(2)} L${(bx - uy * arrowW).toFixed(2)},${(by + ux * arrowW).toFixed(2)} L${(bx + uy * arrowW).toFixed(2)},${(by - ux * arrowW).toFixed(2)} Z`,
-          }),
-        );
+      const e = geo(a, b);
+      if (huge) {
+        d += `M${e.sx.toFixed(1)},${e.sy.toFixed(1)}L${e.ex.toFixed(1)},${e.ey.toFixed(1)}`;
+        continue;
       }
+      const g = s("g", { class: "edge", "data-a": a, "data-b": b, style: varsToStyle(handVars(V, a)) });
+      g.append(s("line", { class: "ln", x1: e.sx, y1: e.sy, x2: e.ex, y2: e.ey }));
+      if (!mini) g.append(s("path", { class: "hd", d: headD(e.head, 2) }));
       edgesG.append(g);
       edges.push({ a, b, g });
     }
+    if (huge && d) edgesG.append(s("g", { class: "edge", "data-a": a, style: varsToStyle(handVars(V, a)) }, s("path", { class: "ln", d })));
+  }
+
+  // 손이 많을 때 덧그린 것: out(짚은 손이 이기는 선), in(짚은 손을 이기는 선), hit(한 판의 선)
+  const over = {};
+  let overFor = null; // out·in 을 그려 둔 손
+  function overlay(kind, pairs) {
+    over[kind]?.remove();
+    over[kind] = null;
+    if (!pairs.length) return;
+    let ln = "";
+    let hd = "";
+    for (const [a, b] of pairs) {
+      const e = geo(a, b);
+      ln += `M${e.sx.toFixed(1)},${e.sy.toFixed(1)}L${e.ex.toFixed(1)},${e.ey.toFixed(1)}`;
+      if (!mini) hd += headD(e.head, 1);
+    }
+    // 선 색(--c)은 이기는 손 것. in 은 손마다 다르지만 CSS 가 한 색(--ink-2)으로 그린다
+    const g = s("g", { class: `edge ${kind}`, style: kind === "in" ? null : varsToStyle(handVars(V, pairs[0][0])) }, s("path", { class: "ln", d: ln }));
+    if (hd) g.append(s("path", { class: "hd", d: hd }));
+    edgesG.append(g);
+    over[kind] = g;
   }
 
   const nodes = V.hands.map((hd) => {
@@ -100,7 +135,14 @@ export function createRing(V, { size = 360, mini = false, emoji = !mini && V.n <
     /** 손 하나를 짚는다: 이기는 선은 그 손 색, 지는 선은 진하게, 나머지는 옅게 */
     focus(i) {
       focus = i;
-      svg.classList.toggle("focused", i !== null && i !== undefined);
+      const on = i !== null && i !== undefined;
+      svg.classList.toggle("focused", on);
+      if (huge && overFor !== (on ? i : null)) {
+        overFor = on ? i : null;
+        const ok = on && !!V.hands[i];
+        overlay("out", ok ? V.beats(i).map((b) => [i, b]) : []);
+        overlay("in", ok ? V.beatenBy(i).map((k) => [k, i]) : []);
+      }
       for (const e of edges) {
         e.g.classList.toggle("out", i === e.a);
         e.g.classList.toggle("in", i === e.b);
@@ -116,10 +158,12 @@ export function createRing(V, { size = 360, mini = false, emoji = !mini && V.n <
       api.focus(null);
       svg.classList.add("bout");
       nodes.forEach((g, k) => g.classList.toggle("on", k === a || k === b));
+      if (huge) overlay("hit", V.win[a]?.[b] ? [[a, b]] : V.win[b]?.[a] ? [[b, a]] : []);
       for (const e of edges) e.g.classList.toggle("hit", (e.a === a && e.b === b) || (e.a === b && e.b === a));
     },
     clear() {
       svg.classList.remove("bout");
+      if (huge) overlay("hit", []);
       for (const e of edges) e.g.classList.remove("hit");
       api.focus(null);
     },

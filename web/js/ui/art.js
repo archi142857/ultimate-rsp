@@ -23,7 +23,7 @@ export function handArt(hand, cls = "") {
     return el;
   }
   el.classList.add("art-svg");
-  const img = h("img", { src: artUrl(hand), alt: "", draggable: "false", decoding: "async" });
+  const img = h("img", { src: artUrl(hand), alt: "", draggable: "false", decoding: "async", loading: "lazy" });
   // 그림을 못 읽으면 이모지로 돌아간다
   img.addEventListener("error", () => {
     el.classList.remove("art-svg");

@@ -432,30 +432,31 @@ main:focus-visible {
 .ring .node {
   --c: var(--cl);
 }
-.ring .edge line {
+.ring .edge .ln {
+  fill: none;
   stroke: var(--line-2);
   stroke-width: 1.5;
   stroke-linecap: round;
   transition: opacity 0.15s, stroke 0.15s;
 }
-.ring .edge path {
+.ring .edge .hd {
   fill: var(--line-2);
   transition: opacity 0.15s, fill 0.15s;
 }
-.ring-dense .edge line {
+.ring-dense .edge .ln {
   stroke-width: 1;
   opacity: 0.7;
 }
 /* 손이 많으면 화살촉이 꼭짓점마다 뭉친다. 짚거나 한 판을 겨룬 선에만 보인다 */
-.ring-dense .edge path {
+.ring-dense .edge .hd {
   opacity: 0;
 }
-.ring-dense .edge.out path,
-.ring-dense .edge.in path,
-.ring-dense .edge.hit path {
+.ring-dense .edge.out .hd,
+.ring-dense .edge.in .hd,
+.ring-dense .edge.hit .hd {
   opacity: 1;
 }
-.ring-huge .edge line {
+.ring-huge .edge .ln {
   stroke-width: 0.5;
   opacity: 0.16;
 }
@@ -463,15 +464,15 @@ main:focus-visible {
   fill: var(--c);
   stroke: none;
 }
-.ring-huge.focused .edge.out line {
+.ring-huge.focused .edge.out .ln {
   stroke-width: 1;
   opacity: 0.9;
 }
-.ring-huge.focused .edge.in line {
+.ring-huge.focused .edge.in .ln {
   stroke-width: 0.6;
   opacity: 0.6;
 }
-.ring-huge.bout .edge.hit line {
+.ring-huge.bout .edge.hit .ln {
   stroke-width: 2.5;
   opacity: 1;
 }
@@ -501,18 +502,18 @@ main:focus-visible {
 .ring.focused .edge.in {
   opacity: 1;
 }
-.ring.focused .edge.out line {
+.ring.focused .edge.out .ln {
   stroke: var(--c);
   stroke-width: 2.5;
 }
-.ring.focused .edge.out path {
+.ring.focused .edge.out .hd {
   fill: var(--c);
 }
-.ring.focused .edge.in line {
+.ring.focused .edge.in .ln {
   stroke: var(--ink-2);
   stroke-width: 1.25;
 }
-.ring.focused .edge.in path {
+.ring.focused .edge.in .hd {
   fill: var(--ink-2);
 }
 .ring.focused .node {
@@ -532,11 +533,11 @@ main:focus-visible {
 .ring.bout .edge.hit {
   opacity: 1;
 }
-.ring.bout .edge.hit line {
+.ring.bout .edge.hit .ln {
   stroke: var(--c);
   stroke-width: 3;
 }
-.ring.bout .edge.hit path {
+.ring.bout .edge.hit .hd {
   fill: var(--c);
 }
 .ring.bout .node {
@@ -545,7 +546,7 @@ main:focus-visible {
 .ring.bout .node.on {
   opacity: 1;
 }
-.ring-mini .edge line {
+.ring-mini .edge .ln {
   stroke: var(--c);
   stroke-width: 1.1;
   opacity: 0.55;
@@ -554,7 +555,7 @@ main:focus-visible {
   fill: var(--c);
   stroke: none;
 }
-.ring-mini.ring-dense .edge line {
+.ring-mini.ring-dense .edge .ln {
   stroke-width: 0.6;
   opacity: 0.5;
 }
@@ -563,7 +564,7 @@ main:focus-visible {
   stroke: var(--c);
   stroke-width: 2.5;
 }
-.ring-mini-emo .edge line {
+.ring-mini-emo .edge .ln {
   stroke: var(--line-2);
   stroke-width: 1.5;
   opacity: 1;
@@ -2625,6 +2626,8 @@ button.shogi-drop {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 2px 4px 6px 2px;
+  /* 위 글(판 결과 등)의 높이가 바뀌어 밀려도 손 그림 101장을 다시 그리지 않게 따로 층을 둔다 */
+  will-change: transform;
 }
 .hands-huge .hand {
   padding: 8px 2px 7px;
@@ -2638,6 +2641,9 @@ button.shogi-drop {
   overflow-wrap: normal;
 }
 .ringlist {
+  /* 손 101개 차례(그림 101장): 화면 밖이면 그리지 않는다 */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1400px;
   margin: 12px 0 0;
   padding: 0;
   columns: 9.5em auto;
