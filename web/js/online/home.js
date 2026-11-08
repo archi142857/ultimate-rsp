@@ -122,7 +122,7 @@ export function onlineHomeView(main, params = {}) {
     if (code) location.hash = `#/room/${code}`;
     else {
       codeInput.setAttribute("aria-invalid", "true");
-      notices.set("note", { title: t("방 코드는 {n}글자다. 받은 코드를 다시 확인해 주세요.", { n: CODE_LEN.room }) });
+      notices.set("note", { title: t("방 코드는 {n}글자다. 받은 코드를 다시 확인하자.", { n: CODE_LEN.room }) });
     }
   });
   codeInput.addEventListener("input", () => {
@@ -179,7 +179,7 @@ export function onlineHomeView(main, params = {}) {
     chip.setRanked(on);
   }
   async function check() {
-    notices.set("wait", { title: t("서버에 잇는 중…"), text: t("잠깐이면 된다."), spin: true });
+    notices.set("wait", { title: t("서버에 연결하는 중…"), text: t("잠깐이면 된다."), spin: true });
     notices.clear("limit", "drop", "update");
     try {
       await hello({ signal: ctl.signal });

@@ -40,7 +40,7 @@ export function myChallengesView(main) {
       bigTitle(t("@list:내 도전장")),
       rows ? h("section", { class: "o-card" }, rows) : h("p", { class: "o-p" }, t("아직 만들거나 받은 도전장이 없다.")),
       h("div", { class: "o-actions" }, h("a", { class: "btn btn-ink btn-big", href: "#/c/new" }, t("도전장 쓰기"))),
-      h("p", { class: "o-p o-small" }, t("이 브라우저에만 남는다. 결과는 도전장을 열어 봐야 알 수 있다.")),
+      h("p", { class: "o-p o-small" }, t("이 목록은 이 브라우저에만 저장된다. 결과는 도전장을 열어야 보인다.")),
     ),
   );
   return {};

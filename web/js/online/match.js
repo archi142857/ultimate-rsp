@@ -166,7 +166,7 @@ export function matchView(main, params = {}) {
   function onStatus(st) {
     if (st.state === "open") notices.clear("drop", "wait");
     else if (st.state === "connecting") {
-      if (!since) notices.set("wait", { title: t("서버에 잇는 중…"), text: t("잠깐이면 된다."), spin: true });
+      if (!since) notices.set("wait", { title: t("서버에 연결하는 중…"), text: t("잠깐이면 된다."), spin: true });
     } else if (st.state === "retrying") {
       notices.clear("wait");
       if (since) notices.set("drop", { title: t("연결이 끊겼다"), text: t("다시 잇는 중… 화면을 닫지 마세요."), spin: true });

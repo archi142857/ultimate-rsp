@@ -153,7 +153,7 @@ export function linkBox(url, { title, text, showUrl = true, copyLabel = t("링�
     timer = setTimeout(() => (done.textContent = ""), 3000);
   };
   const copy = h("button", { type: "button", class: "btn btn-ink" }, copyLabel);
-  copy.addEventListener("click", async () => say((await copyText(url, input)) ? t("복사했다.") : t("복사하지 못했다. 링크를 길게 눌러 복사해 주세요.")));
+  copy.addEventListener("click", async () => say((await copyText(url, input)) ? t("복사했다.") : t("복사하지 못했다. 링크를 길게 눌러 복사하면 된다.")));
   const canShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const share = canShare
     ? h("button", { type: "button", class: "btn", onclick: () => navigator.share({ title, text, url }).catch(() => {}) }, t("공유하기"))

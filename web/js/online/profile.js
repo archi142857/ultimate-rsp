@@ -67,7 +67,7 @@ export function profileChip({ align = "start", ranked = false, onChange = null }
   const save = h("button", { type: "submit", class: "btn btn-ink" }, t("저장"));
   const note = h("p", { class: "o-p o-small", id: `${id}-note` });
   const setRanked = (on) => {
-    note.textContent = on ? t("가입은 없다. 이 브라우저에만 남고, 상대와 순위표에 이 이름과 그림이 보인다.") : t("가입은 없다. 이 브라우저에만 남고, 상대에게 이 이름과 그림이 보인다.");
+    note.textContent = on ? t("가입은 필요 없다. 이름과 그림은 이 브라우저에 저장되고, 상대와 순위표에 보인다.") : t("가입은 필요 없다. 이름과 그림은 이 브라우저에 저장되고, 상대에게 보인다.");
   };
   setRanked(ranked);
   // 그림: 지금 입력한 이름으로 '자동' 칸을 그린다

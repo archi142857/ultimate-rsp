@@ -14,19 +14,19 @@ export function resetTime(now = new Date()) {
 export function errorText(code) {
   switch (code) {
     case "offline":
-      return t("인터넷에 이어져 있지 않다. 연결을 확인해 주세요.");
+      return t("인터넷에 연결되어 있지 않다. 연결을 확인하자.");
     case "timeout":
-      return t("서버가 답하지 않는다. 잠시 뒤에 다시 해 보세요.");
+      return t("서버가 응답하지 않는다. 잠시 뒤 다시 해 보자.");
     case "version":
-      return t("화면과 서버의 버전이 다르다. 새로고침해 주세요.");
+      return t("화면과 서버 버전이 다르다. 새로고침하면 된다.");
     case "bad_reply":
     case "bad_request":
     case "bad_pid":
-      return t("서버와 말이 맞지 않았다. 새로고침해 주세요.");
+      return t("서버와 데이터를 주고받다가 오류가 났다. 새로고침하면 된다.");
     case "origin":
-      return t("이 주소에서는 온라인 대전을 쓸 수 없다.");
+      return t("이 주소에서는 온라인 대전을 할 수 없다.");
     case "bad_name":
-      return t("이 이름은 쓸 수 없다. 온라인 첫 화면에서 이름을 바꿔 주세요.");
+      return t("이 이름은 쓸 수 없다. 온라인 첫 화면에서 이름을 바꾸면 된다.");
     case "not_found":
       return t("도전장을 찾지 못했다. 링크가 틀렸거나 기한이 지나 지워졌다.");
     case "closed":
@@ -40,10 +40,10 @@ export function errorText(code) {
     case "bad_hand":
       return t("그 손은 이 게임에 없다.");
     case "too_fast":
-      return t("너무 자주 보냈다. 잠시 뒤에 다시 해 보세요.");
+      return t("너무 자주 보냈다. 잠시 뒤 다시 해 보자.");
     default:
       // network·busy·server·http_5xx: 서버가 꺼졌거나 하루 한도에 닿았다(규약 5장: 모두 busy 처럼 안내)
-      return t("서버에 닿지 않는다. 잠시 뒤에 다시 해 보세요. 하루 무료 한도를 넘었다면 {time}에 풀린다.", { time: resetTime() });
+      return t("서버에 연결할 수 없다. 잠시 뒤 다시 해 보자. 하루 무료 한도를 넘었다면 {time}에 풀린다.", { time: resetTime() });
   }
 }
 
@@ -54,9 +54,9 @@ export function errorText(code) {
 export function noticeFor(code) {
   switch (code) {
     case "offline":
-      return { kind: "drop", title: t("인터넷에 이어져 있지 않다"), text: t("연결을 확인해 주세요.") };
+      return { kind: "drop", title: t("인터넷에 연결되어 있지 않다"), text: t("연결을 확인하자.") };
     case "version":
-      return { kind: "update", title: t("새 판이 나왔다"), text: t("새로고침하면 바뀐다.") };
+      return { kind: "update", title: t("새 버전이 나왔다"), text: t("새로고침하면 바뀐다.") };
     case "timeout":
     case "network":
     case "busy":
@@ -69,8 +69,8 @@ export function noticeFor(code) {
 
 const limitNotice = () => ({
   kind: "limit",
-  title: t("지금은 서버에 닿지 않는다"),
-  text: t("오늘 한도가 찼거나 잠깐 쉬는 중이다. 한도는 {time}에 풀린다. 혼자 하기는 된다.", { time: resetTime() }),
+  title: t("지금은 서버에 연결할 수 없다"),
+  text: t("오늘 무료 한도가 찼거나 서버가 잠시 멈췄다. 한도는 {time}에 풀린다. 혼자 하기는 그대로 된다.", { time: resetTime() }),
 });
 
 /** 방 WebSocket 의 {t:"error"} (연결은 그대로) */
@@ -97,17 +97,17 @@ export function closeText(code) {
     case CLOSE.not_found:
       return t("방을 찾지 못했다. 코드가 틀렸거나 방이 지워졌다.");
     case CLOSE.replaced:
-      return t("다른 창에서 같은 방에 들어가서 여기는 닫았다.");
+      return t("다른 창에서 이 방에 들어가서 이 창은 연결을 끊었다.");
     case CLOSE.deleted:
       return t("방이 지워졌다.");
     case CLOSE.full:
-      return t("방에 사람이 너무 많다. 잠시 뒤에 다시 해 보세요.");
+      return t("방에 사람이 너무 많다. 잠시 뒤 다시 해 보자.");
     case CLOSE.version:
       return errorText("version");
     case CLOSE.origin:
       return errorText("origin");
     case CLOSE.bad_request:
-      return t("이름이나 주소가 맞지 않아 들어가지 못했다. 온라인 첫 화면에서 이름을 확인해 주세요.");
+      return t("이름이나 주소가 잘못돼 들어가지 못했다. 온라인 첫 화면에서 이름을 확인하자.");
     default:
       return errorText("network");
   }
