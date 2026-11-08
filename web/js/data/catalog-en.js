@@ -28,6 +28,17 @@ export const EN_HANDS = {
   ninja: { name: "Ninja" },
   stick: { name: "Stick" },
   chicken: { name: "Chicken" },
+  giant: { name: "Giant" },
+  wizard: { name: "Wizard" },
+  elf: { name: "Elf" },
+  grandma: { name: "Granny" },
+  warrior: { name: "Warrior" },
+  mosquito: { name: "Mosquito" },
+  handshake: { name: "Handshake" },
+  fistbump: { name: "Fist bump" },
+  hug: { name: "Hug" },
+  pirate: { name: "Pirate" },
+  zombie: { name: "Zombie" },
   // 손을 더한 꼴
   well: { name: "Well" },
   dynamite: { name: "Dynamite" },
@@ -262,6 +273,10 @@ export const EN_CATEGORIES = {
     title: "Games built on RPS",
     blurb: "Rock paper scissors with more rules on top: swap attack and defense, throw two hands, climb the stairs.",
   },
+  cousin: {
+    title: "RPS cousins",
+    blurb: "Coins, dice, finger counts, or soldiers instead of hands. There's never a move that always wins, and every move has one that beats it.",
+  },
   group: {
     title: "Group games",
     blurb: "Three or more people play at once. Join in or watch a crowd play.",
@@ -368,6 +383,75 @@ export const EN_ENTRIES = {
     ],
     verbs: { "stick>tiger": "clubs", "tiger>chicken": "eats", "chicken>stick": "pecks apart" },
   },
+  giantwizardelf: {
+    name: "Giants, Wizards, Elves",
+    origin: "Group game in English-speaking countries",
+    about: [
+      "Scouts and PE classes play this as a team game. Each team secretly picks one and everyone throws it together. The losing team runs back to its line while the winners chase. Anyone tagged joins the other team.",
+      "Giants squash elves, elves outsmart wizards, and wizards zap giants. Some write-ups run the cycle the other way.",
+    ],
+    how: {
+      giant: "Stand on your toes with both arms high",
+      wizard: "Lean back and point your fingers to cast a spell",
+      elf: "Curl up small like a ball",
+    },
+    verbs: { "giant>elf": "squashes", "elf>wizard": "outsmarts", "wizard>giant": "zaps" },
+  },
+  grandmawarriordragon: {
+    name: "Granny, Warrior, Dragon",
+    sub: "Oma, Krieger, Drache",
+    origin: "Germany",
+    about: [
+      "Two teams stand 3 to 4 meters apart and secretly pick one. Anyone caught moves to the other team, and the game ends when a team runs out of players.",
+      "The dragon eats the granny, the granny scolds the warrior into giving up, and the warrior slays the dragon. Like the samurai in Toraken, a hero who beats a dragon still loses to a scolding.",
+    ],
+    how: {
+      grandma: "Wag your index finger and turn in a circle",
+      warrior: "Take a fighting stance and swing your sword",
+      dragon: "Spread your arms and roar as loud as you can",
+    },
+    verbs: { "dragon>grandma": "eats", "grandma>warrior": "scolds", "warrior>dragon": "slays" },
+  },
+  bearfishmosquito: {
+    name: "Bear, Fish, Mosquito",
+    origin: "Calgary, Canada",
+    about: [
+      "The City of Calgary shares it as rock paper scissors with local animals. PE classes in the US use it as a warm-up.",
+      "The bear catches the fish, the fish eats the mosquito, and the mosquito bites the bear. The smallest beats the biggest.",
+    ],
+    how: {
+      bear: "Raise both hands with your fingers curled like claws",
+      fish: "Put your palms together and wiggle them like a fish",
+      mosquito: "Point your index finger out",
+    },
+    verbs: { "bear>fish": "catches", "fish>mosquito": "eats", "mosquito>bear": "bites" },
+  },
+  greetings: {
+    name: "Handshake, Fist Bump, Hug",
+    sub: "Wow, this is awkward!",
+    origin: "US youth groups",
+    about: [
+      "Stand back to back, count to three, then turn around offering a greeting. The loser has to do the winner's greeting, and both say \"Wow, this is awkward!\"",
+      "A handshake beats a fist bump, a fist bump beats a hug, and a hug beats a handshake. Winners play winners until one is left.",
+    ],
+    how: { handshake: "Hold out your hand to shake", fistbump: "Hold out your fist", hug: "Open your arms wide" },
+    verbs: { "handshake>fistbump": "wraps up", "fistbump>hug": "holds off", "hug>handshake": "swallows up" },
+  },
+  reverse: {
+    name: "Reverse Rock Paper Scissors",
+    sub: "じゃんぽんけん",
+    origin: "Japan",
+    about: [
+      "Winning and losing are flipped. The hand that usually loses wins. Draws stay the same.",
+      "The hands look the same, so think of the usual winner, then flip it once more.",
+    ],
+    verbs: {},
+    phrases: {
+      "scissors>rock": "Scissors win by getting crushed by rock",
+      "rock>paper": "Rock wins by getting covered by paper",
+      "paper>scissors": "Paper wins by getting cut by scissors",
+    },
+  },
   well: {
     name: "Well",
     sub: "Pierre-papier-ciseaux-puits",
@@ -438,6 +522,27 @@ export const EN_ENTRIES = {
       "spock>scissors": "breaks",
       "rock>scissors": "crushes",
       "rock>lizard": "squashes",
+    },
+  },
+  moropinzee: {
+    name: "Monkey, Robot, Pirate, Ninja, Zombie",
+    sub: "Monkey-Robot-Pirate-Ninja-Zombie",
+    origin: "Writer Mark Rayner (2010)",
+    about: [
+      "Writer Mark Rayner posted it on his blog in 2010. Each hand beats two and loses to two.",
+      "There's only one way for five hands to each beat two, so it plays exactly like Rock Paper Scissors Lizard Spock. Lay the two rings on top of each other and only the hands' places differ.",
+    ],
+    verbs: {
+      "monkey>ninja": "fools",
+      "monkey>robot": "unplugs",
+      "robot>ninja": "chokes",
+      "robot>zombie": "crushes",
+      "pirate>robot": "drowns",
+      "pirate>monkey": "skewers",
+      "ninja>pirate": "karate chops",
+      "ninja>zombie": "slices",
+      "zombie>pirate": "eats",
+      "zombie>monkey": "mauls",
     },
   },
   rps7: { name: "RPS-7", origin: "David C. Lovelace", about: ["Lovelace added fire, sponge, air, and water to rock, paper, and scissors. Each hand beats three and loses to three."] },
@@ -586,6 +691,130 @@ export const EN_ENTRIES = {
       "Even with equal numbers at the start, a different hand wins each time. Once one kind disappears, the winner of the remaining two takes the whole board, so victory goes to the hand whose predator disappears first.",
     ],
   },
+  hammer: {
+    name: "Hammer and Helmet",
+    sub: "たたいて・かぶって・ジャンケンポン",
+    origin: "Japan",
+    about: [
+      "The winner of rock paper scissors bops the other on the head with a squeaky toy hammer, and the loser grabs a helmet as fast as they can. If the helmet comes first, it's blocked, and you go back to rock paper scissors.",
+      "Land a hit before the block and you score. First to 3 wins. In this app, the winner taps Hit and the loser taps Block, and whoever taps first decides it.",
+    ],
+  },
+  donpappa: {
+    name: "Don Pappa",
+    sub: "ドンパッパ, グリンピース",
+    origin: "Western Japan",
+    about: [
+      "Rock is gurin, scissors is chirin, and paper is parin (グリン, チリン, パリン). Rock paper scissors decides who leads. The leader calls 'this hand, this hand, next hand' and throws three times, and the other player throws along to the beat.",
+      "If the third hands match, whoever shouts 'Don!' first wins. If not, the lead switches. It's a cousin of muk-jji-ppa, but a match goes to the faster shout. In the Kansai region, shouting before the hands match loses.",
+    ],
+  },
+  relay: {
+    name: "RPS Relay",
+    sub: "どんじゃんけん, Hoop Hop Showdown",
+    origin: "Japan, US PE classes",
+    about: [
+      "Two teams start at bases at either end of a path. One player from each side runs out, and when they meet they play rock paper scissors. The winner keeps going, and the losing team sends its next player from base. Reach the other team's base to win.",
+      "FiveThirtyEight's puzzle column, the Riddler, built a puzzle on this game. Counting 1 second per step and 1 second per throw under this app's rules, an 8-space path takes about 2 minutes on average.",
+    ],
+  },
+  ecard: {
+    name: "Emperor and Slave",
+    sub: "E-Card",
+    origin: "Japanese manga",
+    about: [
+      "The emperor beats the citizen, the citizen beats the slave, and the slave beats the emperor. Two citizens draw. The emperor side holds 1 emperor and 4 citizens, the slave side holds 1 slave and 4 citizens, and both play one card at a time.",
+      "Play 12 rounds and switch sides every 3. A slave-side win is worth 4 points, an emperor-side win 1. With best play the slave side wins one round in five, so 4 points makes both sides even. It cuts E-Card from the manga Kaiji down to a two-player game. In the manga, a slave-side win pays five times as much.",
+    ],
+  },
+  shogi: {
+    name: "RPS Shogi",
+    sub: "じゃんけん将棋",
+    origin: "Based on a Japanese app",
+    about: [
+      "Rock, paper, scissors, and king pieces go on a board 3 wide and 4 tall. A piece can only capture an enemy piece it beats at rock paper scissors. The king captures anything and can be captured by anything. When two of the same piece meet, the mover climbs on top, and the piece underneath can't move.",
+      "Captured pieces join your side, and on your turn you can drop one on an empty square instead of moving. Capture the enemy king to win. Rock moves one step straight, scissors one step diagonally, and paper one step to the three squares ahead or to either side. This app's rules are its own, based on the Japanese app じゃんけん将棋.",
+    ],
+  },
+  penney: {
+    name: "Penney's Game",
+    origin: "Walter Penney (1969)",
+    about: [
+      "Each player picks a run of three coin flips, like heads-heads-tails. Flip a coin over and over, and whoever's run shows up first wins.",
+      "The second picker always has the edge. Flip the middle of the other run, put it in front, and add the first two of the other run. Against heads-heads-heads, tails-heads-heads wins 7 times in 8. Every run has one that beats it, so the runs form a cycle like rock paper scissors.",
+    ],
+  },
+  dice: {
+    name: "Strange Dice",
+    sub: "Efron dice, Grime dice",
+    origin: "Bradley Efron, James Grime",
+    about: [
+      "Each die has different numbers. Efron's four dice go A over B, B over C, C over D, and D over A, 2 times in 3. So if the other player picks first, you can always pick a die that beats theirs.",
+      "Grime's five dice form two cycles when you roll one each, and when you roll two each and compare sums, one of the cycles runs backward. Warren Buffett once tried to bet Bill Gates with dice like these.",
+    ],
+  },
+  morra: {
+    name: "Morra",
+    sub: "Morra, 划拳",
+    origin: "Ancient Rome, China",
+    about: [
+      "Both players show 0 to 5 fingers at once and call out the total. If only one calls it right, they score. If both or neither do, nobody scores. First to 3 wins.",
+      "People played it in ancient Rome, and in China it's a drinking game called huaquan (划拳). There's also odds and evens: one side takes odd, the other even, and the total decides.",
+    ],
+  },
+  blotto: {
+    name: "Colonel Blotto",
+    origin: "Émile Borel (1921)",
+    about: [
+      "Both players secretly split 10 soldiers across 3 battlefields. Whoever sends more to a field takes it, and whoever takes more fields wins the round. First to win 3 rounds wins the match.",
+      "With enough soldiers, no split always wins. Spread them evenly and you lose to a split with a few more on two fields. Stack them and you give up the rest. The computer splits close to the best mix.",
+    ],
+  },
+  majority: {
+    name: "Majority Wins",
+    sub: "多い勝ち, 少ない勝ち",
+    origin: "Japan",
+    about: [
+      "Three or more throw at once, and whoever threw the most common hand stays in. There's also minority wins, where the least common hand stays. If two hands tie for most or least, throw again.",
+      "Minority wins keeps people from teaming up ahead of time. Repeating it until one player is left, called gamer janken, is a common way to pick who goes first in board games. With two left, finish with regular rock paper scissors.",
+    ],
+  },
+  choki: {
+    name: "Scissors Break Ties",
+    sub: "チョキじゃんけん",
+    origin: "Japan",
+    about: [
+      "In a group, if rock, paper, and scissors all show up and it's a draw, the players who threw scissors win. Everything else works like group rock paper scissors.",
+      "Group rock paper scissors gets harder to settle as the group grows. With 8 people, about nine throws in ten have to be redone. This rule means fewer redos, but the bigger the group, the more scissors is worth.",
+    ],
+  },
+  host: {
+    name: "Beat the Host",
+    sub: "審判方式",
+    origin: "Japan, a ZEP mini game",
+    about: [
+      "The host picks a hand first, then everyone throws. Lose to the host and you're out. Win and you get 10 points, draw and you get 5, and either way you stay. It ends when one player is left or after 10 rounds.",
+      "If two or more make it to the end, the highest score wins. That's how the rock paper scissors mini game in the ZEP metaverse scores it. If everyone left loses, this app throws the round out.",
+    ],
+  },
+  teamtag: {
+    name: "RPS Team Tag",
+    sub: "Rock Paper Scissors Tag",
+    origin: "PE classes in English-speaking countries",
+    about: [
+      "Two teams each secretly pick one hand and throw it together. The winning team chases, and the losing team runs back to its line. Anyone tagged joins the other team.",
+      "It ends when everyone is on one team. Giants, Wizards, Elves and Granny, Warrior, Dragon are played this way too. In this app, each player on the losing team has a 50 percent chance of getting caught, and after 20 rounds the bigger team wins.",
+    ],
+  },
+  teamsplit: {
+    name: "Picking Teams",
+    sub: "グーパー, Korean 'eopeora dwijibeora'",
+    origin: "Japan, Korea",
+    about: [
+      "Everyone throws rock or paper, and the same hands make a team. Throw again until the teams are even. Japan's uraomote (palms up or down) and Korea's eopeora dwijibeora work the same way.",
+      "When 10 people throw at random, a 5 to 5 split comes up about 1 time in 4, so it takes about four throws. The chant changes from place to place.",
+    ],
+  },
 };
 
 /** 한국어 제목인 출처의 영어 제목(주소로 찾는다) */
@@ -597,6 +826,10 @@ export const EN_SOURCES = {
   "https://www.umop.com/rps101/alloutcomes.htm": "David C. Lovelace, all 5,050 RPS-101 outcomes",
   "https://tvreport.co.kr/movie/article/871051/": "TV Report, Squid Game 2 preview (in Korean)",
   "https://thetvdb.com/series/kaiji/episodes/357041": "TVDB, Kaiji: Ultimate Survivor episode 1 synopsis",
+  "https://docs.channel.io/zep-guide/ko/articles/%EA%B0%80%EC%9C%84%EB%B0%94%EC%9C%84%EB%B3%B4-f03cf86c": "ZEP official guide, Rock paper scissors (in Korean)",
+  "https://thewiki.kr/w/%EC%9F%8C%EC%BC%84": "thewiki, Rock paper scissors (in Korean)",
+  "https://academy.prompie.com/communities/posts/%EC%9D%B4%EA%B1%B4-%EC%A7%80%EC%97%AD%EB%A7%88%EB%8B%A4-%EB%8B%A4%EB%A5%B8%EA%B1%B0%EB%9D%BC%EB%8A%94%EB%8D%B0-9hi8giQr/":
+    "prompie, team-picking chants by region (in Korean)",
   "https://koreascience.or.kr/article/JAKO201919341608265.pdf":
     "Cho Dae-hyun, A rock paper scissors game between two teams (Korean Journal of Applied Statistics, 2019, in Korean)",
 };

@@ -14,9 +14,11 @@ export function isOneHand(entry) {
 /**
  * 여럿이 가위바위보의 바탕이 될 수 있는 변종: 손이 셋인 matrix.
  * 도감의 손 셋 변종은 모두 세 손 고리(손마다 하나를 이기고 하나에 진다)라 groupWinner 가 그대로 맞는다.
+ * group: false 인 변종은 아직 바탕에 넣지 않는다(11-08 에 더한 다섯 가지. 서버·화면 시험이 바탕 8가지를 세고 있어서,
+ * 그 시험을 공용 목록 길이로 바꾼 뒤 연다).
  */
 export function isGroupBase(entry) {
-  return isOneHand(entry) && entry.hands.length === 3;
+  return isOneHand(entry) && entry.hands.length === 3 && entry.group !== false;
 }
 
 const oneHandIds = () => CATALOG.filter(isOneHand).map((e) => e.id);

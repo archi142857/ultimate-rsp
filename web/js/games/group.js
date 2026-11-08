@@ -7,10 +7,17 @@ import { t } from "../i18n.js";
  * 여럿이 가위바위보. 0번이 나.
  * mode "survive": 이긴 손을 낸 사람만 남는다(마지막 한 명이 이긴다)
  * mode "loser":   진 손을 낸 사람만 남는다(마지막 한 명이 술래)
+ * rule "rps":      두 가지 손만 나오면 이긴 손이 이긴다(보통 규칙)
+ * rule "majority": 가장 많이 나온 손이 이긴다(多い勝ち). 가장 많은 손이 둘 이상이면 다시 한다
+ * rule "minority": 가장 적게 나온 손이 이긴다(少ない勝ち). 가장 적은 손이 둘 이상이면 다시 한다
+ *   많은 손·적은 손 규칙도 둘만 남으면 보통 가위바위보로 겨룬다. 모두 같은 손이면 다시 한다.
+ * tie3 "scissors": 보통 규칙에서 세 가지 손이 다 나와 비기면 가위를 낸 사람이 이긴다(チョキじゃんけん). 기본은 "redo"(다시)
  */
-export function createGroup(V, { players = 5, mode = "survive" } = {}) {
+export function createGroup(V, { players = 5, mode = "survive", rule = "rps", tie3 = "redo" } = {}) {
   const g = {
     mode,
+    rule,
+    tie3,
     players,
     alive: Array.from({ length: players }, (_, i) => i),
     rounds: [],
@@ -20,7 +27,7 @@ export function createGroup(V, { players = 5, mode = "survive" } = {}) {
     play(throwsByPlayer) {
       if (g.done) throw new Error("이미 끝났다");
       const hands = g.alive.map((p) => throwsByPlayer[p]);
-      const w = groupWinner(V, hands);
+      const w = winningHand(V, hands, g.alive.length === 2 ? "rps" : rule, tie3);
       const r = { alive: g.alive.slice(), throws: { ...throwsByPlayer }, winnerHand: w, out: [] };
       if (w !== null) {
         const keep = g.alive.filter((p) => (mode === "survive" ? throwsByPlayer[p] === w : throwsByPlayer[p] !== w));
@@ -36,6 +43,23 @@ export function createGroup(V, { players = 5, mode = "survive" } = {}) {
     },
   };
   return g;
+}
+
+/** 여럿이 낸 손에서 이긴 손(번호)을 찾는다. 승부가 안 나면 null. 이긴 손을 모두가 냈으면 승부가 안 난 것이다 */
+export function winningHand(V, hands, rule = "rps", tie3 = "redo") {
+  const kinds = [...new Set(hands)];
+  if (kinds.length < 2) return null;
+  if (rule === "rps") {
+    const w = groupWinner(V, hands);
+    if (w !== null) return w;
+    if (tie3 === "scissors" && kinds.length === 3 && V.n === 3 && "scissors" in V.index) return V.index.scissors;
+    return null;
+  }
+  const count = new Map();
+  for (const h of hands) count.set(h, (count.get(h) || 0) + 1);
+  const target = rule === "majority" ? Math.max(...count.values()) : Math.min(...count.values());
+  const at = kinds.filter((h) => count.get(h) === target);
+  return at.length === 1 ? at[0] : null;
 }
 
 /** 한 판 승부(비기면 다시)를 아무렇게나 내서 끝낸다. 던진 횟수도 센다 */

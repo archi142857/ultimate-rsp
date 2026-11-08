@@ -145,6 +145,11 @@ const CATEGORIES_KO = [
     blurb: "가위바위보 한 판에 규칙을 더 얹었다. 공격과 수비를 바꾸고, 두 손을 내고, 계단을 오른다.",
   },
   {
+    id: "cousin",
+    title: "가위바위보를 닮은 놀이",
+    blurb: "손 대신 동전, 주사위, 손가락 수, 병사로 겨룬다. 늘 이기는 수가 없고, 어떤 수에도 그걸 이기는 수가 있다.",
+  },
+  {
     id: "group",
     title: "여럿이 하는 놀이",
     blurb: "셋 이상이 한꺼번에 가위바위보를 한다. 직접 하거나 여러 사람이 하는 모습을 지켜본다.",
@@ -368,6 +373,134 @@ const CATALOG_KO = [
     ],
     sources: [{ t: "USC Digital Folklore Archives, Game – China", u: "https://folklore.usc.edu/game-china/" }],
   },
+  {
+    id: "giantwizardelf",
+    kind: "matrix",
+    cat: "three",
+    group: false,
+    name: "거인·마법사·요정",
+    sub: "Giants, Wizards, Elves",
+    origin: "영미권 단체 놀이",
+    hands: [
+      { id: "giant", name: "거인", emoji: "🧌", how: "발끝으로 서서 두 팔을 높이 든다" },
+      { id: "wizard", name: "마법사", emoji: "🧙", how: "몸을 뒤로 젖히고 손가락을 뻗어 주문을 건다" },
+      { id: "elf", name: "요정", emoji: "🧝", how: "공처럼 몸을 웅크린다" },
+    ],
+    order: ["giant", "elf", "wizard"],
+    rel: [
+      ["giant", "elf", "밟는다"],
+      ["elf", "wizard", "속인다"],
+      ["wizard", "giant", "마법으로 묶는다"],
+    ],
+    about: [
+      "스카우트와 체육 수업에서 하는 단체 놀이다. 두 편이 몰래 하나를 정해 다 같이 낸다. 진 편은 제 선으로 달아나고 이긴 편이 잡으러 간다. 잡히면 상대 편이 된다.",
+      "거인은 요정을 밟고, 요정은 마법사를 속이고, 마법사는 거인을 마법으로 묶는다. 방향을 거꾸로 적은 자료도 있다.",
+    ],
+    sources: [
+      { t: "Scouts, Giants, wizards and elves", u: "https://www.scouts.org.uk/activities/giants-wizards-and-elves/" },
+      { t: "The Physical Educator, Giants, Elves, & Wizards", u: "https://thephysicaleducator.com/game/giants-elves-wizards" },
+      { t: "Scouts Canada, Giants Wizards Elves", u: "https://scouts.ca/resources/activity-finder/giants-wizards-elves.html" },
+    ],
+  },
+  {
+    id: "grandmawarriordragon",
+    kind: "matrix",
+    cat: "three",
+    group: false,
+    name: "할머니·용사·용",
+    sub: "Oma, Krieger, Drache",
+    origin: "독일",
+    hands: [
+      { id: "grandma", art: "mother", name: "할머니", emoji: "👵", how: "검지를 들어 나무라며 한 바퀴 돈다" },
+      { id: "warrior", name: "용사", emoji: "⚔️", how: "싸우는 자세로 칼을 휘두른다" },
+      { id: "dragon", name: "용", emoji: "🐉", how: "두 팔을 벌리고 크게 으르렁댄다" },
+    ],
+    order: ["dragon", "grandma", "warrior"],
+    rel: [
+      ["dragon", "grandma", "잡아먹는다"],
+      ["grandma", "warrior", "꾸짖는다"],
+      ["warrior", "dragon", "벤다"],
+    ],
+    about: [
+      "두 편이 3~4m 떨어져 서서 몰래 하나를 정한다. 잡힌 사람은 상대 편으로 가고, 한 편이 다 사라지면 끝난다.",
+      "용은 할머니를 잡아먹고, 할머니는 용사를 꾸짖어 이기고, 용사는 용을 벤다. 토라켄의 무사처럼 용을 이기는 용사도 꾸중에는 진다.",
+    ],
+    sources: [{ t: "youngstarswiki, Oma, Krieger, Drache", u: "https://youngstarswiki.org/es/print/pdf/node/709" }],
+  },
+  {
+    id: "bearfishmosquito",
+    kind: "matrix",
+    cat: "three",
+    group: false,
+    name: "곰·물고기·모기",
+    sub: "Bear, Fish, Mosquito",
+    origin: "캐나다 캘거리",
+    hands: [
+      { id: "bear", name: "곰", emoji: "🐻", how: "두 손을 들고 손가락을 발톱처럼 구부린다" },
+      { id: "fish", name: "물고기", emoji: "🐟", how: "두 손바닥을 모아 헤엄치듯 흔든다" },
+      { id: "mosquito", name: "모기", emoji: "🦟", how: "검지를 내민다" },
+    ],
+    order: ["bear", "fish", "mosquito"],
+    rel: [
+      ["bear", "fish", "잡는다"],
+      ["fish", "mosquito", "잡아먹는다"],
+      ["mosquito", "bear", "문다"],
+    ],
+    about: [
+      "캘거리 시가 그 고장 동물로 하는 가위바위보로 소개했다. 미국 체육 수업에서는 몸풀기로 한다.",
+      "곰은 물고기를 잡고, 물고기는 모기를 잡아먹고, 모기는 곰을 문다. 가장 작은 모기가 가장 큰 곰을 이긴다.",
+    ],
+    sources: [
+      { t: "City of Calgary, Bear, Fish, Mosquito", u: "https://calgary.ca/parks-rec-programs/at-home/bear-fish-mosquito.html" },
+      { t: "Gopher PE blog, Rock-Paper-Scissors Warm-Up", u: "https://blog.gophersport.com/rock-paper-scissors-warm-up/" },
+    ],
+  },
+  {
+    id: "greetings",
+    kind: "matrix",
+    cat: "three",
+    group: false,
+    name: "악수·주먹 인사·포옹",
+    sub: "Wow, this is awkward!",
+    origin: "미국 청소년 모임",
+    hands: [
+      { id: "handshake", name: "악수", emoji: "🤝", how: "손을 내밀어 악수를 청한다" },
+      { id: "fistbump", name: "주먹 인사", emoji: "👊", how: "주먹을 내민다" },
+      { id: "hug", name: "포옹", emoji: "🫂", how: "두 팔을 벌린다" },
+    ],
+    order: ["handshake", "fistbump", "hug"],
+    rel: [
+      ["handshake", "fistbump", "감싼다"],
+      ["fistbump", "hug", "막아 낸다"],
+      ["hug", "handshake", "끌어안는다"],
+    ],
+    about: [
+      "둘이 등을 맞대고 셋을 센 뒤 돌아서며 인사를 내민다. 진 사람은 이긴 사람 인사를 따라 하고, 둘이 같이 \"와, 이거 어색하다!\"를 외친다.",
+      "악수는 주먹 인사를, 주먹 인사는 포옹을, 포옹은 악수를 이긴다. 이긴 사람끼리 다시 붙어 한 명이 남을 때까지 한다.",
+    ],
+    sources: [{ t: "YouthWorker, Wow, this is awkward!", u: "https://youthworker.com/wow-this-is-awkward" }],
+  },
+  {
+    id: "reverse",
+    kind: "matrix",
+    cat: "three",
+    group: false,
+    name: "거꾸로 가위바위보",
+    sub: "じゃんぽんけん",
+    origin: "일본",
+    hands: [H.scissors, H.rock, H.paper],
+    order: ["scissors", "rock", "paper"],
+    rel: [
+      ["scissors", "rock", null, "가위가 바위에 부서져서 이긴다"],
+      ["rock", "paper", null, "바위가 보에 싸여서 이긴다"],
+      ["paper", "scissors", null, "보가 가위에 잘려서 이긴다"],
+    ],
+    about: [
+      "이기고 지는 쪽을 뒤집었다. 평소에 지는 손이 이긴다. 비기는 판은 그대로다.",
+      "손 모양이 그대로라서, 이기는 손을 떠올린 뒤 한 번 더 뒤집어야 한다.",
+    ],
+    sources: [{ t: "Wikipedia (Japanese), じゃんけん", u: "https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93" }],
+  },
 
   // 손을 더한 꼴
   {
@@ -492,6 +625,45 @@ const CATALOG_KO = [
       "손마다 둘을 이기고 둘에 진다. 고리에서 바로 다음과 그다음을 이긴다.",
     ],
     sources: [{ t: "Wikipedia, Rock paper scissors (Additional weapons)", u: "https://en.wikipedia.org/wiki/Rock_paper_scissors" }],
+  },
+  {
+    id: "moropinzee",
+    kind: "matrix",
+    cat: "more",
+    name: "원숭이·로봇·해적·닌자·좀비",
+    sub: "Monkey-Robot-Pirate-Ninja-Zombie",
+    origin: "작가 Mark Rayner (2010)",
+    hands: [
+      { id: "monkey", name: "원숭이", emoji: "🐒" },
+      { id: "robot", name: "로봇", emoji: "🤖" },
+      { id: "pirate", name: "해적", emoji: "🏴‍☠️" },
+      { id: "ninja", name: "닌자", emoji: "🥷" },
+      { id: "zombie", name: "좀비", emoji: "🧟" },
+    ],
+    order: ["monkey", "robot", "ninja", "zombie", "pirate"],
+    rel: [
+      ["monkey", "ninja", "속인다"],
+      ["monkey", "robot", null, "원숭이가 로봇 플러그를 뽑는다"],
+      ["robot", "ninja", null, "로봇이 닌자 목을 조른다"],
+      ["robot", "zombie", "부순다"],
+      ["pirate", "robot", "물에 빠뜨린다"],
+      ["pirate", "monkey", "꼬챙이로 찌른다"],
+      ["ninja", "pirate", "내리친다"],
+      ["ninja", "zombie", "벤다"],
+      ["zombie", "pirate", "먹는다"],
+      ["zombie", "monkey", "물어뜯는다"],
+    ],
+    about: [
+      "작가 Mark Rayner가 2010년 블로그에 올렸다. 손마다 둘을 이기고 둘에게 진다.",
+      "손 다섯이 둘씩 이기는 고리는 한 가지뿐이라, 판정 구조는 가위바위보 도마뱀 스팍과 같다. 고리 그림을 겹쳐 보면 손 자리만 다르다.",
+    ],
+    sources: [
+      {
+        t: "Mark A. Rayner, How to Play Monkey-Robot-Pirate-Ninja-Zombie",
+        u: "https://www.goodreads.com/author_blog_posts/1206993-how-to-play-monkey-robot-pirate-ninja-zombie-moropinzee",
+      },
+      { t: "Laughing Squid, Monkey-Pirate-Robot-Ninja-Zombie", u: "https://laughingsquid.com/monkey-pirate-robot-ninja-zombie-an-updated-version-of-rock-paper-scissors/" },
+    ],
   },
   {
     id: "rps7",
@@ -715,6 +887,165 @@ const CATALOG_KO = [
     ],
   },
 
+  // 11-08 에 더한 놀이. draft: true 는 화면이 생길 때까지 도감에 안 보인다(맨 아래 '언어에 따라 바뀌는 도감' 참고)
+  {
+    id: "hammer",
+    kind: "game",
+    cat: "flow",
+    draft: true,
+    name: "뿅망치 가위바위보",
+    sub: "たたいて・かぶって・ジャンケンポン",
+    origin: "일본",
+    base: "classic",
+    about: [
+      "가위바위보에 이긴 사람은 뿅망치로 상대 머리를 치고, 진 사람은 재빨리 헬멧을 쓴다. 헬멧이 먼저면 막은 것이라 가위바위보부터 다시 한다.",
+      "막기 전에 치면 1점이고, 3점을 먼저 내면 이긴다. 이 앱에서는 이긴 쪽이 치기, 진 쪽이 막기를 누르고 누가 먼저 눌렀는지로 정한다.",
+    ],
+    sources: [
+      { t: "RAG Music, たたいてかぶってジャンケンポン", u: "https://www.ragnet.co.jp/freshman-welcome-party-games/8" },
+      { t: "App Store, たたいて・かぶって・ジャンケンは自動!", u: "https://apps.apple.com/us/app/id6443710921" },
+    ],
+  },
+  {
+    id: "donpappa",
+    kind: "game",
+    cat: "flow",
+    draft: true,
+    name: "돈파파",
+    sub: "ドンパッパ, グリンピース",
+    origin: "일본 서쪽",
+    base: "classic",
+    about: [
+      "바위는 그린, 가위는 치린, 보는 파린이라 부른다(グリン·チリン·パリン). 가위바위보로 선공을 정한 뒤, 선공이 '지금 손, 지금 손, 다음 손'을 외치며 세 번 내고 후공도 박자에 맞춰 같이 낸다.",
+      "셋째 손이 같으면 먼저 '돈!'을 외친 사람이 이긴다. 다르면 공수가 바뀐다. 묵찌빠와 같은 갈래인데, 손이 같을 때 누가 먼저 외치는지로 정한다. 간사이에서는 손이 같아지기 전에 외치면 진다.",
+    ],
+    sources: [
+      { t: "pedia, ドンパッパ", u: "https://pedia.3rd-in.co.jp/wiki/%E3%83%89%E3%83%B3%E3%83%91%E3%83%83%E3%83%91" },
+      { t: "東京都, そとあそび図鑑 vol.5 (からだグリンピース)", u: "https://www.sports-tokyo-info.metro.tokyo.lg.jp/suru/hajimeru_sotoasobi_zukan/data/sotoasobi_vol5.pdf" },
+    ],
+  },
+  {
+    id: "relay",
+    kind: "game",
+    cat: "flow",
+    draft: true,
+    name: "가위바위보 릴레이",
+    sub: "どんじゃんけん, Hoop Hop Showdown",
+    origin: "일본, 미국 체육 수업",
+    base: "classic",
+    about: [
+      "두 편이 길 양 끝 진지에 선다. 한 명씩 달려 나가 만나면 가위바위보를 하고, 이긴 사람은 계속 가고 진 편은 진지에서 다음 사람이 나온다. 상대 진지에 닿으면 이긴다.",
+      "FiveThirtyEight의 수학 퍼즐 코너 Riddler가 이 놀이로 문제를 냈다. 이 앱 규칙으로 한 칸에 1초, 가위바위보 한 번에 1초로 세면, 칸이 8개일 때 평균 2분쯤 걸린다.",
+    ],
+    sources: [
+      { t: "栃木県, 元気キッズ「走」プログラム", u: "https://www.pref.tochigi.lg.jp/m12/education/sports/genkikids/documents/run1.pdf" },
+      { t: "GAME Watch, どんじゃんけん", u: "https://game.watch.impress.co.jp/docs/news/1138961.html" },
+      { t: "The Game Gal, Hoop Hop Showdown", u: "https://www.thegamegal.com/?p=5862" },
+      { t: "FiveThirtyEight, The Riddler", u: "https://fivethirtyeight.com/features/how-many-hoops-will-kids-jump-through-to-play-rock-paper-scissors" },
+    ],
+  },
+  {
+    id: "ecard",
+    kind: "game",
+    cat: "flow",
+    draft: true,
+    name: "황제와 노예",
+    sub: "E카드",
+    origin: "일본 만화",
+    about: [
+      "황제는 시민을, 시민은 노예를, 노예는 황제를 이긴다. 시민끼리는 비긴다. 황제 쪽은 황제 1장과 시민 4장, 노예 쪽은 노예 1장과 시민 4장을 들고 한 장씩 같이 낸다.",
+      "12판을 하고 3판마다 쪽을 바꾼다. 노예 쪽이 이기면 4점, 황제 쪽이 이기면 1점이다. 둘 다 최선을 다하면 노예 쪽은 다섯 판에 한 번 이겨서, 4점이면 두 쪽 기대 점수가 같다. 만화 「도박묵시록 카이지」의 E카드를 둘이 하는 놀이로 줄였다. 만화에서는 노예 쪽이 이기면 5배를 받는다.",
+    ],
+    sources: [
+      { t: "Kaiji Wiki, E-Card", u: "https://kaiji.fandom.com/wiki/E-Card" },
+      { t: "E Card (fan-made web game)", u: "https://ecard-24ah.onrender.com" },
+    ],
+  },
+  {
+    id: "shogi",
+    kind: "game",
+    cat: "flow",
+    draft: true,
+    name: "가위바위보 장기",
+    sub: "じゃんけん将棋",
+    origin: "일본 앱에서 따옴",
+    about: [
+      "가로 3칸, 세로 4칸 판에 가위·바위·보 말과 왕 말을 놓는다. 말은 가위바위보로 이기는 상대 말만 잡는다. 왕은 무엇이든 잡지만 무엇에게든 잡힌다. 같은 말끼리 만나면 위에 올라타고, 깔린 말은 못 움직인다.",
+      "잡은 말은 내 말이 되어, 차례에 움직이는 대신 빈칸에 놓을 수 있다. 상대 왕을 잡으면 이긴다. 바위는 앞뒤옆, 가위는 대각선, 보는 앞쪽 세 칸과 양옆으로 한 칸씩 간다. 일본 앱 「じゃんけん将棋」에서 따온 놀이를 이 앱 규칙으로 짰다.",
+    ],
+    sources: [
+      { t: "QooApp, じゃんけん将棋", u: "https://m-apps.qoo-app.com/en_us/app/6426" },
+      { t: "App Store, 対戦じゃんけん将棋", u: "https://apps.apple.com/jp/app/id1105790821" },
+    ],
+  },
+
+  // 가위바위보를 닮은 놀이
+  {
+    id: "penney",
+    kind: "game",
+    cat: "cousin",
+    draft: true,
+    name: "동전 순서 겨루기",
+    sub: "Penney's game",
+    origin: "Walter Penney (1969)",
+    about: [
+      "둘이 동전 앞뒤 세 개짜리 순서를 하나씩 고른다(예: 앞앞뒤). 동전을 계속 던져 먼저 나온 순서를 고른 사람이 이긴다.",
+      "나중에 고르는 쪽이 늘 유리하다. 상대 순서의 가운데를 뒤집어 맨 앞에 두고, 상대 순서의 앞 두 개를 붙이면 된다. 앞앞앞에는 뒤앞앞으로 맞서 8번에 7번 이긴다. 어떤 순서에도 그 순서를 이기는 순서가 있어서 가위바위보처럼 고리가 생긴다.",
+    ],
+    sources: [
+      { t: "Wikipedia, Penney's game", u: "https://en.wikipedia.org/wiki/Penney%27s_game" },
+      { t: "Nishiyama, Pattern Matching Probabilities and Paradoxes", u: "https://blogsarchive.sites.haverford.edu/mathproblemsolving/files/2011/06/Penney-Ante.pdf" },
+    ],
+  },
+  {
+    id: "dice",
+    kind: "game",
+    cat: "cousin",
+    draft: true,
+    name: "이상한 주사위",
+    sub: "Efron 주사위, Grime 주사위",
+    origin: "Bradley Efron, James Grime",
+    about: [
+      "주사위마다 눈이 다르다. Efron 주사위 넷은 A가 B를, B가 C를, C가 D를, D가 A를 3번에 2번 이긴다. 그래서 상대가 먼저 고르면 나는 늘 이기는 주사위를 고를 수 있다.",
+      "Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생기고, 둘씩 굴려 합을 겨루면 그 가운데 한 고리가 거꾸로 돈다. 워런 버핏이 빌 게이츠에게 이런 주사위로 내기를 걸려 한 일화가 있다.",
+    ],
+    sources: [
+      { t: "Wikipedia, Intransitive dice", u: "https://en.wikipedia.org/wiki/Intransitive_dice" },
+      { t: "SAS blog, Intransitive dice", u: "https://blogs.sas.com/content/iml/2020/11/30/intransitive-dice.html" },
+    ],
+  },
+  {
+    id: "morra",
+    kind: "game",
+    cat: "cousin",
+    draft: true,
+    name: "모라",
+    sub: "Morra, 划拳",
+    origin: "고대 로마, 중국",
+    about: [
+      "둘이 동시에 손가락 0~5개를 펴며 손가락 합을 외친다. 한 사람만 맞히면 그 사람이 1점을 얻고, 둘 다 맞히거나 다 틀리면 점수가 없다. 3점을 먼저 내면 이긴다.",
+      "고대 로마 때부터 했고, 중국에서는 划拳이라 부르며 술자리에서 한다. 한쪽은 홀, 한쪽은 짝을 맡아 손가락 합이 홀인지 짝인지로 정하는 홀짝 판도 있다.",
+    ],
+    sources: [{ t: "Wikipedia, Morra (game)", u: "https://en.wikipedia.org/wiki/Morra_(game)" }],
+  },
+  {
+    id: "blotto",
+    kind: "game",
+    cat: "cousin",
+    draft: true,
+    name: "블로토 대령",
+    sub: "Colonel Blotto",
+    origin: "Émile Borel (1921)",
+    about: [
+      "둘이 병사 10명을 싸움터 3곳에 몰래 나눠 보낸다. 싸움터마다 많이 보낸 쪽이 이기고, 싸움터를 더 많이 가진 쪽이 그 판을 이긴다. 3판을 먼저 이기면 경기를 이긴다.",
+      "병사가 넉넉하면 늘 이기는 나눔이 없다. 고르게 나누면 두 곳에 조금씩 더 보낸 쪽에게 지고, 몰아 보내면 다른 곳을 내준다. 컴퓨터는 최적 비율에 가깝게 나눈다.",
+    ],
+    sources: [
+      { t: "Wikipedia, Blotto game", u: "https://en.wikipedia.org/wiki/Blotto_game" },
+      { t: "Colonel Blotto (web game)", u: "https://blotto.incoherency.co.uk" },
+    ],
+  },
+
   // 여럿이
   {
     id: "group",
@@ -766,6 +1097,97 @@ const CATALOG_KO = [
     ],
   },
 
+  {
+    id: "majority",
+    kind: "game",
+    cat: "group",
+    draft: true,
+    name: "많은 손 이기기",
+    sub: "多い勝ち, 少ない勝ち",
+    origin: "일본",
+    base: "classic",
+    about: [
+      "셋 이상이 같이 내고, 가장 많이 나온 손을 낸 사람이 남는다. 거꾸로 가장 적게 나온 손을 낸 사람이 남는 적은 손 이기기도 있다. 가장 많은 손이나 가장 적은 손이 둘 이상이면 다시 한다.",
+      "적은 손 이기기는 미리 짜고 내지 못하게 하려고 한다. 한 명이 남을 때까지 되풀이하는 게이머 가위바위보는 보드게임 선을 정할 때 많이 쓴다. 둘만 남으면 보통 가위바위보로 끝낸다.",
+    ],
+    sources: [
+      { t: "Wikipedia (Japanese), じゃんけん", u: "https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93" },
+      { t: "thewiki, 가위바위보", u: "https://thewiki.kr/w/%EC%9F%8C%EC%BC%84" },
+    ],
+  },
+  {
+    id: "choki",
+    kind: "game",
+    cat: "group",
+    draft: true,
+    name: "셋 다 나오면 가위 승",
+    sub: "チョキじゃんけん",
+    origin: "일본",
+    base: "classic",
+    about: [
+      "여럿이 할 때 가위·바위·보가 다 나와 비기면 가위를 낸 사람이 이긴다. 나머지는 여럿이 가위바위보와 같다.",
+      "여럿이 가위바위보는 사람이 많을수록 잘 안 끝난다. 8명이면 열 번에 아홉 번쯤 다시 한다. 이 규칙은 다시 하는 횟수를 줄이는 대신, 사람이 많을수록 가위가 유리해진다.",
+    ],
+    sources: [{ t: "Wikipedia (Japanese), じゃんけん", u: "https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93" }],
+  },
+  {
+    id: "host",
+    kind: "game",
+    cat: "group",
+    draft: true,
+    name: "진행자 이기기",
+    sub: "審判方式",
+    origin: "일본, ZEP 미니 게임",
+    base: "classic",
+    about: [
+      "진행자가 먼저 손을 정하고 모두 각자 낸다. 진행자에게 지면 빠지고, 이기면 10점, 비기면 5점을 얻고 남는다. 한 명이 남거나 10판이 끝나면 끝난다.",
+      "끝까지 둘 이상 남으면 점수가 높은 사람이 이긴다. 메타버스 ZEP의 가위바위보 미니 게임이 이렇게 점수를 준다. 남은 사람이 모두 지면 이 앱에서는 그 판을 없던 것으로 한다.",
+    ],
+    sources: [
+      { t: "Wikipedia (Japanese), じゃんけん", u: "https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93" },
+      { t: "ZEP 공식 가이드, 가위바위보", u: "https://docs.channel.io/zep-guide/ko/articles/%EA%B0%80%EC%9C%84%EB%B0%94%EC%9C%84%EB%B3%B4-f03cf86c" },
+    ],
+  },
+  {
+    id: "teamtag",
+    kind: "game",
+    cat: "group",
+    draft: true,
+    name: "편 가위바위보 술래잡기",
+    sub: "Rock Paper Scissors Tag",
+    origin: "영미권 체육 수업",
+    base: "classic",
+    about: [
+      "두 편이 몰래 손 하나씩을 정해 다 같이 낸다. 이긴 편이 쫓고 진 편은 제 선으로 달아난다. 잡힌 사람은 상대 편이 된다.",
+      "모두 한 편이 되면 끝난다. 거인·마법사·요정이나 할머니·용사·용도 원래 이렇게 하는 놀이다. 이 앱에서는 진 편 사람이 저마다 반반 확률로 잡히고, 20판이 지나면 사람이 많은 편이 이긴다.",
+    ],
+    sources: [
+      { t: "Playworks, Rock Paper Scissor Tag", u: "https://playworks.org/game-library/rock-paper-scissor-tag" },
+      { t: "Sport Aberdeen, Rock Paper Scissors", u: "https://www.sportaberdeen.co.uk/wp-content/uploads/2020/11/Rock-Paper-Scissors-_-Complete.pdf" },
+    ],
+  },
+  {
+    id: "teamsplit",
+    kind: "game",
+    cat: "group",
+    draft: true,
+    name: "편 가르기",
+    sub: "グーパー, 엎어라 뒤집어라",
+    origin: "일본, 한국",
+    base: "classic",
+    about: [
+      "모두 바위나 보 하나를 내서 같은 손끼리 한 편이 된다. 두 편 수가 같아질 때까지 다시 낸다. 손바닥을 위나 아래로 하는 일본의 うらおもて, 한국의 엎어라 뒤집어라도 같은 방법이다.",
+      "10명이 아무렇게나 내면 다섯 대 다섯으로 갈릴 확률이 1/4쯤이라 평균 네 번쯤 낸다. 구호는 고장마다 다르다.",
+    ],
+    sources: [
+      { t: "Wikipedia (Japanese), じゃんけん", u: "https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93" },
+      {
+        t: "prompie, 편 가르기 구호 이야기",
+        u: "https://academy.prompie.com/communities/posts/%EC%9D%B4%EA%B1%B4-%EC%A7%80%EC%97%AD%EB%A7%88%EB%8B%A4-%EB%8B%A4%EB%A5%B8%EA%B1%B0%EB%9D%BC%EB%8A%94%EB%8D%B0-9hi8giQr/",
+      },
+    ],
+  },
+
   // 시뮬레이션
   {
     id: "league",
@@ -811,23 +1233,47 @@ const CATALOG_KO = [
 
 // ── 언어에 따라 바뀌는 도감 ─────────────────────
 // CATALOG·CATEGORIES 는 지금 언어의 자료를 가리킨다(언어를 바꾸면 새로 가리킨다). 영어판은 catalog-en.js.
+// draft: true 인 항목은 화면이 아직 없어서 CATALOG 에서 빼고 DRAFTS 에 둔다. 들어 있는 항목이 없는 갈래도 뺀다.
+// 화면을 붙이면 그 항목의 draft 줄을 지운다(프론트엔드가 지워도 된다).
 export let CATEGORIES = CATEGORIES_KO;
 export let CATALOG = CATALOG_KO;
+export let DRAFTS = [];
 let english = null;
+let korean = null;
+
+function split(categories, entries) {
+  const live = entries.filter((e) => !e.draft);
+  return {
+    categories: categories.filter((c) => live.some((e) => e.cat === c.id)),
+    catalog: live,
+    drafts: entries.filter((e) => e.draft),
+  };
+}
 
 function useLang(l) {
+  let s;
   if (l === "en") {
-    english ||= localizeCatalog(CATEGORIES_KO, CATALOG_KO, OBJECT_VERBS);
-    CATEGORIES = english.categories;
-    CATALOG = english.catalog;
+    if (!english) {
+      const en = localizeCatalog(CATEGORIES_KO, CATALOG_KO, OBJECT_VERBS);
+      english = split(en.categories, en.catalog);
+    }
+    s = english;
   } else {
-    CATEGORIES = CATEGORIES_KO;
-    CATALOG = CATALOG_KO;
+    korean ||= split(CATEGORIES_KO, CATALOG_KO);
+    s = korean;
   }
+  CATEGORIES = s.categories;
+  CATALOG = s.catalog;
+  DRAFTS = s.drafts;
 }
 useLang(lang());
 onLang(useLang);
 
 export function findEntry(id) {
   return CATALOG.find((e) => e.id === id) || null;
+}
+
+/** 화면 준비 중인 항목(DRAFTS)까지 찾는다. 화면을 만들 때 쓴다 */
+export function findAnyEntry(id) {
+  return findEntry(id) || DRAFTS.find((e) => e.id === id) || null;
 }
