@@ -43,18 +43,22 @@ export class Ranking extends DurableObject {
     return { a: afterEntry(out.a), b: afterEntry(out.b) };
   }
 
-  /** 순위표(상위 RANK_TOP, 경기 BOARD_MIN_GAMES 이상). pid 를 주면 그 사람 기록과 순위(me)도 */
+  /**
+   * 순위표(상위 RANK_TOP, 경기 BOARD_MIN_GAMES 이상). pid 를 주면 그 사람 기록·순위와,
+   * 순위표 안에 있으면 그 줄 번호(me.index, 0부터. 없으면 null)도 준다. 열쇠는 내보내지 않는다
+   */
   async board({ pid = null } = {}) {
     if (!this.board_) {
-      const top = this.sql
+      const rows = this.sql
         .exec("SELECT * FROM players WHERE games >= ? ORDER BY rating DESC, games DESC, at ASC LIMIT ?", BOARD_MIN_GAMES, RANK_TOP)
-        .toArray()
-        .map(boardEntry);
+        .toArray();
       const n = this.sql.exec("SELECT COUNT(*) AS n FROM players WHERE games >= ?", BOARD_MIN_GAMES).one().n;
-      this.board_ = { n, top };
+      this.board_ = { n, top: rows.map(boardEntry), keys: rows.map((r) => r.key) };
     }
-    if (!pid) return this.board_;
-    const row = this.#row(await rankKey(pid));
+    const { n, top, keys } = this.board_;
+    if (!pid) return { n, top };
+    const key = await rankKey(pid);
+    const row = this.#row(key);
     let me = null;
     if (row) {
       let rank = null;
@@ -70,8 +74,9 @@ export class Ranking extends DurableObject {
           .one().n;
         rank = ahead + 1;
       }
-      me = { ...boardEntry(row), rank };
+      const i = keys.indexOf(key);
+      me = { ...boardEntry(row), rank, index: i < 0 ? null : i };
     }
-    return { ...this.board_, me };
+    return { n, top, me };
   }
 }
