@@ -5,6 +5,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { CATALOG } from "../web/js/data/catalog.js";
 import { DWB_DEF } from "../web/js/games/dynamitewb.js";
+import { PROPS } from "../web/js/data/props.js";
+import { ART_FILES } from "../web/js/data/art-files.js";
 import { scanArt, renderList, checkSvg } from "../scripts/art_list.mjs";
 
 const NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -34,9 +36,20 @@ test("art-files.js 가 web/art/ 와 맞다 (그림을 바꾸면 node scripts/art
   assert.equal(now, renderList(ok));
 });
 
-test("web/art/ 의 그림은 모두 어떤 손의 그림 이름이다", () => {
-  const known = new Set(allHands().map((hd) => hd.art || hd.id));
-  for (const [key] of scanArt().ok) assert.ok(known.has(key), `${key}.svg 를 쓰는 손이 없다(이름 오타?)`);
+test("web/art/ 의 그림은 모두 어떤 손이나 소품의 그림 이름이다", () => {
+  const known = new Set([...allHands(), ...Object.values(PROPS)].map((hd) => hd.art || hd.id));
+  for (const [key] of scanArt().ok) assert.ok(known.has(key), `${key}.svg 를 쓰는 손이나 소품이 없다(이름 오타?)`);
+});
+
+test("소품 그림(data/props.js)은 모두 있고 손 그림과 이름이 겹치지 않는다", () => {
+  const handNames = new Set(allHands().map((hd) => hd.art || hd.id));
+  for (const [key, p] of Object.entries(PROPS)) {
+    assert.equal(p.id, key);
+    assert.match(p.id, NAME);
+    assert.ok(p.emoji, key);
+    assert.ok(ART_FILES.has(p.art || p.id), `${key}.svg 가 web/art 에 없다`);
+    assert.ok(!handNames.has(p.art || p.id), `${key} 는 손 그림 이름과 겹친다`);
+  }
 });
 
 test("SVG 규격 검사", () => {

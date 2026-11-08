@@ -109,14 +109,14 @@ node scripts/variants_doc.mjs > docs/variants.md   # 변종 목록 문서 다시
 web/                          웹 앱 (GitHub Pages)
   index.html, style.css, online.css
   icons/                      파비콘
-  art/                        손 그림 SVG (Fluent UI Emoji, 없는 손은 이모지)
+  art/                        손·소품 그림 SVG (Fluent UI Emoji, 없는 손은 이모지)
   js/app.js                   주소(#/…)에 따라 화면을 고른다
   js/i18n.js, js/i18n/en.js   화면 언어(한국어·영어)와 영어 사전
   js/core/                    판정(engine), 최적 비율(lp), 컴퓨터 전략(bots), 난수(rng), 조사(josa),
                               온라인 랭킹 점수(rating)
   js/data/                    도감(catalog), 도감 영어(catalog-en), RPS 확장판 판정 문장(verbs),
                               직접 만들기 손 모음(custom), 손 그림 목록(art-files),
-                              온라인 대전 게임 목록(online)
+                              놀이 소품 그림(props), 온라인 대전 게임 목록(online)
   js/games/                   놀이 규칙: 판(match), 묵찌빠, 아치무이테호이, 하나빼기, 글리코,
                               한정 가위바위보, 다이너마이트와 물풍선, 명령, 여럿이·기차·진화(group),
                               뿅망치(hammer), 돈파파(donpappa), 릴레이(relay), 황제와 노예(ecard),
