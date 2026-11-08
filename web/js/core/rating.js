@@ -9,6 +9,12 @@ export const RATING_FLOOR = 100;
 export const PROVISIONAL_GAMES = 10;
 /** 순위표에 오르려면 이만큼 경기를 해야 한다 */
 export const BOARD_MIN_GAMES = 5;
+/**
+ * 상대가 순위 경기를 BOARD_MIN_GAMES 번 하기 전(처음 온 사람)이면 그 경기로 움직이는 내 점수에 이 값을 곱한다.
+ * 처음 온 사람의 점수는 아직 믿기 어려워서 이기든 지든 덜 움직인다(Glicko 의 RD 와 같은 생각).
+ * 11-08 검수: 새 pid 를 만들어 일부러 져 주면 혼자 1위가 됐다. 이걸로 그렇게 얻는 점수가 반이 된다
+ */
+export const NEWCOMER_WEIGHT = 0.5;
 
 /** a 가 b 를 이길 기대값(0..1, 비김은 반으로 친다) */
 export function expectedScore(ra, rb) {
@@ -20,6 +26,11 @@ export function kFactor(games) {
   return games < PROVISIONAL_GAMES ? 40 : 20;
 }
 
+/** 상대의 경기 수에 따른 무게(처음 온 사람이면 NEWCOMER_WEIGHT, 아니면 1) */
+export function opponentWeight(games) {
+  return games < BOARD_MIN_GAMES ? NEWCOMER_WEIGHT : 1;
+}
+
 /** 처음 온 사람의 기록 */
 export function newRecord() {
   return { rating: RATING_START, games: 0, wins: 0, losses: 0, draws: 0 };
@@ -27,6 +38,7 @@ export function newRecord() {
 
 /**
  * 한 경기 결과로 두 사람 기록을 고친다. 받은 객체는 바꾸지 않는다.
+ * 움직이는 점수 = K(내 경기 수) × 무게(상대 경기 수) × (결과 − 기대값). 처음 온 두 사람끼리면 ±10
  * score 는 a 쪽에서 본 결과: 1 이김, 0.5 비김, 0 짐. 도중에 나간 사람은 진 것으로 넣는다.
  * 돌려주는 값 { a, b } 는 새 기록이고, 각각 delta(이번에 바뀐 점수)가 붙는다. 점수는 정수.
  */
@@ -36,8 +48,8 @@ export function rateMatch(a, b, score) {
     if (!Number.isFinite(r?.rating) || !Number.isInteger(r?.games) || r.games < 0) throw new Error("기록 꼴이 틀림");
   }
   const ea = expectedScore(a.rating, b.rating);
-  const da = Math.round(kFactor(a.games) * (score - ea));
-  const db = Math.round(kFactor(b.games) * (1 - score - (1 - ea)));
+  const da = Math.round(kFactor(a.games) * opponentWeight(b.games) * (score - ea));
+  const db = Math.round(kFactor(b.games) * opponentWeight(a.games) * (1 - score - (1 - ea)));
   return { a: applyResult(a, da, score), b: applyResult(b, db, 1 - score) };
 }
 

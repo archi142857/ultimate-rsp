@@ -3,8 +3,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  RATING_START, RATING_FLOOR, BOARD_MIN_GAMES,
-  expectedScore, kFactor, newRecord, rateMatch, onBoard, compareStanding,
+  RATING_START, RATING_FLOOR, BOARD_MIN_GAMES, NEWCOMER_WEIGHT,
+  expectedScore, kFactor, opponentWeight, newRecord, rateMatch, onBoard, compareStanding,
 } from "../web/js/core/rating.js";
 
 const rec = (rating, games) => ({ ...newRecord(), rating, games });
@@ -25,11 +25,12 @@ test("처음 10경기는 K 40, 그 뒤 20", () => {
 });
 
 test("같은 점수끼리", () => {
+  // 처음 온 두 사람끼리: 40 × 0.5(상대가 처음 온 사람) × 0.5
   const r = rateMatch(newRecord(), newRecord(), 1);
-  assert.equal(r.a.rating, 1020);
-  assert.equal(r.a.delta, 20);
-  assert.equal(r.b.rating, 980);
-  assert.equal(r.b.delta, -20);
+  assert.equal(r.a.rating, 1010);
+  assert.equal(r.a.delta, 10);
+  assert.equal(r.b.rating, 990);
+  assert.equal(r.b.delta, -10);
   assert.deepEqual([r.a.games, r.a.wins, r.a.losses, r.b.losses], [1, 1, 0, 1]);
 
   const v = rateMatch(rec(1000, 30), rec(1000, 30), 0.5);
@@ -42,7 +43,21 @@ test("같은 점수끼리", () => {
 test("뒤집기: 새로 온 1000 이 오래 한 1400 을 이기면", () => {
   const r = rateMatch(rec(1000, 2), rec(1400, 50), 1);
   assert.equal(r.a.delta, 36); // 40 × (1 − 1/11)
-  assert.equal(r.b.delta, -18); // 20 × (0 − 10/11)
+  assert.equal(r.b.delta, -9); // 20 × 0.5(상대가 2경기째) × (0 − 10/11)
+});
+
+test("처음 온 상대에게는 점수가 반만 움직인다(새 pid 로 져 주기 막기)", () => {
+  assert.equal(NEWCOMER_WEIGHT, 0.5);
+  assert.equal(opponentWeight(0), 0.5);
+  assert.equal(opponentWeight(BOARD_MIN_GAMES - 1), 0.5);
+  assert.equal(opponentWeight(BOARD_MIN_GAMES), 1);
+  // 오래 한 사람이 처음 온 사람을 이기면 20 × 0.5 × 0.5 = 5, 다섯 경기 한 사람을 이기면 10
+  assert.equal(rateMatch(rec(1000, 30), rec(1000, 0), 1).a.delta, 5);
+  assert.equal(rateMatch(rec(1000, 30), rec(1000, BOARD_MIN_GAMES), 1).a.delta, 10);
+  // 매번 새 pid 에게 이겨서 올리기: 예전에는 8번이면 1100 을 넘었지만 이제는 반쯤
+  let me = newRecord();
+  for (let i = 0; i < 8; i++) me = rateMatch(me, newRecord(), 1).a;
+  assert.ok(me.rating < 1080, `8번 이긴 뒤 ${me.rating}`);
 });
 
 test("바닥 아래로는 안 내려가고, 받은 기록은 그대로 둔다", () => {
