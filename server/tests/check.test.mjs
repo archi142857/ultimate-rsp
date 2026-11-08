@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { makeCode, normCode, checkPid, checkName, checkEmote, checkFace } from "../src/check.js";
+import { makeCode, normCode, checkPid, checkName, checkEmote, checkFace, checkRoomCode } from "../src/check.js";
 import { Fail, allowedOrigin, checkVersion, originList } from "../src/http.js";
 import { CODE_ABC, NAME_MAX, PROTOCOL } from "../src/protocol.js";
 
@@ -104,4 +104,12 @@ test("프로필 그림: web/art 그림 이름만, 아니면 오류 없이 null",
   assert.equal(checkFace("fox"), "fox");
   assert.equal(checkFace("king"), "king");
   for (const bad of [undefined, null, "", "nope", "../fox", "FOX", 3, ["fox"], {}]) assert.equal(checkFace(bad), null, String(bad));
+});
+
+test("방을 만들 때 화면이 고른 코드: 없으면 null, 소문자는 대문자로, 꼴이 틀리면 bad_request", () => {
+  assert.equal(checkRoomCode(undefined), null);
+  assert.equal(checkRoomCode(null), null);
+  assert.equal(checkRoomCode("k7q2"), "K7Q2");
+  assert.equal(checkRoomCode(makeCode(4)).length, 4);
+  for (const bad of ["", "ABC", "ABCDE", "AB0D", "ABIO", 1234, {}, "가나다라"]) assert.equal(failCode(() => checkRoomCode(bad)), "bad_request", String(bad));
 });

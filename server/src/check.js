@@ -1,7 +1,7 @@
 // 값 검사와 코드 만들기. Cloudflare 없이 돌아서 시험(tests/)에서 바로 쓴다.
 
 import { Fail } from "./http.js";
-import { CODE_ABC, EMOTES, NAME_MAX } from "./protocol.js";
+import { CODE_ABC, CODE_LEN, EMOTES, NAME_MAX } from "./protocol.js";
 import { ART_FILES } from "../../web/js/data/art-files.js";
 
 function randomBytes(n) {
@@ -30,6 +30,14 @@ export function normCode(s, len) {
   const up = s.toUpperCase();
   for (const ch of up) if (!CODE_ABC.includes(ch)) return null;
   return up;
+}
+
+/** 방을 만들 때 화면이 미리 채운 코드. 안 주면 null(서버가 뽑는다), 꼴이 틀리면 bad_request */
+export function checkRoomCode(code) {
+  if (code === undefined || code === null) return null;
+  const c = normCode(code, CODE_LEN.room);
+  if (!c) throw new Fail("bad_request");
+  return c;
 }
 
 const PID = /^[A-Za-z0-9_-]{16,64}$/;

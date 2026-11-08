@@ -3,6 +3,7 @@
 
 import { DurableObject } from "cloudflare:workers";
 import { answerChallenge, viewChallenge } from "./challenge.js";
+import { checkPid } from "./check.js";
 import { Fail } from "./http.js";
 
 const KEY = "c";
@@ -27,7 +28,19 @@ export class Challenge extends DurableObject {
     try {
       const { rec: next, changed } = answerChallenge(rec, body, Date.now());
       if (changed) await this.ctx.storage.put(KEY, next);
-      return { view: viewChallenge(next) };
+      return { view: viewChallenge(next, body.pid) };
+    } catch (e) {
+      if (e instanceof Fail) return { error: e.code, status: e.status, ...(e.extra || {}) };
+      throw e;
+    }
+  }
+
+  /** pid 로 묻는 꼴(여럿이 도전장: 만든 사람은 모든 답, 답한 사람은 자기 결과) */
+  async mine(body) {
+    const rec = await this.#load();
+    if (!rec) return { error: "not_found", status: 404 };
+    try {
+      return { view: viewChallenge(rec, checkPid(body.pid)) };
     } catch (e) {
       if (e instanceof Fail) return { error: e.code, status: e.status, ...(e.extra || {}) };
       throw e;

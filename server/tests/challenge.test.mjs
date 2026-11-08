@@ -44,6 +44,7 @@ test("만들기: 기록에는 손과 pid, 보이는 꼴에는 둘 다 없다", (
     made: NOW,
     expires: NOW + KEEP_MS,
     open: true,
+    max: 1,
   });
   const text = JSON.stringify(v);
   assert.ok(!text.includes("rock"));
@@ -150,4 +151,81 @@ test("프로필 그림: 만든 사람 fromFace, 답한 사람 toFace(모르는 �
   const { rec: plain } = answerChallenge(make(), { v: 1, pid: B, name: "곰", face: 7, hands: ["paper"] }, NOW + 1);
   assert.equal(viewChallenge(plain).toFace, null);
   assert.ok(!JSON.stringify(v).includes(B));
+});
+
+test("여럿이 도전장: max 명까지 답하고, 다 차면 closed. 같은 사람은 그대로, 만든 사람은 own", () => {
+  const rec = make({ hands: ["rock", "paper", "scissors"], max: 3 });
+  assert.deepEqual(rec.answers, []);
+  let v = viewChallenge(rec);
+  assert.equal(v.max, 3);
+  assert.equal(v.count, 0);
+  assert.equal(v.open, true);
+  assert.deepEqual(v.answers, []);
+  const pids = ["manyPid_0000000000001", "manyPid_0000000000002", "manyPid_0000000000003"];
+  const throwsOf = [["paper", "paper", "paper"], ["rock", "paper", "scissors"], ["scissors", "scissors", "rock"]];
+  let cur = rec;
+  pids.forEach((pid, i) => {
+    const r = answerChallenge(cur, { v: 1, pid, name: `사람${i}`, hands: throwsOf[i] }, NOW + i);
+    assert.equal(r.changed, true);
+    cur = r.rec;
+  });
+  assert.equal(cur.answers.length, 3);
+  // 첫 사람: 보 보 보 → 바위에 이기고 보와 비기고 가위에 진다 → 1:1 비김
+  assert.deepEqual(cur.answers[0].cmp, [-1, 0, 1]);
+  assert.equal(cur.answers[0].winner, -1);
+  assert.equal(cur.answers[1].winner, -1, "똑같이 내면 모두 비김");
+  assert.equal(cur.answers[2].winner, 1, "가위 가위 바위 → 받은 사람이 2판");
+  const again = answerChallenge(cur, { v: 1, pid: pids[1], name: "사람1", hands: ["rock", "rock", "rock"] }, NOW + 9);
+  assert.equal(again.changed, false);
+  assert.equal(failOf(() => answerChallenge(cur, { v: 1, pid: A, name: "여우", hands: ["rock", "rock", "rock"] }, NOW)).code, "own");
+  const late = failOf(() => answerChallenge(cur, { v: 1, pid: C, name: "새", hands: ["rock", "rock", "rock"] }, NOW));
+  assert.equal(late.code, "closed");
+  assert.equal(late.extra.result.open, false);
+  assert.ok(!JSON.stringify(late.extra.result).includes("scissors"), "늦게 온 사람에게도 손은 안 보인다");
+  v = viewChallenge(cur);
+  assert.equal(v.count, 3);
+  assert.equal(v.open, false);
+});
+
+test("여럿이 도전장 꼴: 누구나 보는 꼴에는 손이 없고, 만든 사람은 모든 답, 답한 사람은 자기 결과", () => {
+  const P1 = "manyPid_0000000000011";
+  const P2 = "manyPid_0000000000012";
+  let { rec } = answerChallenge(make({ hands: ["rock"], max: 10, face: "fox" }), { v: 1, pid: P1, name: "곰", face: "bear", hands: ["paper"] }, NOW + 1);
+  ({ rec } = answerChallenge(rec, { v: 1, pid: P2, name: "새", hands: ["scissors"] }, NOW + 2));
+  const anyone = viewChallenge(rec);
+  assert.deepEqual(anyone.answers, [
+    { name: "곰", face: "bear", at: NOW + 1, score: [0, 1], winner: 1 },
+    { name: "새", face: null, at: NOW + 2, score: [1, 0], winner: 0 },
+  ]);
+  assert.equal(anyone.open, true);
+  assert.equal(anyone.you, undefined);
+  const text = JSON.stringify(anyone);
+  for (const bad of ["rock", "paper", "scissors", A, P1, P2]) assert.ok(!text.includes(bad), bad);
+  assert.deepEqual(viewChallenge(rec, C), anyone, "답하지 않은 사람이 물어도 같다");
+
+  const owner = viewChallenge(rec, A);
+  assert.equal(owner.you, "from");
+  assert.deepEqual(owner.hands, { from: ["rock"] });
+  assert.deepEqual(owner.answers.map((a) => [a.hands, a.cmp]), [[["paper"], [-1]], [["scissors"], [1]]]);
+
+  const second = viewChallenge(rec, P2);
+  assert.equal(second.you, 1);
+  assert.deepEqual(second.hands, { from: ["rock"], to: ["scissors"] });
+  assert.deepEqual([second.to, second.toFace, second.answered, second.score, second.winner], ["새", null, NOW + 2, [1, 0], 0]);
+  assert.equal(second.answers[0].hands, undefined, "남의 손은 안 보인다");
+  const back = structuredClone(rec);
+  assert.deepEqual(viewChallenge(back, P1), viewChallenge(rec, P1), "저장했다 꺼내도 같다");
+});
+
+test("여럿이 도전장 만들기 검사: max 는 1–50 정수, 안 주면 1(지금 도전장 그대로)", () => {
+  for (const bad of [0, 51, 2.5, "3", -1]) assert.equal(failOf(() => make({ max: bad })).code, "bad_request", String(bad));
+  assert.equal(make().max, 1);
+  assert.equal(make().answers, undefined);
+  assert.equal(make({ max: 50 }).max, 50);
+  // 11-08 전에 만든 기록(max 없음)은 한 사람 도전장으로 읽는다
+  const old = make();
+  delete old.max;
+  const { rec } = answerChallenge(old, { v: 1, pid: B, name: "곰", hands: ["paper"] }, NOW);
+  assert.equal(viewChallenge(rec).open, false);
+  assert.equal(viewChallenge(rec).max, 1);
 });

@@ -7,11 +7,11 @@ import { MatchQueue } from "./match-do.js";
 import { Ranking } from "./rank-do.js";
 import { QUEUE_HINT, RANK_HINT, placeOf } from "./where.js";
 import { makeChallenge } from "./challenge.js";
-import { checkFace, checkName, checkPid, makeCode, normCode } from "./check.js";
-import { normRules, warmUp } from "./games.js";
+import { checkFace, checkName, checkPid, checkRoomCode, makeCode, normCode } from "./check.js";
+import { groupBaseIds, normRules, warmUp } from "./games.js";
 import { isOnlineGame } from "../../web/js/data/online.js";
 import { Fail, allowedOrigin, checkVersion, json, originList, preflight, readBody } from "./http.js";
-import { CLOSE, CODE_LEN, MATCH_FORMATS, PROTOCOL } from "./protocol.js";
+import { CLOSE, CODE_LEN, GROUP_MODES, MATCH_FORMATS, PROTOCOL } from "./protocol.js";
 
 export { Challenge, RoomHost, MatchQueue, Ranking };
 
@@ -85,7 +85,7 @@ function reply(r, now, origin) {
   return json({ ...r.view, now }, 200, origin);
 }
 
-// POST /api/c · GET /api/c/<코드> · POST /api/c/<코드>/answer
+// POST /api/c · GET /api/c/<코드> · POST /api/c/<코드>/answer · POST /api/c/<코드>/me(pid 로 묻는 꼴)
 async function challengeRoute(request, env, rest, url, now, origin) {
   const m = request.method;
   if (rest.length === 0 && m === "POST") {
@@ -107,14 +107,25 @@ async function challengeRoute(request, env, rest, url, now, origin) {
     const body = await readBody(request);
     return reply(await callDO(() => stub(env.CHALLENGES, code).answer(body)), now, origin);
   }
+  if (rest.length === 2 && rest[1] === "me" && m === "POST") {
+    const body = await readBody(request);
+    return reply(await callDO(() => stub(env.CHALLENGES, code).mine(body)), now, origin);
+  }
   throw new Fail("not_found");
 }
 
-// POST /api/rooms: 새 방. 만든 사람이 방장(0번 자리)
+// POST /api/rooms: 새 방. 만든 사람이 방장(0번 자리).
+// code 를 주면(화면이 미리 채운 코드) 그 코드로 만든다. 그 코드 방이 이미 있으면 만들지 않고 { code, taken: true }(200)로 답해
+// 화면이 그 방으로 들어간다. 안 주면 서버가 비어 있는 코드를 뽑는다(201)
 async function createRoom(request, env, now, origin) {
   const body = await readBody(request);
   const host = { pid: checkPid(body.pid), name: checkName(body.name), face: checkFace(body.face) };
   const rules = normRules(body.rules);
+  const wanted = checkRoomCode(body.code);
+  if (wanted) {
+    const r = await callDO(() => stub(env.ROOMS, wanted).init({ code: wanted, rules, host }));
+    return r.taken ? json({ code: wanted, taken: true, now }, 200, origin) : json({ code: wanted, now }, 201, origin);
+  }
   for (let i = 0; i < TRIES; i++) {
     const code = makeCode(CODE_LEN.room);
     const r = await callDO(() => stub(env.ROOMS, code).init({ code, rules, host }));
@@ -176,12 +187,23 @@ async function socketRoute(request, env, url, parts, okOrigin) {
     id = code;
   } else if (parts[0] === "api" && parts[1] === "match" && parts[2] === "ws" && parts.length === 3) {
     const game = q.get("game");
-    const format = q.get("format");
-    if (!isOnlineGame("random", game)) return refuse("bad_game", CLOSE.bad_request);
-    if (!MATCH_FORMATS.includes(format)) return refuse("bad_rules", CLOSE.bad_request);
     ns = env.MATCH;
-    // 11-08: 대기열을 동북아에 새로 둔다(처음 것은 시험 때 미국에 생겼다). 대기열은 저장하는 게 없어 이름만 바꾸면 된다
-    id = `2:${game}:${format}`;
+    if (game === "group") {
+      // 여럿이 가위바위보 대기열: 바탕·정하기마다 하나(판 수는 없다)
+      const base = q.get("base") || "classic";
+      const mode = q.get("mode") || GROUP_MODES[0];
+      if (!groupBaseIds().includes(base)) return refuse("bad_game", CLOSE.bad_request);
+      if (!GROUP_MODES.includes(mode)) return refuse("bad_rules", CLOSE.bad_request);
+      fwd.searchParams.set("base", base);
+      fwd.searchParams.set("mode", mode);
+      id = `2:group:${base}:${mode}`;
+    } else {
+      const format = q.get("format");
+      if (!isOnlineGame("random", game)) return refuse("bad_game", CLOSE.bad_request);
+      if (!MATCH_FORMATS.includes(format)) return refuse("bad_rules", CLOSE.bad_request);
+      // 11-08: 대기열을 동북아에 새로 둔다(처음 것은 시험 때 미국에 생겼다). 대기열은 저장하는 게 없어 이름만 바꾸면 된다
+      id = `2:${game}:${format}`;
+    }
     hint = QUEUE_HINT;
     const place = placeOf(request.cf);
     if (place) fwd.searchParams.set("place", place);

@@ -21,6 +21,8 @@ export const EMOTE_GAP_MS = 2000;
 
 // 도전장
 export const CHALLENGE_ROUNDS = [1, 3, 5];
+/** 도전장 하나에 답할 수 있는 사람 수(max). 1 이 보통 도전장, 2 부터는 링크 하나에 여럿이 답한다 */
+export const CHALLENGE_MAX = { default: 1, max: 50 };
 export const CHALLENGE_KEEP_MS = 30 * 24 * 60 * 60 * 1000;
 
 // 방
@@ -54,6 +56,8 @@ export const MATCH_TIMER = 20;
 export const MATCH_BOT_OFFER_MS = 20_000;
 /** 짝이 정해진 뒤 이 안에 안 들어온 자리는 봇이 앉는다 */
 export const MATCH_SHOW_MS = 15_000;
+/** 여럿이 대기열: 최소 인원이 모인 뒤 사람을 더 기다리는 시간(최대 인원이 차면 바로 시작) */
+export const GROUP_MATCH_WAIT_MS = 10_000;
 
 // 랭킹(게임마다 따로, 랜덤 방 첫 경기만 센다. 점수 계산은 web/js/core/rating.js)
 /** 순위표에 보이는 사람 수 */
