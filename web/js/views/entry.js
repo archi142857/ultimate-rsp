@@ -31,6 +31,8 @@ const VIEWS = {
   league: leagueView,
   lattice: latticeView,
   war: warView,
+  majority: (main, entry, params) => groupView(main, entry, params, { rules: ["majority", "minority"] }),
+  choki: (main, entry, params) => groupView(main, entry, params, { tie3: "scissors" }),
 };
 
 export function entryView(main, entry, params) {

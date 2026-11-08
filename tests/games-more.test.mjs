@@ -384,9 +384,12 @@ test("화면 준비 중(draft) 항목은 도감에 안 보이고, 영어와 출�
   const cat = await import("../web/js/data/catalog.js");
   const { setLang } = await import("../web/js/i18n.js");
   const ids = ["hammer", "donpappa", "relay", "ecard", "shogi", "penney", "dice", "morra", "blotto", "majority", "choki", "host", "teamtag", "teamsplit"];
-  assert.deepEqual(cat.DRAFTS.map((e) => e.id).sort(), [...ids].sort());
+  // 화면이 붙은 항목은 프론트엔드가 draft 를 지워 도감에 나온다(11-08 프론트엔드: 하나씩 열 수 있게 고침)
+  const drafts = cat.DRAFTS.map((e) => e.id);
+  assert.ok(drafts.every((id) => ids.includes(id)), `draft 는 11-08 놀이만: ${drafts}`);
   for (const id of ids) {
-    assert.equal(cat.findEntry(id), null, `${id} 는 아직 도감에 없다`);
+    if (drafts.includes(id)) assert.equal(cat.findEntry(id), null, `${id} 는 아직 도감에 없다`);
+    else assert.ok(cat.findEntry(id), `${id} 는 화면이 생겨 도감에 있다`);
     const e = cat.findAnyEntry(id);
     assert.ok(e && e.about.length === 2 && e.sources.length, id);
   }
@@ -395,7 +398,7 @@ test("화면 준비 중(draft) 항목은 도감에 안 보이고, 영어와 출�
   const HANGUL = /[ㄱ-ㆎ가-힣]/;
   try {
     setLang("en");
-    for (const e of cat.DRAFTS) {
+    for (const e of ids.map((id) => cat.findAnyEntry(id))) {
       const text = [e.name, e.sub || "", e.origin, ...e.about, ...e.sources.map((s) => s.t)].join(" ");
       assert.ok(!HANGUL.test(text), `${e.id} 영어에 한글이 남았다`);
     }

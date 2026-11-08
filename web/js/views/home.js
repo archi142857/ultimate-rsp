@@ -26,6 +26,8 @@ const ART = {
   league: "🏆",
   lattice: "🦎",
   war: "⚔️",
+  majority: "📊",
+  choki: "✂️",
 };
 const META = {
   mukjjippa: "공격과 수비",
@@ -41,6 +43,8 @@ const META = {
   league: "전략 9가지",
   lattice: "도마뱀과 대장균",
   war: "손 3~5가지",
+  majority: "많은 손·적은 손",
+  choki: "가위가 유리",
 };
 
 const compiled = new Map();
