@@ -25,7 +25,7 @@ export function minusOneView(main, entry) {
 
   const st = stage();
   const score = scoreboard();
-  const steps = stepList([t("두 손으로 가위바위보를 낸다"), t("서로 두 손을 보고, 하나 빼기! 에 한 손을 거둔다"), t("남은 손끼리 겨룬다. 비기면 1번부터")]);
+  const steps = stepList([t("두 손으로 가위바위보를 낸다"), t("서로 두 손을 보고 '하나 빼기!'에 맞춰 한 손을 거둔다"), t("남은 손끼리 겨룬다. 비기면 1번부터")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("minusone")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -202,12 +202,12 @@ export function minusOneView(main, entry) {
   const side = h(
     "div",
     { class: "side-panel" },
-    block(t("차례"), steps.el),
+    block(t("하는 법"), steps.el),
     h(
       "p",
       { class: "note" },
       h("b", {}, t("같은 손 둘은 손해다. ")),
-      t("두 손을 보고 나서 고르는 2단계를 끝까지 계산하면, 1단계에서는 서로 다른 두 손({pairs})을 같은 몫으로 섞는 게 가장 좋다. 같은 손 둘을 내면 상대가 그 손을 이기는 손을 남길 수 있기 때문이다.", { pairs: pairFacts.join(", ") }),
+      t("두 손을 보고 고르는 2단계까지 끝까지 계산하면, 1단계에서는 서로 다른 두 손({pairs})을 같은 비율로 섞어 내야 가장 좋다. 같은 손 둘을 내면 상대가 그 손을 이기는 손을 남겨 버린다.", { pairs: pairFacts.join(", ") }),
     ),
   );
   const panel = h(

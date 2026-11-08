@@ -72,8 +72,8 @@ export function groupView(main, entry) {
     finishBtn.hidden = game.done || meIn;
     if (!game.done) {
       const c = groupDecisiveChance(game.alive.length);
-      chanceLine.textContent = t("{n}명이 아무렇게나 내면 이번에 승부가 날 확률은 {p}. 나머지는 다시 한다.", { n: game.alive.length, p: pct(c) });
-    } else chanceLine.textContent = t("{n}번 던져서 끝났다.", { n: game.rounds.length });
+      chanceLine.textContent = t("{n}명이 아무렇게나 내면 이번에 승부가 날 확률은 {p}. 나지 않으면 다시 낸다.", { n: game.alive.length, p: pct(c) });
+    } else chanceLine.textContent = t("{n}번 만에 끝났다.", { n: game.rounds.length });
   }
 
   function newGame() {
@@ -84,7 +84,7 @@ export function groupView(main, entry) {
     grid.lock(false);
     log.clear();
     st.say("");
-    st.sub(mode === "survive" ? t("이긴 손을 낸 사람만 남는다. 마지막 한 명이 이긴다.") : t("진 손을 낸 사람만 남는다. 마지막 한 명이 술래."));
+    st.sub(mode === "survive" ? t("이긴 손을 낸 사람만 남는다. 마지막 한 명이 이긴다.") : t("진 손을 낸 사람만 남는다. 마지막 한 명이 술래다."));
     draw();
   }
 

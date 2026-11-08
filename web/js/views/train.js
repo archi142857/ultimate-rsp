@@ -53,7 +53,7 @@ export function trainView(main, entry) {
       stat(t("기차"), t("{n}줄", { n: sim.trains.length })),
       stat(t("@stat:차례"), t("{n}번", { n: sim.turn })),
       stat(t("@stat:가위바위보"), t("{n}번", { n: sim.throws })),
-      stat(t("한 줄이 되기까지 어림"), t("{n}차례쯤", { n: Math.ceil(Math.log2(people)) })),
+      stat(t("한 줄이 될 때까지(어림)"), t("{n}차례쯤", { n: Math.ceil(Math.log2(people)) })),
     );
     stepBtn.disabled = runBtn.disabled = sim.done || running;
   }

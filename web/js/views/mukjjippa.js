@@ -114,7 +114,7 @@ export function mukjjippaView(main, entry) {
       st.say(meWon ? t("이겼다!") : t("졌다"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
-      line = meWon ? t("같은 손 {h}! 내가 공격이라 내가 이겼다.", { h: lower(V.hands[i].name) }) : t("같은 손 {h}! 컴퓨터가 공격이라 컴퓨터가 이겼다.", { h: lower(V.hands[i].name) });
+      line = meWon ? t("둘 다 {h}! 공격하던 내가 이겼다.", { h: lower(V.hands[i].name) }) : t("둘 다 {h}! 공격하던 컴퓨터가 이겼다.", { h: lower(V.hands[i].name) });
     } else {
       const s = V.sentence(i, j);
       st.say(r.note === "keep" ? t("공격 그대로") : t("공격이 넘어갔다"), game.attacker === 0 ? "win" : "lose");
@@ -139,12 +139,12 @@ export function mukjjippaView(main, entry) {
   const side = h(
     "div",
     { class: "side-panel" },
-    block(t("차례"), steps.el),
+    block(t("하는 법"), steps.el),
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("공격을 쥐면 유리하다. ")),
-      t("둘 다 아무렇게나 내면 공격 쪽이 결국 이길 확률이 2/3 이다. 같은 손이 나올 확률 1/3, 공격을 지킬 확률 1/3, 빼앗길 확률 1/3 이 이어지기 때문이다."),
+      h("b", {}, t("공격하는 쪽이 유리하다. ")),
+      t("둘 다 아무렇게나 내면 공격하는 쪽이 끝내 이길 확률은 2/3이다. 판마다 같은 손이 나올 확률, 공격을 지킬 확률, 빼앗길 확률이 모두 1/3이기 때문이다."),
     ),
   );
   const panel = h(

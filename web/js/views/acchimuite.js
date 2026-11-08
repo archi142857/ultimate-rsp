@@ -24,7 +24,7 @@ export function acchimuiteView(main, entry) {
 
   const st = stage();
   const score = scoreboard();
-  const steps = stepList([t("@step:가위바위보"), t("이긴 쪽이 가리키고, 진 쪽이 같은 순간 고개를 돌린다"), t("가리킨 쪽을 보면 진다. 아니면 1번부터")]);
+  const steps = stepList([t("@step:가위바위보"), t("이긴 쪽이 가리키고, 진 쪽이 같은 순간 고개를 돌린다"), t("가리킨 쪽으로 고개를 돌리면 진다. 아니면 1번부터 다시")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("acchimuite")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -138,11 +138,11 @@ export function acchimuiteView(main, entry) {
   const side = h(
     "div",
     { class: "side-panel" },
-    block(t("차례"), steps.el),
+    block(t("하는 법"), steps.el),
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("가리키는 쪽이 이길 확률은 한 번에 1/4. ")),
+      h("b", {}, t("가리키는 쪽이 한 번에 이길 확률은 1/4이다. ")),
       t("그래서 가위바위보를 여러 번 이겨야 끝나는 경우가 많다. 교토 기온의 술자리 놀이에서 비롯됐다는 이야기가 있다."),
     ),
   );

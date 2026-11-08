@@ -95,7 +95,7 @@ export function glicoView(main, entry) {
     analysis.append(
       h("p", { class: "field-label", style: { margin: 0 } }, t("지금 자리에서 둘 다 최선을 다하면 내가 이길 확률")),
       h("div", { class: "big-num" }, pct(v)),
-      h("p", { class: "field-label", style: { margin: "6px 0 0" } }, t("그때 내가 낼 최적 섞기")),
+      h("p", { class: "field-label", style: { margin: "6px 0 0" } }, t("여기서 내가 낼 최적 비율")),
       mixBar(V, sol.mix[pa][pb]),
     );
   }
@@ -189,7 +189,7 @@ export function glicoView(main, entry) {
     "div",
     { class: "side-panel" },
     block(
-      t("계산기가 본 판"),
+      t("계산기는 이렇게 본다"),
       h(
         "p",
         {},

@@ -52,7 +52,7 @@ export function dynamiteWbView(main, entry) {
     label: t("컴퓨터"),
     value: botKind,
     options: [
-      { id: "bomber", name: t("폭탄 꾼") },
+      { id: "bomber", name: t("폭탄꾼") },
       { id: "random", name: t("주사위") },
     ],
     onChange: (v) => ((botKind = v), (bot = createDwbBot(V, rng, v)), newMatch()),
@@ -110,7 +110,7 @@ export function dynamiteWbView(main, entry) {
       const won = match.winner === 0;
       rec.textContent = recordLine(addRecord("dynamitewb", won ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, won ? t("{n}점 먼저, 승리", { n: target }) : t("컴퓨터가 먼저 닿았다")),
+        h("strong", {}, won ? t("{n}점 먼저, 승리", { n: target }) : t("컴퓨터가 먼저 채웠다")),
         h("button", { class: "btn btn-ink", type: "button", onclick: newMatch }, t("새 경기")),
       );
       doneBar.hidden = false;
@@ -126,7 +126,7 @@ export function dynamiteWbView(main, entry) {
     block(
       t("언제 터뜨릴까"),
       h("p", {}, t("다이너마이트를 아무 때나 쓰면 금방 떨어진다. 점수가 쌓인 판에 쓰면 한 번에 여러 점을 가져온다.")),
-      h("p", {}, t("그 버릇을 읽으면 물풍선으로 받아칠 수 있다. 물풍선은 다이너마이트만 이기고 나머지에는 지니, 빗나가면 손해다. '폭탄 꾼'은 이렇게 두고, 상대가 비긴 뒤에 다이너마이트를 자주 쓰면 물풍선을 꺼낸다.")),
+      h("p", {}, t("그 버릇을 읽으면 물풍선으로 받아칠 수 있다. 물풍선은 다이너마이트만 이기고 나머지에는 지므로 빗나가면 손해다. 컴퓨터 전략 '폭탄꾼'이 이렇게 둔다. 상대가 비긴 뒤에 다이너마이트를 자주 쓰면 물풍선을 꺼낸다.")),
     ),
   );
   const panel = h(
