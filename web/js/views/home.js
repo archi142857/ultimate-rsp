@@ -28,6 +28,9 @@ const ART = {
   war: "⚔️",
   majority: "📊",
   choki: "✂️",
+  host: "🎙️",
+  teamtag: "🏃",
+  teamsplit: "🤚",
 };
 const META = {
   mukjjippa: "공격과 수비",
@@ -45,6 +48,9 @@ const META = {
   war: "손 3~5가지",
   majority: "많은 손·적은 손",
   choki: "가위가 유리",
+  host: "진행자에게 지면 탈락",
+  teamtag: "편끼리 쫓고 달아나기",
+  teamsplit: "바위와 보로 편 나누기",
 };
 
 const compiled = new Map();

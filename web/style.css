@@ -1549,6 +1549,100 @@ table.grid td.s {
   color: var(--muted);
 }
 
+/* 누르기 단추(뿅망치·돈!·달아나기) */
+.press {
+  display: block;
+  width: 100%;
+  min-height: 64px;
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  border: 2px dashed var(--line-2);
+  border-radius: var(--r-tile);
+  background: var(--surface);
+  color: var(--muted);
+  font: 400 var(--step-2) / 1.1 var(--display);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.press.armed {
+  border-style: solid;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  animation: press-pulse 0.5s ease-in-out infinite alternate;
+}
+.press.armed.hot {
+  border-color: var(--lose);
+  background: var(--lose);
+  color: #fff;
+}
+@keyframes press-pulse {
+  to {
+    transform: scale(1.015);
+  }
+}
+
+/* 편 두 줄(편 술래잡기·편 가르기) */
+.teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.team {
+  border: 1px solid var(--line);
+  border-radius: var(--r-tile);
+  padding: 10px;
+  background: var(--surface);
+  min-width: 0;
+}
+.team.mine {
+  border-color: var(--ink-2);
+}
+.team-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: var(--step--1);
+}
+.team-head b {
+  font: 400 var(--step-2) / 1 var(--display);
+}
+.team .circle {
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 6px;
+  margin: 0;
+}
+.team .person {
+  padding: 6px 4px;
+}
+.team .person .face {
+  font-size: 1.4rem;
+}
+.team .person .nm {
+  word-break: keep-all;
+}
+@media (max-width: 560px) {
+  .teams {
+    grid-template-columns: 1fr;
+  }
+}
+.person.moved {
+  animation: person-in 0.5s ease-out;
+}
+@keyframes person-in {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+
 /* 기차 */
 .trains {
   display: grid;

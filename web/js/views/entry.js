@@ -16,6 +16,9 @@ import { evolutionView } from "./evolution.js";
 import { leagueView } from "./league.js";
 import { latticeView } from "./lattice.js";
 import { warView } from "./war.js";
+import { hostView } from "./host.js";
+import { teamSplitView } from "./teamsplit.js";
+import { teamTagView } from "./teamtag.js";
 
 const VIEWS = {
   mukjjippa: mukjjippaView,
@@ -33,6 +36,9 @@ const VIEWS = {
   war: warView,
   majority: (main, entry, params) => groupView(main, entry, params, { rules: ["majority", "minority"] }),
   choki: (main, entry, params) => groupView(main, entry, params, { tie3: "scissors" }),
+  host: hostView,
+  teamtag: teamTagView,
+  teamsplit: teamSplitView,
 };
 
 export function entryView(main, entry, params) {
