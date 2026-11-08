@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { afterEntry, boardEntry, fromRow, ipTag, rankKey, sameHome } from "../src/rank.js";
+import { afterEntry, boardEntry, fromRow, homeOf, ipTag, rankKey, sameHome } from "../src/rank.js";
 import { newRecord, rateMatch } from "../../web/js/core/rating.js";
 import { RANK_TOP } from "../src/protocol.js";
 
@@ -48,4 +48,15 @@ test("같은 곳: 둘 다 꼬리표가 있고 같을 때만", () => {
   assert.equal(sameHome(["aa", "bb"]), false);
   assert.equal(sameHome([null, null]), false, "모르면 막지 않는다");
   assert.equal(sameHome(["aa"]), false, "봇과 하기");
+});
+
+test("한 집: IPv4 는 그대로, IPv6 는 앞 64비트, IPv6 안의 IPv4 는 IPv4", async () => {
+  assert.equal(homeOf("203.0.113.7"), "203.0.113.7");
+  assert.equal(homeOf("2001:db8:1:2:aaaa:bbbb:cccc:dddd"), "2001:db8:1:2::/64");
+  assert.equal(homeOf("2001:DB8:1:2::9"), "2001:db8:1:2::/64");
+  assert.equal(homeOf("2001:db8::1"), "2001:db8:0:0::/64");
+  assert.equal(homeOf("::ffff:198.51.100.4"), "198.51.100.4");
+  const day = Date.UTC(2026, 10, 8, 12);
+  assert.equal(await ipTag("2001:db8:1:2:aaaa::1", day), await ipTag("2001:db8:1:2:bbbb::2", day), "같은 /64 는 한 집");
+  assert.notEqual(await ipTag("2001:db8:1:2::1", day), await ipTag("2001:db8:1:3::1", day));
 });
