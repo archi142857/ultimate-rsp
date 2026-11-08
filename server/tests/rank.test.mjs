@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { afterEntry, boardEntry, fromRow, homeOf, ipTag, rankKey, sameHome } from "../src/rank.js";
+import { afterEntry, boardEntry, dayOf, fromRow, homeOf, ipTag, overDaily, rankKey, sameHome } from "../src/rank.js";
 import { newRecord, rateMatch } from "../../web/js/core/rating.js";
 import { RANK_TOP } from "../src/protocol.js";
 
@@ -59,4 +59,16 @@ test("한 집: IPv4 는 그대로, IPv6 는 앞 64비트, IPv6 안의 IPv4 는 I
   const day = Date.UTC(2026, 10, 8, 12);
   assert.equal(await ipTag("2001:db8:1:2:aaaa::1", day), await ipTag("2001:db8:1:2:bbbb::2", day), "같은 /64 는 한 집");
   assert.notEqual(await ipTag("2001:db8:1:2::1", day), await ipTag("2001:db8:1:3::1", day));
+});
+
+test("하루 상한: pid 하나 30경기, 같은 곳 하나 60경기에 닿으면 그 경기는 안 센다. 날은 UTC(한국 오전 9시)", () => {
+  assert.equal(overDaily({ a: 29, b: 0 }), false);
+  assert.equal(overDaily({ a: 30, b: 0 }), true);
+  assert.equal(overDaily({ a: 0, b: 30 }), true);
+  assert.equal(overDaily({ a: 0, b: 0, ha: 59, hb: 0 }), false);
+  assert.equal(overDaily({ a: 0, b: 0, ha: 60, hb: null }), true);
+  assert.equal(overDaily({ a: 0, b: 0, ha: null, hb: 60 }), true);
+  assert.equal(overDaily({ a: 0, b: 0, ha: null, hb: null }), false, "같은 곳을 모르면 pid 만 본다");
+  assert.equal(dayOf(Date.UTC(2026, 10, 9, 0, 0)), "2026-11-09");
+  assert.equal(dayOf(Date.UTC(2026, 10, 8, 23, 59)), "2026-11-08", "한국 11-09 08:59 는 아직 11-08");
 });

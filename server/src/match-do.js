@@ -150,7 +150,7 @@ export class MatchQueue extends DurableObject {
 
   /** 여럿이 방을 만들고 방 코드를 준다. 먼저 온 사람이 0번 자리(방장), seats 가 사람보다 많으면 시작할 때 봇이 앉는다. 됐으면 true */
   async #groupStart(sockets, seats) {
-    const people = sockets.map((ws) => ({ pid: att(ws).pid, name: att(ws).name, face: att(ws).face ?? null }));
+    const people = sockets.map((ws) => ({ pid: att(ws).pid, name: att(ws).name, face: att(ws).face ?? null, home: att(ws).ip ?? null }));
     const { base, mode } = att(sockets[0]);
     for (const p of people) this.busy.add(p.pid);
     try {
@@ -176,7 +176,7 @@ export class MatchQueue extends DurableObject {
 
   /** 짝(또는 혼자)으로 방을 만들고 방 코드를 준다. 먼저 온 사람이 0번 자리(방장) */
   async #pair(sockets) {
-    const people = sockets.map((ws) => ({ pid: att(ws).pid, name: att(ws).name, face: att(ws).face ?? null }));
+    const people = sockets.map((ws) => ({ pid: att(ws).pid, name: att(ws).name, face: att(ws).face ?? null, home: att(ws).ip ?? null }));
     const { game, format } = att(sockets[0]);
     for (const p of people) this.busy.add(p.pid);
     try {

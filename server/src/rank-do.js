@@ -4,7 +4,7 @@
 
 import { DurableObject } from "cloudflare:workers";
 import { BOARD_MIN_GAMES, onBoard, rateMatch } from "../../web/js/core/rating.js";
-import { afterEntry, boardEntry, fromRow, rankKey } from "./rank.js";
+import { afterEntry, boardEntry, dayOf, fromRow, overDaily, rankKey } from "./rank.js";
 import { RANK_TOP } from "./protocol.js";
 
 const UPSERT = `INSERT INTO players (key, name, face, rating, games, wins, losses, draws, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -27,6 +27,17 @@ export class Ranking extends DurableObject {
     } catch {
       this.sql.exec("ALTER TABLE players ADD COLUMN face TEXT");
     }
+    // 하루 상한(11-09): 열쇠(pid 해시 또는 "h:" + 같은 곳 꼬리표)마다 오늘 센 경기 수. 지난날 줄은 하루에 한 번 지운다
+    this.sql.exec("CREATE TABLE IF NOT EXISTS daily (key TEXT NOT NULL, day TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (key, day)) WITHOUT ROWID");
+    this.tidied = null;
+  }
+
+  #today(key, day) {
+    return key ? this.sql.exec("SELECT n FROM daily WHERE key = ? AND day = ?", key, day).toArray()[0]?.n ?? 0 : null;
+  }
+
+  #bump(key, day) {
+    if (key) this.sql.exec("INSERT INTO daily (key, day, n) VALUES (?, ?, 1) ON CONFLICT(key, day) DO UPDATE SET n = n + 1", key, day);
   }
 
   #row(key) {
@@ -37,14 +48,26 @@ export class Ranking extends DurableObject {
     this.sql.exec(UPSERT, key, who.name, who.face ?? null, rec.rating, rec.games, rec.wins, rec.losses, rec.draws, at);
   }
 
-  /** 한 경기 결과. a·b 는 {pid, name, face}, score 는 a 쪽에서 본 1·0.5·0. 돌려주는 값: 두 사람 새 기록(delta 포함) */
+  /**
+   * 한 경기 결과. a·b 는 {pid, name, face, home}(home 은 같은 곳 꼬리표, 모르면 null), score 는 a 쪽에서 본 1·0.5·0.
+   * 돌려주는 값: 두 사람 새 기록(delta 포함). 하루 상한(RANK_DAILY)에 닿았으면 { skip: true }(기록은 그대로)
+   */
   async record({ a, b, score }) {
     const [ka, kb] = await Promise.all([rankKey(a.pid), rankKey(b.pid)]);
     if (ka === kb) return null;
-    const out = rateMatch(fromRow(this.#row(ka)), fromRow(this.#row(kb)), score);
     const at = Date.now();
+    const day = dayOf(at);
+    if (this.tidied !== day) {
+      this.sql.exec("DELETE FROM daily WHERE day < ?", day);
+      this.tidied = day;
+    }
+    const ha = a.home ? `h:${a.home}` : null;
+    const hb = b.home ? `h:${b.home}` : null;
+    if (overDaily({ a: this.#today(ka, day), b: this.#today(kb, day), ha: this.#today(ha, day), hb: this.#today(hb, day) })) return { skip: true };
+    const out = rateMatch(fromRow(this.#row(ka)), fromRow(this.#row(kb)), score);
     this.#put(ka, a, out.a, at);
     this.#put(kb, b, out.b, at);
+    for (const k of [ka, kb, ha, hb]) this.#bump(k, day);
     this.board_ = null;
     return { a: afterEntry(out.a), b: afterEntry(out.b) };
   }

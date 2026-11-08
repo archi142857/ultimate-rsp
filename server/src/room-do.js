@@ -200,7 +200,9 @@ export class RoomHost extends DurableObject {
       console.error("rank error", (e && e.stack) || e);
     }
     if (!out || !this.room) return;
-    game.rank.after = [out.a, out.b];
+    // 하루 상한에 닿은 경기는 순위에 안 든다(꼴은 skip, 화면은 '순위에 들지 않았다')
+    if (out.skip) game.rank.skip = true;
+    else game.rank.after = [out.a, out.b];
     await this.#commit([{ k: "rated" }]);
   }
 

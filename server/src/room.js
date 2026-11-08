@@ -72,6 +72,8 @@ export class Room {
     if (reserve) {
       reserve.forEach((p, i) => (seats[i] = human(p.pid, p.name, now, false, p.face ?? null)));
       s.reserve = reserve.map((p) => p.pid);
+      // 같은 곳 꼬리표(대기열이 준 IP 해시): 순위 하루 상한에만 쓰고 꼴에는 안 싣는다
+      s.homes = Object.fromEntries(reserve.filter((p) => p.home).map((p) => [p.pid, p.home]));
       s.startAt = now + MATCH_SHOW_MS;
       s.host = 0;
     }
@@ -304,11 +306,12 @@ export class Room {
     // 랭킹: 랜덤 방 첫 경기이고 두 자리 다 사람 몫일 때(안 온 사람 자리도 그 사람 몫). 봇 대전은 안 센다
     let rank = null;
     if (s.ranked && !this.group) {
-      const who = s.seats.map((x) => (x.kind === "human" || (x.kind === "bot" && x.why !== "fill" && x.pid) ? { pid: x.pid, name: x.name, face: x.face ?? null } : null));
+      const who = s.seats.map((x) => (x.kind === "human" || (x.kind === "bot" && x.why !== "fill" && x.pid) ? { pid: x.pid, name: x.name, face: x.face ?? null, home: s.homes?.[x.pid] ?? null } : null));
       if (who.every(Boolean)) rank = { who, done: false, skip: false, after: null };
     }
     s.ranked = false;
     s.reserve = null;
+    s.homes = null;
     s.startAt = null;
     s.phase = "play";
     s.game = { r: 0, rounds: [], pend: [], acted: [], deadline: null, paused: false, idle: 0, winner: null, rank };
@@ -480,7 +483,7 @@ export class Room {
     }
     const [a, b] = g.rank.who.map((w, i) => {
       const x = s.seats[i];
-      return x.kind === "human" ? { pid: w.pid, name: x.name, face: x.face ?? null } : { pid: w.pid, name: w.name, face: w.face ?? null };
+      return x.kind === "human" ? { pid: w.pid, name: x.name, face: x.face ?? null, home: w.home ?? null } : { pid: w.pid, name: w.name, face: w.face ?? null, home: w.home ?? null };
     });
     const score = out[0] ? 0 : out[1] ? 1 : g.winner === 0 ? 1 : g.winner === 1 ? 0 : 0.5;
     return { game: s.rules.game, a, b, score };

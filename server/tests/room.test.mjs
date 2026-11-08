@@ -416,7 +416,7 @@ test("랭킹: 랜덤 방 첫 경기만 센다. 이긴 쪽 1, 이름은 끝날 �
   thr(room, A, "rock");
   thr(room, B, "scissors");
   assert.equal(room.s.phase, "end");
-  assert.deepEqual(room.takeRank(), { game: "classic", a: { pid: A, name: "붉은여우", face: null }, b: { pid: B, name: "곰", face: null }, score: 1 });
+  assert.deepEqual(room.takeRank(), { game: "classic", a: { pid: A, name: "붉은여우", face: null, home: null }, b: { pid: B, name: "곰", face: null, home: null }, score: 1 });
   assert.equal(room.takeRank(), null, "한 번만");
   for (const you of [0, 1, null]) assert.ok(!JSON.stringify(room.view(you)).includes("player"), "방 꼴에 pid 는 안 실린다");
   room.handle(A, "붉은여우", { t: "start" }, T0);
@@ -443,7 +443,7 @@ test("랭킹: 끝날 때 봇이 잇던 자리(나감·안 옴)는 진다. 둘 �
   assert.equal(left.view(1).seats[0].kind, "bot");
   for (let k = 0; k < 60 && left.s.phase === "play"; k++) thr(left, B, "rock");
   assert.equal(left.s.phase, "end");
-  assert.deepEqual(left.takeRank(), { game: "classic", a: { pid: A, name: "여우", face: null }, b: { pid: B, name: "곰", face: null }, score: 0 }, "봇이 이겨도 나간 사람이 진다");
+  assert.deepEqual(left.takeRank(), { game: "classic", a: { pid: A, name: "여우", face: null, home: null }, b: { pid: B, name: "곰", face: null, home: null }, score: 0 }, "봇이 이겨도 나간 사람이 진다");
 
   const noShow = Room.create({ code: "R2D5", rules: { game: "rps101", format: "single" }, now: T0, seed: 5, reserve: pair, random: true });
   noShow.join(A, "여우", T0);
@@ -485,6 +485,18 @@ test("프로필 그림: 사람 자리 face, 다시 들어오면 바뀌고, 랜�
   assert.ok(!("face" in rnd.view(0).seats[1]), "봇 자리에는 그림을 안 싣는다");
   for (let k = 0; k < 60 && rnd.s.phase === "play"; k++) thr(rnd, A, "rock");
   const due = rnd.takeRank();
-  assert.deepEqual(due.a, { pid: A, name: "여우", face: "fox" });
-  assert.deepEqual(due.b, { pid: B, name: "곰", face: "bear" }, "나간 사람은 시작 때 그림");
+  assert.deepEqual(due.a, { pid: A, name: "여우", face: "fox", home: null });
+  assert.deepEqual(due.b, { pid: B, name: "곰", face: "bear", home: null }, "나간 사람은 시작 때 그림");
+});
+
+test("같은 곳 꼬리표: 대기열이 준 home 은 순위 결과까지 이어지고 꼴에는 안 나간다", () => {
+  const room = Room.create({ code: "H0M3", rules: { game: "classic", format: "single" }, now: T0, seed: 4, reserve: [{ pid: A, name: "여우", home: "aaaa1111" }, { pid: B, name: "곰", home: "bbbb2222" }], random: true });
+  room.join(A, "여우", T0);
+  room.join(B, "곰", T0);
+  for (const k of [0, 1, null]) assert.ok(!JSON.stringify(room.view(k)).includes("aaaa1111"), "꼴에 꼬리표 없음");
+  thr(room, A, "rock");
+  thr(room, B, "scissors");
+  const due = room.takeRank();
+  assert.deepEqual([due.a.home, due.b.home], ["aaaa1111", "bbbb2222"]);
+  assert.equal(room.s.homes, null, "시작하면 방 상태에서는 지운다");
 });

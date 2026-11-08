@@ -1,6 +1,7 @@
 // 랭킹 저장소(rank-do.js)가 쓰는 순수 함수. 점수 계산은 web/js/core/rating.js(컨셉)를 그대로 쓴다.
 // 저장 열쇠는 pid 의 해시다. pid 는 그 사람만 아는 값이라 순위표·방 어디에도 내보내지 않는다.
 
+import { RANK_DAILY } from "./protocol.js";
 import { newRecord } from "../../web/js/core/rating.js";
 
 /** pid → 저장 열쇠(SHA-256 앞 16바이트, 16진수 32자) */
@@ -56,4 +57,17 @@ export function boardEntry(row) {
 /** 경기 뒤 방에 실을 기록(바뀐 점수 delta 포함) */
 export function afterEntry(rec) {
   return { rating: rec.rating, delta: rec.delta, games: rec.games, wins: rec.wins, losses: rec.losses, draws: rec.draws };
+}
+
+/** 하루 상한을 세는 날(UTC 날짜. 한국 오전 9시에 바뀌고, IP 꼬리표가 바뀌는 때와 같다) */
+export function dayOf(now) {
+  return new Date(now).toISOString().slice(0, 10);
+}
+
+/**
+ * 오늘 센 순위 경기 수로 이 경기를 셀지. counts: { a, b }(두 pid), { ha, hb }(두 사람의 같은 곳, 모르면 null).
+ * pid 하나가 RANK_DAILY.pid, 같은 곳 하나가 RANK_DAILY.home 에 닿았으면 true(이 경기는 안 센다)
+ */
+export function overDaily({ a, b, ha = null, hb = null }, limits = RANK_DAILY) {
+  return a >= limits.pid || b >= limits.pid || (ha !== null && ha >= limits.home) || (hb !== null && hb >= limits.home);
 }

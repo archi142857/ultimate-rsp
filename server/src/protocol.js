@@ -23,8 +23,10 @@ export const EMOTE_GAP_MS = 2000;
 export const CHALLENGE_ROUNDS = [1, 3, 5];
 /** 도전장 하나에 답할 수 있는 사람 수(max). 1 이 보통 도전장, 2 부터는 링크 하나에 여럿이 답한다 */
 export const CHALLENGE_MAX = { default: 1, max: 50 };
-/** 여럿이 도전장의 결과 공개(reveal): now 는 답하자마자 자기 결과, end 는 마감(다 참·만든 사람이 닫음) 때 모두. 맨 앞이 기본값 */
-export const CHALLENGE_REVEAL = ["now", "end"];
+/** 여럿이 도전장의 결과 공개(reveal). 11-09 사용자 결정: 늘 마감 때 한꺼번에(end). 바로 공개(now)는 엿보기 구멍이라 없앴다 */
+export const CHALLENGE_REVEAL = ["end"];
+/** 여럿이 도전장이 답을 받는 시간: 만든 뒤 24시간이 지나면 저절로 마감(11-09 사용자 결정). 보관은 CHALLENGE_KEEP_MS */
+export const CHALLENGE_OPEN_MS = 24 * 3600_000;
 export const CHALLENGE_KEEP_MS = 30 * 24 * 60 * 60 * 1000;
 
 // 방
@@ -64,6 +66,8 @@ export const GROUP_MATCH_WAIT_MS = 10_000;
 // 랭킹(게임마다 따로, 랜덤 방 첫 경기만 센다. 점수 계산은 web/js/core/rating.js)
 /** 순위표에 보이는 사람 수 */
 export const RANK_TOP = 50;
+/** 게임마다 하루(UTC 날짜, 한국 오전 9시에 바뀜)에 세는 순위 경기 수: pid 하나 30, 같은 곳(IP 꼬리표) 하나 60. 넘으면 그 경기는 안 센다(컨셉 11-09 기본안) */
+export const RANK_DAILY = { pid: 30, home: 60 };
 
 // 연결 유지: 화면이 PING 글자를 보내면 서버가 PONG 으로 바로 답한다(서버를 깨우지 않는다)
 export const PING = "ping";
