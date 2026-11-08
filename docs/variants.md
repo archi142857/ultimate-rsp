@@ -1,6 +1,6 @@
 # 변종 목록
 
-앱에 실린 가위바위보 39가지와 화면을 만들고 있는 14가지의 규칙과 출처. `web/js/data/catalog.js` 에서 `node scripts/variants_doc.mjs > docs/variants.md` 로 만든다. 이 파일은 손으로 고치지 않는다.
+앱에 실린 가위바위보 53가지의 규칙과 출처. `web/js/data/catalog.js` 에서 `node scripts/variants_doc.mjs > docs/variants.md` 로 만든다. 이 파일은 손으로 고치지 않는다.
 
 판정 문장과 손 설명은 이 앱이 새로 쓴 것이다. RPS-7 부터 RPS-101 까지의 손 구성과 고리 순서는 David C. Lovelace 의 것을 따랐고, 손끼리 이기는 까닭을 적은 문장은 따라 쓰지 않았다.
 
@@ -627,6 +627,128 @@ RPS-25의 손을 모두 담았지만 그대로 늘린 것은 아니다. 늑대�
 
 30초 동안 몇 개를 맞히는지 센다. 이기는 손뿐 아니라 지는 손과 비기는 손도 바로바로 떠올려야 한다.
 
+### 뿅망치 가위바위보 (たたいて・かぶって・ジャンケンポン)
+
+일본. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/hammer)
+
+가위바위보에 이긴 사람은 뿅망치로 상대 머리를 치고, 진 사람은 재빨리 헬멧을 쓴다. 헬멧을 먼저 쓰면 막은 것이고, 가위바위보부터 다시 한다.
+
+막기 전에 치면 1점이고, 먼저 3점을 내면 이긴다. 이 앱에서는 이긴 쪽은 '치기', 진 쪽은 '막기'를 누르고, 누가 먼저 눌렀는지로 정한다.
+
+출처
+
+- [RAG Music, たたいてかぶってジャンケンポン](https://www.ragnet.co.jp/freshman-welcome-party-games/8)
+- [App Store, たたいて・かぶって・ジャンケンは自動!](https://apps.apple.com/us/app/id6443710921)
+
+### 돈파파 (ドンパッパ, グリンピース)
+
+일본 서쪽. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/donpappa)
+
+바위는 그린, 가위는 치린, 보는 파린이라 부른다(グリン·チリン·パリン). 가위바위보로 선공을 정한다. 선공이 '지금 손, 지금 손, 다음 손'을 외치며 세 번 내면, 후공도 박자에 맞춰 같이 낸다.
+
+셋째 손이 같으면 먼저 '돈!'을 외친 사람이 이긴다. 다르면 공격과 수비가 바뀐다. 묵찌빠와 같은 갈래지만, 손이 같을 때 공격이 아니라 먼저 외친 사람이 이긴다. 간사이에서는 손이 같아지기 전에 외치면 진다.
+
+출처
+
+- [pedia, ドンパッパ](https://pedia.3rd-in.co.jp/wiki/%E3%83%89%E3%83%B3%E3%83%91%E3%83%83%E3%83%91)
+- [東京都, そとあそび図鑑 vol.5 (からだグリンピース)](https://www.sports-tokyo-info.metro.tokyo.lg.jp/suru/hajimeru_sotoasobi_zukan/data/sotoasobi_vol5.pdf)
+
+### 가위바위보 릴레이 (どんじゃんけん, Hoop Hop Showdown)
+
+일본, 미국 체육 수업. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/relay)
+
+두 편이 길 양 끝 진지에 선다. 한 명씩 달려 나가 만나면 가위바위보를 한다. 이긴 사람은 계속 가고, 진 편은 진지에서 다음 사람이 나온다. 상대 진지에 먼저 닿는 편이 이긴다.
+
+FiveThirtyEight의 수학 퍼즐 코너 Riddler가 이 놀이로 문제를 냈다. 이 앱 규칙으로 한 칸에 1초, 가위바위보 한 번에 1초로 세면, 칸이 8개일 때 평균 2분쯤 걸린다.
+
+출처
+
+- [栃木県, 元気キッズ「走」プログラム](https://www.pref.tochigi.lg.jp/m12/education/sports/genkikids/documents/run1.pdf)
+- [GAME Watch, どんじゃんけん](https://game.watch.impress.co.jp/docs/news/1138961.html)
+- [The Game Gal, Hoop Hop Showdown](https://www.thegamegal.com/?p=5862)
+- [FiveThirtyEight, The Riddler](https://fivethirtyeight.com/features/how-many-hoops-will-kids-jump-through-to-play-rock-paper-scissors)
+
+### 황제와 노예 (E카드)
+
+일본 만화. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/ecard)
+
+황제는 시민을, 시민은 노예를, 노예는 황제를 이긴다. 시민끼리는 비긴다. 황제 쪽은 황제 1장과 시민 4장, 노예 쪽은 노예 1장과 시민 4장을 들고 한 장씩 같이 낸다.
+
+12판을 하고 3판마다 쪽을 바꾼다. 노예 쪽이 이기면 4점, 황제 쪽이 이기면 1점이다. 둘 다 최적 비율로 내면 노예 쪽은 다섯 판에 한 번 이긴다. 그래서 노예 쪽 승리를 4점으로 하면 두 쪽 기대 점수가 같다. 만화 「도박묵시록 카이지」의 E카드를 둘이 하는 놀이로 줄였다. 만화에서는 노예 쪽이 이기면 5배를 받는다.
+
+출처
+
+- [Kaiji Wiki, E-Card](https://kaiji.fandom.com/wiki/E-Card)
+- [E Card (fan-made web game)](https://ecard-24ah.onrender.com)
+
+### 가위바위보 장기 (じゃんけん将棋)
+
+일본 앱에서 따옴. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/shogi)
+
+가로 3칸, 세로 4칸짜리 장기판에 가위·바위·보 말과 왕 말을 놓는다. 말은 가위바위보로 이기는 상대 말만 잡는다. 왕은 무엇이든 잡지만 무엇에든 잡힌다. 같은 말끼리 만나면 움직인 말이 위에 올라타고, 깔린 말은 못 움직인다.
+
+잡은 말은 내 말이 되어, 차례에 움직이는 대신 빈칸에 놓을 수 있다. 상대 왕을 잡으면 이긴다. 바위는 앞뒤와 양옆, 가위는 대각선, 보는 앞쪽 세 칸과 양옆으로 한 칸씩 간다. 일본 앱 「じゃんけん将棋」를 본떠 이 앱에서 규칙을 짰다.
+
+출처
+
+- [QooApp, じゃんけん将棋](https://m-apps.qoo-app.com/en_us/app/6426)
+- [App Store, 対戦じゃんけん将棋](https://apps.apple.com/jp/app/id1105790821)
+
+## 가위바위보를 닮은 놀이
+
+손 대신 동전, 주사위, 손가락 수, 병사로 겨룬다. 어떤 수를 골라도 그 수를 이기는 수가 있다.
+
+### 동전 순서 겨루기 (Penney's game)
+
+Walter Penney (1969). [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/penney)
+
+둘이 동전을 세 번 던졌을 때의 앞뒤 순서를 하나씩 고른다(예: 앞앞뒤). 동전을 계속 던져서, 고른 순서가 먼저 나온 사람이 이긴다.
+
+나중에 고르는 쪽이 늘 유리하다. 상대 순서의 가운데 것을 뒤집어 맨 앞에 두고, 그 뒤에 상대 순서의 앞 두 개를 붙이면 된다. 앞앞앞에는 뒤앞앞으로 맞서 8번에 7번 이긴다. 어떤 순서에도 그 순서를 이기는 순서가 있어서 가위바위보처럼 고리가 생긴다.
+
+출처
+
+- [Wikipedia, Penney's game](https://en.wikipedia.org/wiki/Penney%27s_game)
+- [Nishiyama, Pattern Matching Probabilities and Paradoxes](https://blogsarchive.sites.haverford.edu/mathproblemsolving/files/2011/06/Penney-Ante.pdf)
+
+### 이상한 주사위 (Efron 주사위, Grime 주사위)
+
+Bradley Efron, James Grime. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/dice)
+
+주사위마다 면에 적힌 눈이 다르다. Efron 주사위 넷은 A가 B를, B가 C를, C가 D를, D가 A를 3번에 2번 이긴다. 그래서 상대가 먼저 고르면, 나는 그 주사위를 이기는 주사위를 고를 수 있다.
+
+Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생긴다. 둘씩 굴려 합을 겨루면 그 가운데 한 고리가 거꾸로 돈다. 워런 버핏이 빌 게이츠에게 이런 주사위로 내기를 걸려 한 일화가 있다.
+
+출처
+
+- [Wikipedia, Intransitive dice](https://en.wikipedia.org/wiki/Intransitive_dice)
+- [SAS blog, Intransitive dice](https://blogs.sas.com/content/iml/2020/11/30/intransitive-dice.html)
+
+### 모라 (Morra, 划拳)
+
+고대 로마, 중국. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/morra)
+
+둘이 동시에 손가락을 0~5개 펴면서, 두 사람 손가락 수의 합을 외친다. 한 사람만 맞히면 그 사람이 1점을 얻고, 둘 다 맞히거나 다 틀리면 점수가 없다. 3점을 먼저 내면 이긴다.
+
+고대 로마 때부터 했고, 중국에서는 화취안(划拳)이라 부르며 술자리에서 한다. 한쪽은 홀, 한쪽은 짝을 맡아 손가락 합이 홀인지 짝인지로 정하는 홀짝 놀이도 있다.
+
+출처
+
+- [Wikipedia, Morra (game)](https://en.wikipedia.org/wiki/Morra_(game))
+
+### 블로토 대령 (Colonel Blotto)
+
+Émile Borel (1921). [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/blotto)
+
+둘이 병사 10명을 싸움터 3곳에 몰래 나눠 보낸다. 싸움터마다 많이 보낸 쪽이 이기고, 더 많은 싸움터에서 이긴 쪽이 그 판을 이긴다. 먼저 3판을 이기면 경기에서 이긴다.
+
+병사가 넉넉하면 어떻게 나눠도 늘 이길 수는 없다. 고르게 나누면 두 곳에 조금씩 더 보낸 쪽에게 지고, 몰아 보내면 다른 곳을 내준다. 컴퓨터는 최적 비율에 가깝게 나누는 방법을 고른다.
+
+출처
+
+- [Wikipedia, Blotto game](https://en.wikipedia.org/wiki/Blotto_game)
+- [Colonel Blotto (web game)](https://blotto.incoherency.co.uk)
+
 ## 여럿이 하는 놀이
 
 셋 이상이 한꺼번에 가위바위보를 한다. 직접 하거나 여러 사람이 하는 모습을 지켜본다.
@@ -670,6 +792,70 @@ RPS-25의 손을 모두 담았지만 그대로 늘린 것은 아니다. 늑대�
 - [playmeo, Evolution](https://playmeo.com/?p=1105)
 - [Allegheny College, Evolution](https://sites.allegheny.edu/studentinvolvement/?p=6156)
 
+### 많은 손 이기기 (多い勝ち, 少ない勝ち)
+
+일본. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/majority)
+
+셋 이상이 같이 내고, 가장 많이 나온 손을 낸 사람이 남는다. 거꾸로 가장 적게 나온 손을 낸 사람이 남는 적은 손 이기기도 있다. 가장 많은 손이나 가장 적은 손이 둘 이상이면 다시 한다.
+
+적은 손 이기기는 미리 짜고 내지 못하게 하려고 한다. 한 명이 남을 때까지 되풀이하는 게이머 가위바위보는 보드게임에서 선을 정할 때 많이 쓴다. 둘만 남으면 보통 가위바위보로 끝낸다.
+
+출처
+
+- [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
+- [thewiki, 가위바위보](https://thewiki.kr/w/%EC%9F%8C%EC%BC%84)
+
+### 셋 다 나오면 가위 승 (チョキじゃんけん)
+
+일본. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/choki)
+
+여럿이 할 때 가위·바위·보가 다 나와 비기면 가위를 낸 사람이 이긴다. 나머지는 여럿이 가위바위보와 같다.
+
+여럿이 가위바위보는 사람이 많을수록 잘 안 끝난다. 8명이면 열 번에 아홉 번쯤 다시 한다. 이 규칙은 다시 하는 횟수를 줄이는 대신, 사람이 많을수록 가위가 유리해진다.
+
+출처
+
+- [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
+
+### 진행자 이기기 (審判方式)
+
+일본, ZEP 미니 게임. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/host)
+
+진행자가 먼저 손을 정하고 모두 각자 낸다. 진행자에게 지면 빠지고, 이기면 10점, 비기면 5점을 얻고 남는다. 한 명이 남거나 10판이 끝나면 끝난다.
+
+끝까지 둘 이상 남으면 점수가 높은 사람이 이긴다. 메타버스 ZEP의 가위바위보 미니 게임이 이렇게 점수를 준다. 남은 사람이 모두 지면 이 앱에서는 그 판을 없던 것으로 한다.
+
+출처
+
+- [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
+- [ZEP 공식 가이드, 가위바위보](https://docs.channel.io/zep-guide/ko/articles/%EA%B0%80%EC%9C%84%EB%B0%94%EC%9C%84%EB%B3%B4-f03cf86c)
+
+### 편 가위바위보 술래잡기 (Rock Paper Scissors Tag)
+
+영미권 체육 수업. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/teamtag)
+
+두 편이 몰래 손 하나씩을 정해 다 같이 낸다. 이긴 편이 쫓고 진 편은 제 선으로 달아난다. 잡힌 사람은 상대 편이 된다.
+
+모두 한 편이 되면 끝난다. 거인·마법사·요정이나 할머니·용사·용도 원래 이렇게 하는 놀이다. 이 앱에서는 진 편 사람이 저마다 반반 확률로 잡히고, 20판이 지나면 사람이 많은 편이 이긴다.
+
+출처
+
+- [Playworks, Rock Paper Scissor Tag](https://playworks.org/game-library/rock-paper-scissor-tag)
+- [Sport Aberdeen, Rock Paper Scissors](https://www.sportaberdeen.co.uk/wp-content/uploads/2020/11/Rock-Paper-Scissors-_-Complete.pdf)
+
+### 편 가르기 (グーパー, 엎어라 뒤집어라)
+
+일본, 한국. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/teamsplit)
+
+모두 바위나 보 하나를 내서 같은 손끼리 한 편이 된다. 두 편 수가 같아질 때까지 다시 낸다. 손바닥을 위나 아래로 하는 일본의 우라오모테(うらおもて)와 한국의 엎어라 뒤집어라도 같은 방법이다.
+
+10명이 아무렇게나 내면 다섯 대 다섯으로 갈릴 확률이 1/4쯤이라, 평균 네 번은 내야 한다. 구호는 고장마다 다르다.
+
+출처
+
+- [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
+- [prompie, 편 가르기 구호 이야기](https://academy.prompie.com/communities/posts/%EC%9D%B4%EA%B1%B4-%EC%A7%80%EC%97%AD%EB%A7%88%EB%8B%A4-%EB%8B%A4%EB%A5%B8%EA%B1%B0%EB%9D%BC%EB%8A%94%EB%8D%B0-9hi8giQr/)
+
 ## 시뮬레이션
 
 컴퓨터 전략끼리 수천 판을 겨루게 하고, 가위바위보처럼 물고 물리는 생물이 어떻게 함께 사는지 본다.
@@ -707,189 +893,3 @@ RPS-25의 손을 모두 담았지만 그대로 늘린 것은 아니다. 늑대�
 가위·바위·보가 화면 위를 떠돌다 부딪히면 진 쪽이 이긴 쪽으로 바뀐다. 한 가지만 남으면 끝난다.
 
 처음 수가 같아도 매번 다른 손이 이긴다. 한 가지가 먼저 사라지면 남은 둘 가운데 이기는 쪽이 판을 다 차지하므로, 우승은 '자기를 이기는 손이 먼저 사라진 손'에게 간다.
-
-## 화면 준비 중
-
-규칙 코드(`web/js/games/`)와 시험은 있고 화면이 아직 없는 14가지. 화면이 붙으면 위 갈래로 옮겨 간다.
-
-### 뿅망치 가위바위보 (たたいて・かぶって・ジャンケンポン)
-
-일본. 화면 준비 중
-
-가위바위보에 이긴 사람은 뿅망치로 상대 머리를 치고, 진 사람은 재빨리 헬멧을 쓴다. 헬멧을 먼저 쓰면 막은 것이고, 가위바위보부터 다시 한다.
-
-막기 전에 치면 1점이고, 먼저 3점을 내면 이긴다. 이 앱에서는 이긴 쪽은 '치기', 진 쪽은 '막기'를 누르고, 누가 먼저 눌렀는지로 정한다.
-
-출처
-
-- [RAG Music, たたいてかぶってジャンケンポン](https://www.ragnet.co.jp/freshman-welcome-party-games/8)
-- [App Store, たたいて・かぶって・ジャンケンは自動!](https://apps.apple.com/us/app/id6443710921)
-
-### 돈파파 (ドンパッパ, グリンピース)
-
-일본 서쪽. 화면 준비 중
-
-바위는 그린, 가위는 치린, 보는 파린이라 부른다(グリン·チリン·パリン). 가위바위보로 선공을 정한다. 선공이 '지금 손, 지금 손, 다음 손'을 외치며 세 번 내면, 후공도 박자에 맞춰 같이 낸다.
-
-셋째 손이 같으면 먼저 '돈!'을 외친 사람이 이긴다. 다르면 공격과 수비가 바뀐다. 묵찌빠와 같은 갈래지만, 손이 같을 때 공격이 아니라 먼저 외친 사람이 이긴다. 간사이에서는 손이 같아지기 전에 외치면 진다.
-
-출처
-
-- [pedia, ドンパッパ](https://pedia.3rd-in.co.jp/wiki/%E3%83%89%E3%83%B3%E3%83%91%E3%83%83%E3%83%91)
-- [東京都, そとあそび図鑑 vol.5 (からだグリンピース)](https://www.sports-tokyo-info.metro.tokyo.lg.jp/suru/hajimeru_sotoasobi_zukan/data/sotoasobi_vol5.pdf)
-
-### 가위바위보 릴레이 (どんじゃんけん, Hoop Hop Showdown)
-
-일본, 미국 체육 수업. 화면 준비 중
-
-두 편이 길 양 끝 진지에 선다. 한 명씩 달려 나가 만나면 가위바위보를 한다. 이긴 사람은 계속 가고, 진 편은 진지에서 다음 사람이 나온다. 상대 진지에 먼저 닿는 편이 이긴다.
-
-FiveThirtyEight의 수학 퍼즐 코너 Riddler가 이 놀이로 문제를 냈다. 이 앱 규칙으로 한 칸에 1초, 가위바위보 한 번에 1초로 세면, 칸이 8개일 때 평균 2분쯤 걸린다.
-
-출처
-
-- [栃木県, 元気キッズ「走」プログラム](https://www.pref.tochigi.lg.jp/m12/education/sports/genkikids/documents/run1.pdf)
-- [GAME Watch, どんじゃんけん](https://game.watch.impress.co.jp/docs/news/1138961.html)
-- [The Game Gal, Hoop Hop Showdown](https://www.thegamegal.com/?p=5862)
-- [FiveThirtyEight, The Riddler](https://fivethirtyeight.com/features/how-many-hoops-will-kids-jump-through-to-play-rock-paper-scissors)
-
-### 황제와 노예 (E카드)
-
-일본 만화. 화면 준비 중
-
-황제는 시민을, 시민은 노예를, 노예는 황제를 이긴다. 시민끼리는 비긴다. 황제 쪽은 황제 1장과 시민 4장, 노예 쪽은 노예 1장과 시민 4장을 들고 한 장씩 같이 낸다.
-
-12판을 하고 3판마다 쪽을 바꾼다. 노예 쪽이 이기면 4점, 황제 쪽이 이기면 1점이다. 둘 다 최적 비율로 내면 노예 쪽은 다섯 판에 한 번 이긴다. 그래서 노예 쪽 승리를 4점으로 하면 두 쪽 기대 점수가 같다. 만화 「도박묵시록 카이지」의 E카드를 둘이 하는 놀이로 줄였다. 만화에서는 노예 쪽이 이기면 5배를 받는다.
-
-출처
-
-- [Kaiji Wiki, E-Card](https://kaiji.fandom.com/wiki/E-Card)
-- [E Card (fan-made web game)](https://ecard-24ah.onrender.com)
-
-### 가위바위보 장기 (じゃんけん将棋)
-
-일본 앱에서 따옴. 화면 준비 중
-
-가로 3칸, 세로 4칸짜리 장기판에 가위·바위·보 말과 왕 말을 놓는다. 말은 가위바위보로 이기는 상대 말만 잡는다. 왕은 무엇이든 잡지만 무엇에든 잡힌다. 같은 말끼리 만나면 움직인 말이 위에 올라타고, 깔린 말은 못 움직인다.
-
-잡은 말은 내 말이 되어, 차례에 움직이는 대신 빈칸에 놓을 수 있다. 상대 왕을 잡으면 이긴다. 바위는 앞뒤와 양옆, 가위는 대각선, 보는 앞쪽 세 칸과 양옆으로 한 칸씩 간다. 일본 앱 「じゃんけん将棋」를 본떠 이 앱에서 규칙을 짰다.
-
-출처
-
-- [QooApp, じゃんけん将棋](https://m-apps.qoo-app.com/en_us/app/6426)
-- [App Store, 対戦じゃんけん将棋](https://apps.apple.com/jp/app/id1105790821)
-
-### 동전 순서 겨루기 (Penney's game)
-
-Walter Penney (1969). 화면 준비 중
-
-둘이 동전을 세 번 던졌을 때의 앞뒤 순서를 하나씩 고른다(예: 앞앞뒤). 동전을 계속 던져서, 고른 순서가 먼저 나온 사람이 이긴다.
-
-나중에 고르는 쪽이 늘 유리하다. 상대 순서의 가운데 것을 뒤집어 맨 앞에 두고, 그 뒤에 상대 순서의 앞 두 개를 붙이면 된다. 앞앞앞에는 뒤앞앞으로 맞서 8번에 7번 이긴다. 어떤 순서에도 그 순서를 이기는 순서가 있어서 가위바위보처럼 고리가 생긴다.
-
-출처
-
-- [Wikipedia, Penney's game](https://en.wikipedia.org/wiki/Penney%27s_game)
-- [Nishiyama, Pattern Matching Probabilities and Paradoxes](https://blogsarchive.sites.haverford.edu/mathproblemsolving/files/2011/06/Penney-Ante.pdf)
-
-### 이상한 주사위 (Efron 주사위, Grime 주사위)
-
-Bradley Efron, James Grime. 화면 준비 중
-
-주사위마다 면에 적힌 눈이 다르다. Efron 주사위 넷은 A가 B를, B가 C를, C가 D를, D가 A를 3번에 2번 이긴다. 그래서 상대가 먼저 고르면, 나는 그 주사위를 이기는 주사위를 고를 수 있다.
-
-Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생긴다. 둘씩 굴려 합을 겨루면 그 가운데 한 고리가 거꾸로 돈다. 워런 버핏이 빌 게이츠에게 이런 주사위로 내기를 걸려 한 일화가 있다.
-
-출처
-
-- [Wikipedia, Intransitive dice](https://en.wikipedia.org/wiki/Intransitive_dice)
-- [SAS blog, Intransitive dice](https://blogs.sas.com/content/iml/2020/11/30/intransitive-dice.html)
-
-### 모라 (Morra, 划拳)
-
-고대 로마, 중국. 화면 준비 중
-
-둘이 동시에 손가락을 0~5개 펴면서, 두 사람 손가락 수의 합을 외친다. 한 사람만 맞히면 그 사람이 1점을 얻고, 둘 다 맞히거나 다 틀리면 점수가 없다. 3점을 먼저 내면 이긴다.
-
-고대 로마 때부터 했고, 중국에서는 화취안(划拳)이라 부르며 술자리에서 한다. 한쪽은 홀, 한쪽은 짝을 맡아 손가락 합이 홀인지 짝인지로 정하는 홀짝 놀이도 있다.
-
-출처
-
-- [Wikipedia, Morra (game)](https://en.wikipedia.org/wiki/Morra_(game))
-
-### 블로토 대령 (Colonel Blotto)
-
-Émile Borel (1921). 화면 준비 중
-
-둘이 병사 10명을 싸움터 3곳에 몰래 나눠 보낸다. 싸움터마다 많이 보낸 쪽이 이기고, 더 많은 싸움터에서 이긴 쪽이 그 판을 이긴다. 먼저 3판을 이기면 경기에서 이긴다.
-
-병사가 넉넉하면 어떻게 나눠도 늘 이길 수는 없다. 고르게 나누면 두 곳에 조금씩 더 보낸 쪽에게 지고, 몰아 보내면 다른 곳을 내준다. 컴퓨터는 최적 비율에 가깝게 나누는 방법을 고른다.
-
-출처
-
-- [Wikipedia, Blotto game](https://en.wikipedia.org/wiki/Blotto_game)
-- [Colonel Blotto (web game)](https://blotto.incoherency.co.uk)
-
-### 많은 손 이기기 (多い勝ち, 少ない勝ち)
-
-일본. 화면 준비 중
-
-셋 이상이 같이 내고, 가장 많이 나온 손을 낸 사람이 남는다. 거꾸로 가장 적게 나온 손을 낸 사람이 남는 적은 손 이기기도 있다. 가장 많은 손이나 가장 적은 손이 둘 이상이면 다시 한다.
-
-적은 손 이기기는 미리 짜고 내지 못하게 하려고 한다. 한 명이 남을 때까지 되풀이하는 게이머 가위바위보는 보드게임에서 선을 정할 때 많이 쓴다. 둘만 남으면 보통 가위바위보로 끝낸다.
-
-출처
-
-- [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
-- [thewiki, 가위바위보](https://thewiki.kr/w/%EC%9F%8C%EC%BC%84)
-
-### 셋 다 나오면 가위 승 (チョキじゃんけん)
-
-일본. 화면 준비 중
-
-여럿이 할 때 가위·바위·보가 다 나와 비기면 가위를 낸 사람이 이긴다. 나머지는 여럿이 가위바위보와 같다.
-
-여럿이 가위바위보는 사람이 많을수록 잘 안 끝난다. 8명이면 열 번에 아홉 번쯤 다시 한다. 이 규칙은 다시 하는 횟수를 줄이는 대신, 사람이 많을수록 가위가 유리해진다.
-
-출처
-
-- [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
-
-### 진행자 이기기 (審判方式)
-
-일본, ZEP 미니 게임. 화면 준비 중
-
-진행자가 먼저 손을 정하고 모두 각자 낸다. 진행자에게 지면 빠지고, 이기면 10점, 비기면 5점을 얻고 남는다. 한 명이 남거나 10판이 끝나면 끝난다.
-
-끝까지 둘 이상 남으면 점수가 높은 사람이 이긴다. 메타버스 ZEP의 가위바위보 미니 게임이 이렇게 점수를 준다. 남은 사람이 모두 지면 이 앱에서는 그 판을 없던 것으로 한다.
-
-출처
-
-- [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
-- [ZEP 공식 가이드, 가위바위보](https://docs.channel.io/zep-guide/ko/articles/%EA%B0%80%EC%9C%84%EB%B0%94%EC%9C%84%EB%B3%B4-f03cf86c)
-
-### 편 가위바위보 술래잡기 (Rock Paper Scissors Tag)
-
-영미권 체육 수업. 화면 준비 중
-
-두 편이 몰래 손 하나씩을 정해 다 같이 낸다. 이긴 편이 쫓고 진 편은 제 선으로 달아난다. 잡힌 사람은 상대 편이 된다.
-
-모두 한 편이 되면 끝난다. 거인·마법사·요정이나 할머니·용사·용도 원래 이렇게 하는 놀이다. 이 앱에서는 진 편 사람이 저마다 반반 확률로 잡히고, 20판이 지나면 사람이 많은 편이 이긴다.
-
-출처
-
-- [Playworks, Rock Paper Scissor Tag](https://playworks.org/game-library/rock-paper-scissor-tag)
-- [Sport Aberdeen, Rock Paper Scissors](https://www.sportaberdeen.co.uk/wp-content/uploads/2020/11/Rock-Paper-Scissors-_-Complete.pdf)
-
-### 편 가르기 (グーパー, 엎어라 뒤집어라)
-
-일본, 한국. 화면 준비 중
-
-모두 바위나 보 하나를 내서 같은 손끼리 한 편이 된다. 두 편 수가 같아질 때까지 다시 낸다. 손바닥을 위나 아래로 하는 일본의 우라오모테(うらおもて)와 한국의 엎어라 뒤집어라도 같은 방법이다.
-
-10명이 아무렇게나 내면 다섯 대 다섯으로 갈릴 확률이 1/4쯤이라, 평균 네 번은 내야 한다. 구호는 고장마다 다르다.
-
-출처
-
-- [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
-- [prompie, 편 가르기 구호 이야기](https://academy.prompie.com/communities/posts/%EC%9D%B4%EA%B1%B4-%EC%A7%80%EC%97%AD%EB%A7%88%EB%8B%A4-%EB%8B%A4%EB%A5%B8%EA%B1%B0%EB%9D%BC%EB%8A%94%EB%8D%B0-9hi8giQr/)
