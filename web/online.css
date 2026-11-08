@@ -1,6 +1,8 @@
-/* Ultimate RSP — 온라인 대전 화면(#/play, #/c/…, #/room/…, #/match). 디자인 시안 ③ 고리(2026-11-07).
+/* Ultimate RSP — 온라인 대전 화면(#/play, #/c/…, #/room/…, #/match, #/rank/…). 디자인 시안 ③ 고리(2026-11-07),
+   첫 화면·순위표·양피지 도전장은 시안2 ① 깔끔한 세 칸(2026-11-08).
    style.css 의 색 변수·글꼴·단추를 그대로 쓴다. 색은 손에만 쓰고, 사람 고리는 무채색(나는 --focus).
-   한 줄로 쌓는 화면(폭 480px 까지)이라 넓은 화면에서는 가운데에 놓는다. */
+   대부분 한 줄로 쌓는 화면(폭 480px 까지)이라 넓은 화면에서는 가운데에 놓는다. 첫 화면은 900px 부터 세 칸,
+   순위표는 760px 부터 왼쪽 게임 목록 + 오른쪽 표. */
 
 :root {
   --warn: #9a6a00;
@@ -332,26 +334,141 @@ a.o-back:hover {
   }
 }
 
-/* ── 첫 화면 ───────────────────────────── */
-.name-input {
-  width: 100%;
+/* ── 첫 화면(시안2 ① 세 칸) ───────────────────────────── */
+/* 숨긴 것은 display 를 준 class 가 있어도 숨는다 */
+.online [hidden] {
+  display: none !important;
+}
+.online-home,
+.online-rank {
+  max-width: 560px;
+}
+@media (min-width: 760px) {
+  .online-rank {
+    max-width: 1000px;
+  }
+}
+@media (min-width: 900px) {
+  .online-home {
+    max-width: 1000px;
+  }
+}
+.o-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
   min-width: 0;
-  padding: 2px 6px;
-  margin-left: -6px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-weight: 700;
-  font-size: 1rem;
 }
-.name-input:hover {
-  border-color: var(--line);
+.o-head .o-back {
+  font-size: 0.875rem;
 }
-.name-input:focus {
-  border-color: var(--line-2);
+.o-grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.o-titlerow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.o-titlerow .o-h1 {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+.o-narrow-only {
+  display: none;
+}
+@media (max-width: 599px) {
+  .o-wide-only {
+    display: none;
+  }
+  .o-narrow-only {
+    display: inline;
+  }
+}
+@media (min-width: 600px) {
+  .o-titlerow .o-h1 {
+    font-size: 2.125rem;
+  }
+}
+.o-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .o-cols {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+.o-col {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  padding: 16px;
   background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.o-col-title {
+  margin: 4px 0 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.625rem;
+  line-height: 1;
+}
+.o-col > .btn {
+  min-height: 44px;
+}
+.o-col-foot {
+  margin-top: auto;
+  padding-top: 6px;
+}
+.o-col-art {
+  display: grid;
+  place-items: center;
+  height: 124px;
+}
+.parch-art {
+  width: 150px;
+  height: 120px;
+  display: block;
+}
+.pring.pring-deco {
+  margin: 0 auto;
+}
+.pring-deco .pring-av {
+  border-width: 2.5px;
+}
+.pring-deco .pring-node.me .pring-av {
+  box-shadow: none;
+}
+.pring-deco .pring-empty {
+  font-size: 0.8125rem;
+}
+.pring-deco .pring-label {
+  display: none;
+}
+.o-pick {
+  gap: 8px;
+}
+.o-pick > .btn {
+  flex: none;
+  min-height: 44px;
+  padding-inline: 18px;
+}
+.o-select select {
+  width: 100%;
+  min-height: 44px;
+  border-width: 1.5px;
+  border-color: var(--line);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .text-input {
   min-width: 0;
@@ -366,19 +483,11 @@ a.o-back:hover {
 .text-input:hover {
   border-color: var(--line-2);
 }
-.room-actions {
-  gap: 8px;
-}
-.room-actions > .btn {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding-inline: 12px;
-}
 .code-form {
   display: flex;
   gap: 8px;
   align-items: center;
-  flex: none;
+  min-width: 0;
 }
 .code-input {
   flex: none;
@@ -387,8 +496,18 @@ a.o-back:hover {
   text-transform: uppercase;
   letter-spacing: 0.14em;
 }
+.code-input.o-grow {
+  flex: 1 1 auto;
+  width: auto;
+}
+.code-input::placeholder {
+  text-transform: none;
+  letter-spacing: 0.08em;
+}
 .code-form > .btn {
-  padding-inline: 12px;
+  flex: none;
+  min-height: 42px;
+  padding-inline: 14px;
 }
 .code-input[aria-invalid="true"] {
   border-color: var(--lose);
@@ -396,8 +515,8 @@ a.o-back:hover {
 .mine {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 6px;
-  padding-top: 8px;
+  gap: 4px;
+  padding-top: 9px;
   border-top: 1px solid var(--line);
 }
 .mine-list {
@@ -414,6 +533,9 @@ a.o-back:hover {
   min-height: 36px;
   color: inherit;
   text-decoration: none;
+  font-size: 0.8125rem;
+}
+.o-card .mine-list a {
   font-size: 0.875rem;
 }
 .mine-list a:hover .mine-what {
@@ -422,9 +544,230 @@ a.o-back:hover {
 .mine-what {
   flex: 1;
   min-width: 0;
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 이 게임 순위(랜덤 칸 아래) */
+.rkbox {
+  display: grid;
+  gap: 2px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+.rkbox-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+.rkbox-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.o-link.o-small {
+  font-size: 0.8125rem;
+}
+.rk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.rk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 3px 4px;
+  font-size: 0.8125rem;
+}
+.rk.me {
+  background: color-mix(in srgb, var(--focus) 10%, transparent);
+  border-radius: 8px;
+}
+.rk-n {
+  flex: none;
+  min-width: 28px;
+  text-align: center;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 0.9375rem;
+}
+.rk .av {
+  flex: none;
+  background: var(--sunk);
+}
+.rk-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rk-v {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.rk-left {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.o-linkbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── 프로필 칩과 이름 바꾸기 ───────────────────────────── */
+.pchip-wrap {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+}
+.pchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  max-width: 220px;
+  min-height: 38px;
+  padding: 4px 12px 4px 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pchip:hover,
+.pchip[aria-expanded="true"] {
+  border-color: var(--line-2);
+}
+.pchip-av {
+  flex: none;
+  background: var(--sunk);
+}
+.pchip-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pchip-pen {
+  flex: none;
+  color: var(--muted);
+  font-weight: 400;
+}
+.ppop {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  z-index: 40;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(26, 30, 58, 0.18);
+}
+.ppop::before {
+  content: "";
+  position: absolute;
+  left: 30px;
+  top: -7px;
+  width: 12px;
+  height: 12px;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.pchip-wrap.end .ppop {
+  left: auto;
+  right: 0;
+}
+.pchip-wrap.end .ppop::before {
+  left: auto;
+  right: 30px;
+}
+:root[data-scheme="dark"] .ppop {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+.pname {
+  display: grid;
+  gap: 10px;
+}
+.pname-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.pname-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.pname-limit {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.pname-field {
+  position: relative;
+  display: flex;
+}
+.pname-input {
+  flex: 1 1 auto;
+  width: 100%;
+  padding-right: 40px;
+  border-color: var(--focus);
+  font-size: 0.9375rem;
+}
+.pname-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 28%, transparent);
+}
+.pname-input[aria-invalid="true"] {
+  border-color: var(--lose);
+}
+.pname-clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.pname-clear:hover {
+  color: var(--ink);
+  background: var(--sunk);
+}
+.pname-act {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pname-act .btn {
+  min-height: 44px;
 }
 
 /* ── 변종 줄(도전장 1단계, 랜덤 고르기) ───────────────────────────── */
@@ -590,10 +933,6 @@ button.varrow {
 }
 .copy-done:empty {
   display: none;
-}
-.pring-game {
-  color: var(--muted);
-  font-size: 0.75rem;
 }
 
 /* ── 이모트 줄 ───────────────────────────── */
@@ -1227,6 +1566,503 @@ button.varrow {
   color: var(--lose);
 }
 
+/* ── 순위표(#/rank/게임) ───────────────────────────── */
+:root {
+  --gold: #c98500;
+  --silver: #8a93a6;
+  --bronze: #b2642e;
+}
+:root[data-scheme="dark"] {
+  --gold: #e0a526;
+  --silver: #aab3c5;
+  --bronze: #d08452;
+}
+.lb {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+.lb-side {
+  display: none;
+}
+.lb-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+@media (min-width: 760px) {
+  .lb {
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 18px;
+  }
+  .lb-side {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .lb-pick,
+  .lb-mine {
+    display: none !important;
+  }
+}
+.lb-search {
+  width: 100%;
+  margin-bottom: 4px;
+}
+.lb-games {
+  display: grid;
+  gap: 6px;
+}
+.lb-game {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 10px;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  background: none;
+  color: var(--ink);
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+}
+.lb-game:hover {
+  background: var(--surface);
+}
+.lb-game.on {
+  background: var(--surface);
+  border-color: var(--focus);
+}
+.lb-game .mini-hand {
+  width: 22px;
+  height: 22px;
+}
+.lb-game-body {
+  display: grid;
+  min-width: 0;
+}
+.lb-game-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lb-game-n {
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+.lb-game-n:empty {
+  display: none;
+}
+.lb-mine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--focus);
+  border-radius: 14px;
+}
+.lb-mine:empty {
+  display: none;
+}
+.lb-box {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* clip 은 스크롤 상자를 만들지 않아서 내 줄이 화면 아래에 붙어 있을 수 있다 */
+  overflow: clip;
+}
+.lb-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 2px;
+  border-top: 1px solid var(--line);
+  font-size: 0.8125rem;
+}
+.lb-th,
+.lb-games-n,
+.lb-rate {
+  display: none;
+}
+.lb-n {
+  text-align: center;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1rem;
+}
+.lb-row.top1 .lb-n {
+  color: var(--gold);
+}
+.lb-row.top2 .lb-n {
+  color: var(--silver);
+}
+.lb-row.top3 .lb-n {
+  color: var(--bronze);
+}
+.lb-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.lb-name .av {
+  flex: none;
+}
+.lb-name-body {
+  display: grid;
+  min-width: 0;
+}
+.lb-nm {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lb-sub,
+.lb-left {
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+.lb-score {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.lb-row.me {
+  background: color-mix(in srgb, var(--focus) 10%, var(--surface));
+}
+/* 좁은 화면은 위의 '내 순위' 카드가 대신한다 */
+@media (max-width: 759px) {
+  .lb-row.pinned {
+    display: none;
+  }
+}
+.lb-row.pinned {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  border-top: 2px solid var(--focus);
+}
+.lb-dots,
+.lb-empty {
+  padding: 8px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.8125rem;
+}
+.lb-empty {
+  padding: 24px 12px;
+  border-top: 1px solid var(--line);
+}
+@media (min-width: 760px) {
+  .lb-box {
+    min-height: 420px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  .lb-row {
+    grid-template-columns: 56px minmax(0, 1fr) 80px 64px 64px;
+    gap: 0;
+    padding: 7px 16px;
+  }
+  .lb-th {
+    display: grid;
+    border-top: 0;
+    padding-top: 10px;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  .lb-th .lb-n {
+    font-family: inherit;
+    font-size: inherit;
+    text-align: left;
+  }
+  .lb-th .lb-score {
+    font-weight: 400;
+  }
+  .lb-n {
+    text-align: left;
+  }
+  .lb-games-n,
+  .lb-rate {
+    display: block;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .lb-score {
+    font-weight: 400;
+  }
+  .lb-sub {
+    display: none;
+  }
+  .lb-name-body {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .lb-empty {
+    border-top: 1px solid var(--line);
+  }
+}
+
+/* ── 양피지 도전장 ───────────────────────────── */
+/* 짜임: 위 막대 / 종이 / 아래 막대. 막대는 종이보다 18px 넓고(양쪽 9px), 종이는 위아래로 10px 씩 막대 밑에 들어간다.
+   어두운 화면에서도 양피지 색과 그 안의 글자·손 색은 밝은 화면 그대로 둔다. */
+.parch {
+  --h: 196px;
+  position: relative;
+  justify-self: center;
+  width: min(232px, calc(100% - 18px));
+  margin: 10px auto 4px;
+}
+.parch.recv {
+  width: min(300px, calc(100% - 18px));
+}
+.parch-roll {
+  position: relative;
+  z-index: 3;
+  display: block;
+  width: calc(100% + 18px);
+  height: auto;
+  margin-left: -9px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.parch-sheet {
+  --paper: #f4e4c1;
+  --ink: #1a1e3a;
+  --ink-2: #4e5476;
+  --muted: #8a6a3a;
+  --surface: #fffaf0;
+  --sunk: #f3e6c8;
+  --line: #d8bf8e;
+  --line-2: #c9a86c;
+  --focus: #3a55e6;
+  color-scheme: light;
+  position: relative;
+  z-index: 2;
+  min-height: 160px;
+  margin: -10px 0;
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  color: var(--ink);
+  background: url("icons/parchment/sheet.svg") center / 100% 100% no-repeat;
+}
+.parch-title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.375rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.parch-sub {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #8a6a3a;
+}
+.parch-sig {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #8a6a3a;
+  overflow-wrap: anywhere;
+}
+.parch-slot {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 2.5px dashed #c9a86c;
+  border-radius: 50%;
+  font-family: var(--display);
+  font-size: 1.5rem;
+  color: #b08a50;
+}
+.parch-from {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.parch-from .av {
+  background: #f3e6c8;
+}
+.parch-ring {
+  width: 100%;
+  padding-bottom: 6px;
+}
+.parch-ring .ring {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+}
+.parch-sheet .ring .edge,
+.parch-sheet .ring .node,
+:root[data-scheme="dark"] .parch-sheet .ring .edge,
+:root[data-scheme="dark"] .parch-sheet .ring .node {
+  --c: var(--cl);
+}
+.parch-seal {
+  position: absolute;
+  z-index: 4;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.parch-seal-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.parch.send .parch-seal {
+  right: -6px;
+  bottom: 2px;
+}
+/* 받기 봉인은 말린 두 막대의 이음매 가운데에. 막대 높이는 (폭 + 18px) × 24/200 이고,
+   절대 위치의 margin % 는 감싼 상자의 폭을 따르므로 margin-top 으로 잰다 */
+.parch.recv .parch-seal {
+  left: 50%;
+  top: 0;
+  margin-left: -31px;
+  margin-top: calc((100% + 18px) * 0.12 - 34px);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.parch.recv .parch-seal:focus-visible {
+  outline-offset: 3px;
+}
+.parch .parch-half {
+  opacity: 0;
+}
+/* 받기: 말린 채(종이를 접어 두 막대가 붙는다) */
+.parch.rolled .parch-sheet {
+  min-height: 0;
+  height: 14px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(0 0 100% 0);
+}
+.parch.recv.rolled .parch-seal {
+  animation: parch-wobble 1.8s ease-in-out infinite;
+}
+.parch.recv.opening .parch-whole {
+  opacity: 0;
+}
+.parch.recv.opening .parch-half-l {
+  animation: parch-break-l 0.4s ease-out both;
+}
+.parch.recv.opening .parch-half-r {
+  animation: parch-break-r 0.4s ease-out both;
+}
+.parch.recv.opening .parch-sheet {
+  animation: parch-unroll 0.45s 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.parch.recv.opening .parch-roll-bot {
+  animation: parch-down 0.45s 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+/* 보내기: 0–450ms 펼치기, 450ms 밀랍, 800ms 쿵 */
+.parch.send.play .parch-sheet {
+  animation: parch-unroll 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.parch.send.play .parch-roll-bot {
+  animation: parch-down 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.parch.send.play .parch-whole {
+  animation: parch-stamp 0.38s 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.parch.send.play {
+  animation: parch-thud 0.22s 0.8s ease-out;
+}
+@keyframes parch-unroll {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes parch-down {
+  from {
+    transform: translateY(calc(-1 * var(--h) + 14px));
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes parch-stamp {
+  0% {
+    opacity: 0;
+    transform: translateY(-38px) scale(1.7) rotate(-12deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(0.9);
+  }
+  80% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes parch-thud {
+  30% {
+    transform: translateY(3px);
+  }
+  65% {
+    transform: translateY(-1px);
+  }
+}
+@keyframes parch-wobble {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes parch-break-l {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-30px, 34px) rotate(-30deg);
+  }
+}
+@keyframes parch-break-r {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(30px, 34px) rotate(30deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spin,
   .btn.ready-all,
@@ -1234,5 +2070,10 @@ button.varrow {
   .pring-bubble.pop,
   .o-sheet {
     animation: none;
+  }
+  /* 양피지: 움직이지 않고 끝 모습만(받기는 parchment.js 가 봉인 없이 펼친 채로 연다) */
+  .parch,
+  .parch * {
+    animation: none !important;
   }
 }

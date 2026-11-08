@@ -70,7 +70,7 @@ const styleOf = (vars) =>
  *            badge?: {text, kind: "ok"|"away"|"plus"|"crown"}, host?: 글, hand?: {V, i}, title? }]
  * arrows: [{ from, to, hand: {V, i} }]   from·to 는 people 의 차례
  */
-export function peopleRing({ height = 300, label = t("자리"), chords = true, size: fixedSize = null, radius = null, start = 90 } = {}) {
+export function peopleRing({ height = 300, label = t("자리"), chords = true, size: fixedSize = null, radius = null, start = 90, minWidth = MIN_W } = {}) {
   const svg = s("svg", { class: "pring-lines", "aria-hidden": "true", focusable: "false" });
   const mid = h("div", { class: "pring-mid" });
   const nodesBox = h("div", { class: "pring-nodes", role: "list", "aria-label": label });
@@ -84,7 +84,7 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
 
   function measure() {
     const w = el.clientWidth;
-    return w ? Math.max(MIN_W, Math.min(MAX_W, w)) : W;
+    return w ? Math.max(minWidth, Math.min(MAX_W, w)) : W;
   }
 
   function draw() {

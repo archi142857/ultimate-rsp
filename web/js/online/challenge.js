@@ -1,6 +1,7 @@
-// 도전장(#/c/코드, 디자인 시안 ③ 3–6번). 서버에서 읽어 와서
-//  - 열려 있고 내가 만든 것: 막 만들었으면 '도전장이 준비됐다'(3/3), 다시 열면 '아직 아무도 안 받았다' + 링크
-//  - 열려 있고 남이 만든 것: 보낸 사람 카드, 변종 카드, 손 고리에서 손 누르기 → '○○으로 내기'
+// 도전장(#/c/코드, 디자인 시안 ③ 3–6번 + 시안2 ① 양피지). 서버에서 읽어 와서
+//  - 열려 있고 내가 만든 것: 막 만들었으면 '도전장이 준비됐다'(3/3, 양피지가 펼쳐지고 밀랍이 찍힌다),
+//    다시 열면 펼친 양피지와 '아직 아무도 안 받았다' + 링크
+//  - 열려 있고 남이 만든 것: 말린 양피지의 봉인을 뜯으면 펼쳐지고, 그 안 손 고리에서 손 누르기 → '○○으로 내기'
 //  - 끝난 것: 내가 낸 쪽이면 큰 글씨(이겼다·졌다·비겼다)와 동사 문장, 손 고리에 두 손과 화살표.
 //             남이 겨룬 것이면 두 사람과 화살표(이미 끝난 도전장)
 // 승패는 서버가 답할 때 적어 둔 값(cmp·winner)을 쓴다. 지금은 한 판짜리만 연다(여러 판짜리는 '아직 못 연다').
@@ -14,6 +15,7 @@ import { noticeSlot } from "./notice.js";
 import { avatar } from "./avatar.js";
 import { peopleRing } from "./people-ring.js";
 import { emoteIcon, emoteLabel, isEmote } from "./emotes.js";
+import { scroll } from "./parchment.js";
 import { variantOf } from "./games.js";
 import { myName, playerId } from "./identity.js";
 import { fetchChallenge, answerChallenge } from "./api.js";
@@ -35,6 +37,12 @@ export function challengeView(main, code) {
   let onKey = null;
   let waiting = null; // 내가 만든 열린 도전장을 보고 있으면 { refresh }
   let lastFetch = 0;
+  let paper = null; // 지금 보이는 양피지(움직임 타이머를 치운다)
+  const putPaper = (p) => {
+    if (paper) paper.destroy();
+    paper = p;
+    return p;
+  };
 
   async function load(note = null) {
     notices.set("wait", { title: t("도전장을 불러오는 중…"), spin: true });
@@ -77,6 +85,7 @@ export function challengeView(main, code) {
   function show(c, { note = null, reveal = false } = {}) {
     onKey = null;
     waiting = null;
+    putPaper(null);
     const V = variantOf(c.game, c.custom);
     if (!V || c.rounds !== 1) return failed("unsupported");
     const mine = myChallenge(c.code);
@@ -88,12 +97,12 @@ export function challengeView(main, code) {
   const leftText = (c) => (c.expires ? t("{n}일 남음", { n: daysLeft(c.expires) }) : null);
   const rulesLink = (c) => (c.game === "custom" ? null : h("a", { class: "o-link", href: `#/v/${c.game}` }, t("규칙")));
 
-  // ── 받은 사람: 손 고르기 ─────────────────
+  // ── 받은 사람: 봉인을 뜯고 손 고르기 ─────────────────
   function answerView(c, V) {
     setTitle(t("{name}의 도전장", { name: c.from }));
     let picked = null;
     const go = h("button", { type: "button", class: "btn btn-ink btn-big", disabled: true }, t("손을 고르세요"));
-    const ring = handRing(V, { pickable: true, onPick: (i) => choose(i, "ring") });
+    const ring = handRing(V, { size: 260, pickable: true, onPick: (i) => choose(i, "ring") });
     const grid = V.n > 7 ? handGrid(V, { onPick: (i) => choose(i, "grid") }) : null;
     if (grid) grid.buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
     function choose(i, from) {
@@ -107,7 +116,6 @@ export function challengeView(main, code) {
       go.textContent = t("{hand:으로로} 내기", { hand: V.hands[i].name });
       go.disabled = false;
     }
-    onKey = grid ? (e) => grid.keyHandler(e) : null;
     go.addEventListener("click", async () => {
       if (picked === null || go.disabled) return;
       const hand = V.hands[picked].id;
@@ -133,23 +141,47 @@ export function challengeView(main, code) {
         go.disabled = false;
       }
     });
-    const from = h(
+    const title = t("{name}의 도전장", { name: c.from });
+    // 봉인을 뜯기 전에는 종이 아래(변종·단추)도 숨긴다
+    const hint = h("p", { class: "o-p o-small o-center" }, t("봉인을 눌러 뜯는다."));
+    const rest = h(
       "div",
-      { class: "o-row" },
-      avatar({ kind: "human", name: c.from }, { size: 44 }),
-      h("div", { class: "o-grow" }, h("p", { class: "o-strong o-ell" }, t("{name}의 도전장", { name: c.from })), h("p", { class: "o-p o-small" }, t("손은 이미 냈다. 내 차례!"))),
-      isEmote(c.e) ? h("span", { class: "from-emote", title: emoteLabel(c.e), role: "img", "aria-label": emoteLabel(c.e) }, emoteIcon(c.e)) : null,
-    );
-    fill(
-      topBar({ label: t("도전장") }, leftText(c)).el,
-      card(from),
+      { class: "online-body", hidden: true },
       variantRow(V, { right: rulesLink(c) }),
       h("p", { class: "o-p" }, t("손을 골라 누른다. 상대 손은 내가 낸 다음에 보인다.")),
-      h("div", { class: "hand-ring-box" }, ring.el),
       grid ? grid.el : null,
       h("div", { class: "o-actions o-bottom" }, go),
-      h("p", { class: "o-p o-small o-center" }, t("내 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play" }, t("이름 바꾸기"))),
+      h("p", { class: "o-p o-small o-center" }, t("내 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play?name=1" }, t("이름 바꾸기"))),
     );
+    const p = putPaper(
+      scroll({
+        mode: "recv",
+        label: title,
+        children: [
+          h(
+            "div",
+            { class: "parch-from" },
+            avatar({ kind: "human", name: c.from }, { size: 34 }),
+            isEmote(c.e) ? h("span", { class: "from-emote", title: emoteLabel(c.e), role: "img", "aria-label": emoteLabel(c.e) }, emoteIcon(c.e)) : null,
+          ),
+          h("h2", { class: "parch-title" }, title),
+          h("p", { class: "parch-sub" }, t("무엇을 낼까?")),
+          h("div", { class: "hand-ring-box parch-ring" }, ring.el),
+        ],
+        onOpen: (byKey) => {
+          hint.remove();
+          rest.hidden = false;
+          onKey = grid ? (e) => grid.keyHandler(e) : null;
+          // 키보드로 뜯었으면 첫 손으로 포커스를 옮긴다(봉인 단추가 사라지므로)
+          if (byKey) {
+            const first = ring.el.querySelector("[tabindex]");
+            if (first) first.focus();
+          }
+        },
+      }),
+    );
+    fill(topBar({ label: t("도전장") }, leftText(c)).el, p.el, hint, rest);
+    p.start();
   }
 
   // ── 만든 사람: 링크 보내고 기다리기 ─────────────────
@@ -181,20 +213,26 @@ export function challengeView(main, code) {
     }
     check.addEventListener("click", () => refresh(true));
     waiting = { refresh };
-    if (isFresh(c.code)) {
-      // 3/3: 막 만든 도전장
-      const ring = peopleRing({ height: 164, size: 58, radius: 74, chords: false, start: 180, label: t("도전장") });
-      ring.set({
-        people: [
-          { key: "me", who: { kind: "human", name: myName() }, me: true, label: t("나"), sub: handName ? t("내 손: {name}", { name: handName }) : null },
-          { key: "to", empty: true, emptyText: "?", label: t("받는 사람") },
+    // 내가 쓴 도전장: 종이에 '도전장 / ○○ 한 판 / ? / — 내 이름', 오른쪽 아래에 밀랍
+    const p = putPaper(
+      scroll({
+        mode: "send",
+        label: t("도전장"),
+        children: [
+          h("h2", { class: "parch-title" }, t("도전장")),
+          h("p", { class: "parch-sub" }, t("{game} 한 판", { game: V.name })),
+          h("span", { class: "parch-slot", "aria-hidden": "true" }, "?"),
+          h("p", { class: "parch-sig" }, `— ${c.from}`),
         ],
-      });
-      ring.center(h("small", { class: "pring-game" }, V.name));
+      }),
+    );
+    if (isFresh(c.code)) {
+      // 3/3: 막 만든 도전장. 양피지가 펼쳐지고 밀랍이 찍힌다
       fill(
         topBar({ href: "#/c/new", label: t("도전장 만들기") }, h("span", {}, h("b", {}, "3"), "/3")).el,
         bigTitle(t("도전장이 준비됐다")),
-        h("section", { class: "o-card o-card-center" }, ring.el),
+        p.el,
+        handName ? h("p", { class: "o-p o-center" }, t("내 손: {name}", { name: handName })) : null,
         card(h("p", { class: "o-label" }, t("링크")), linkBox(url, share)),
         h(
           "p",
@@ -206,11 +244,13 @@ export function challengeView(main, code) {
         ),
         h("div", { class: "o-actions" }, check),
       );
+      p.start({ play: true });
       return;
     }
     const meta = [V.name, handName ? t("내 손: {name}", { name: handName }) : null, leftText(c)].filter(Boolean).join(" · ");
     fill(
       topBar({ href: "#/play", label: t("온라인") }, h("span", {}, t("@page:내 도전장"))).el,
+      p.el,
       card(
         h(
           "div",
@@ -314,6 +354,7 @@ export function challengeView(main, code) {
     onKey: (e) => (onKey ? onKey(e) : false),
     destroy() {
       ctl.abort();
+      putPaper(null);
       notices.destroy();
       document.removeEventListener("visibilitychange", onVisible);
     },

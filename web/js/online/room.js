@@ -13,6 +13,7 @@ import { setSetting } from "../ui/store.js";
 import { chantWords } from "../views/matrix.js";
 import { formatById } from "../games/match.js";
 import { topBar, bigTitle, copyText } from "./common.js";
+import { forgetRank } from "./rank.js";
 import { noticeSlot } from "./notice.js";
 import { avatar } from "./avatar.js";
 import { peopleRing, timerDial, midText } from "./people-ring.js";
@@ -494,7 +495,8 @@ export function roomView(main, code) {
       }
       if (revealing) return;
       const r = room.round;
-      top.right.textContent = [r ? t("{r}판", { r: r.r }) : "", gameName(room.rules)].filter(Boolean).join(" · ");
+      // 랜덤 방 첫 경기(사람끼리)는 순위에 든다(규약 4.1)
+      top.right.textContent = [r ? t("{r}판", { r: r.r }) : "", gameName(room.rules), room.rank ? t("순위 경기") : ""].filter(Boolean).join(" · ");
       const mine = mineNow();
       markPicked(mine);
       const alive = !group || (room.alive || []).includes(you);
@@ -584,6 +586,7 @@ export function roomView(main, code) {
     const sit = h("button", { type: "button", class: "btn btn-big", onclick: () => send({ t: "sit" }) }, t("자리에 앉기"));
     const leave = h("button", { type: "button", class: "btn btn-big", onclick: leaveRoom }, t("나가기"));
     const info = h("p", { class: "o-p o-center" });
+    const rated = h("p", { class: "o-p o-center rated-line", "aria-live": "polite", hidden: true });
     const editor = host ? rulesEditor(room.rules, { onChange: (r) => (setSetting("online.rules", r), send({ t: "rules", rules: r })) }) : null;
     const rulesCard = editor
       ? h("details", { class: "o-card rules-card" }, h("summary", { class: "o-h3" }, t("규칙 바꾸기")), editor.el)
@@ -599,6 +602,7 @@ export function roomView(main, code) {
       { class: "room-end" },
       top.el,
       head,
+      rated,
       ring.el,
       rankCard,
       info,
@@ -623,6 +627,7 @@ export function roomView(main, code) {
       ring.set({ people });
       ring.center();
       head.replaceChildren(bigTitle(...finalTitle()));
+      showRated();
       // 순위
       const list = ranking(room);
       ranks.replaceChildren(
@@ -664,6 +669,33 @@ export function roomView(main, code) {
       sit.hidden = !(you === null && canSit(room));
       info.textContent =
         you === null ? t("구경하는 중이다.") : host ? t("같은 자리로 다시 하거나, 규칙을 바꾼 뒤 다시 할 수 있다.") : t("방장이 다시 시작하기를 기다린다.");
+    }
+    /** 순위 경기였으면 내 새 점수와 바뀐 만큼(+12). 끝(end) 바로 뒤에 ev rated 로 온다 */
+    function showRated() {
+      const rk = room.rank;
+      if (!rk || you === null || group) {
+        rated.hidden = true;
+        return;
+      }
+      rated.hidden = false;
+      if (rk.skip) {
+        rated.replaceChildren(t("이번 경기는 순위에 들지 않았다."));
+        return;
+      }
+      const mine = Array.isArray(rk.after) ? rk.after[you] : null;
+      if (!mine || !Number.isFinite(mine.rating)) {
+        rated.replaceChildren(t("점수를 세는 중…"));
+        return;
+      }
+      forgetRank(room.rules.game);
+      const d = Number.isFinite(mine.delta) ? Math.round(mine.delta) : 0;
+      rated.replaceChildren(
+        t("내 점수 {n}", { n: Math.round(mine.rating) }),
+        " ",
+        h("b", { class: d > 0 ? "tone-win" : d < 0 ? "tone-lose" : "" }, `(${d > 0 ? "+" : d < 0 ? "−" : "±"}${Math.abs(d)})`),
+        " · ",
+        h("a", { class: "o-link", href: `#/rank/${encodeURIComponent(room.rules.game)}` }, t("@page:순위표"), h("span", { "aria-hidden": "true" }, " →")),
+      );
     }
     function finalTitle() {
       if (group) {

@@ -38,9 +38,10 @@ export function initialOf(name) {
   return first.toUpperCase();
 }
 
-/** 자리(또는 { kind, name })의 그림 열쇠: { art } 이거나 { text } */
+/** 자리(또는 { kind, name })의 그림 열쇠: { art } 이거나 { text }. 꾸밈 그림은 { art } 를 바로 줘도 된다 */
 export function faceOf(who) {
   if (!who || who.kind === "empty") return { text: "" };
+  if (typeof who.art === "string") return { art: who.art };
   if (who.kind === "bot") return { art: "robot" };
   const a = animalOf(who.name);
   return a ? { art: a } : { text: initialOf(who.name) };

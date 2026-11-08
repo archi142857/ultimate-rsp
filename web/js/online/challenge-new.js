@@ -112,7 +112,7 @@ function handStep(main, entry) {
       h("p", { class: "o-label" }, t("같이 보낼 이모트(안 골라도 된다)")),
       emotes.el,
       h("div", { class: "o-actions o-bottom" }, send),
-      h("p", { class: "o-p o-small o-center" }, t("보내는 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play" }, t("이름 바꾸기"))),
+      h("p", { class: "o-p o-small o-center" }, t("보내는 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play?name=1" }, t("이름 바꾸기"))),
     ),
   );
 

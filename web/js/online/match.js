@@ -1,4 +1,4 @@
-// 랜덤 매칭(#/match, #/match?v=게임&f=판수, 디자인 시안 ③ 12–14번): 게임과 판 수를 고르면 같은 걸 고른 사람과 짝을 짓는다
+// 랜덤 매칭(#/match, #/match?v=게임&f=판수[&go=1], 디자인 시안 ③ 12–14번): 게임과 판 수를 고르면 같은 걸 고른 사람과 짝을 짓는다
 // (온라인 규약 4장). 기다리는 동안 고리에 나와 빈자리 '?' 를 두고 가운데에 기다린 초를 센다.
 // 짝이 생기면(matched) 이 연결을 바로 닫고(1000) 그 방(#/room/코드)으로 간다. 20초가 지나면 아래 시트로 컴퓨터를 권한다.
 
@@ -75,7 +75,7 @@ export function matchView(main, params = {}) {
       h("div", { class: "o-card o-kv-card" }, fmt.el),
       list,
       h("div", { class: "o-actions o-sticky" }, find),
-      h("p", { class: "o-p o-small o-center" }, t("내 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play" }, t("이름 바꾸기"))),
+      h("p", { class: "o-p o-small o-center" }, t("내 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play?name=1" }, t("이름 바꾸기"))),
     );
     // 고른 게임이 보이게
     const on = list.querySelector(".on");
@@ -202,7 +202,12 @@ export function matchView(main, params = {}) {
   }
 
   main.append(root);
-  pickView();
+  // 첫 화면에서 게임을 고르고 '찾기'를 눌렀으면(#/match?v=게임&go=1) 바로 찾는다. 판 수는 마지막에 고른 것
+  if (params.go && params.v && game === params.v) {
+    // 새로고침했을 때 또 바로 찾지 않게 주소에서 go 를 뗀다
+    history.replaceState(null, "", `#/match?v=${encodeURIComponent(game)}`);
+    search();
+  } else pickView();
 
   return {
     destroy() {
