@@ -27,7 +27,7 @@ const HANGUL = /[ㄱ-ㆎ가-힣]/;
 
 test("서버 답 읽기(규약 2장): 열린 것은 손이 없고, 닫힌 것은 두 손과 서버 판정", () => {
   const open = readChallenge({ code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: " 날쌘\n여우 42 ", e: "hi", made: 1, expires: 5, open: true, now: 1 });
-  assert.deepEqual(open, { code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: "날쌘 여우 42", e: "hi", expires: 5, open: true });
+  assert.deepEqual(open, { code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: "날쌘 여우 42", fromFace: null, e: "hi", expires: 5, open: true });
   assert.ok(!("hands" in open));
   const closed = readChallenge({
     code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: "a", open: false, to: "느린 곰 7", answered: 9,
@@ -35,6 +35,9 @@ test("서버 답 읽기(규약 2장): 열린 것은 손이 없고, 닫힌 것은
   });
   assert.deepEqual(closed.hands, { from: ["rock"], to: ["paper"] });
   assert.deepEqual([closed.cmp, closed.score, closed.winner, closed.to], [[-1], [0, 1], 1, "느린 곰 7"]);
+  assert.equal(closed.toFace, null, "그림을 안 고른 사람은 null");
+  const faced = readChallenge({ ...closed, hands: { from: ["rock"], to: ["paper"] }, open: false, to: "b", fromFace: "fox", toFace: "../x.png" });
+  assert.deepEqual([faced.fromFace, faced.toFace], ["fox", null], "우리 그림만 받고 모르는 이름은 버린다");
   const custom = readChallenge({ code: "X", game: "custom", custom: { n: 5, k: 2, seed: 7, extra: 1 }, rounds: 1, from: "a", open: true });
   assert.deepEqual(custom.custom, { n: 5, k: 2, seed: 7 });
   const base = { code: "X", game: "classic", rounds: 1, from: "a" };

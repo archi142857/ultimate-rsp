@@ -13,7 +13,7 @@ import { topBar, bigTitle, variantRow, handRing } from "./common.js";
 import { noticeSlot } from "./notice.js";
 import { emoteRow } from "./emotes.js";
 import { challengeGames, challengeGame } from "./games.js";
-import { myName, playerId } from "./identity.js";
+import { myName, playerId, meFields } from "./identity.js";
 import { createChallenge } from "./api.js";
 import { rememberChallenge, markFresh } from "./mine.js";
 import { noticeFor } from "./messages.js";
@@ -85,7 +85,7 @@ function handStep(main, entry) {
     notices.set("wait", { title: t("도전장을 만드는 중…"), spin: true });
     try {
       const e = emotes.picked || undefined;
-      const { code } = await createChallenge({ game: entry.id, hands: [hand], name: myName(), pid: playerId(), e }, { signal: ctl.signal });
+      const { code } = await createChallenge({ game: entry.id, hands: [hand], ...meFields(), pid: playerId(), e }, { signal: ctl.signal });
       rememberChallenge({ id: code, role: "maker", game: entry.id, hand, at: Date.now() });
       markFresh(code);
       location.hash = `#/c/${code}`;

@@ -37,7 +37,10 @@ test("서버 답 다듬기: 틀린 줄은 버리고 50위까지, 이름은 다�
     [1, 2, 3],
   );
   assert.equal(b.n, 412);
-  assert.deepEqual(b.me, { name: "Swift Fox 42", rating: 1032, games: 14, wins: 8, losses: 6, draws: 0, rank: 128 });
+  assert.deepEqual(b.me, { name: "Swift Fox 42", face: null, rating: 1032, games: 14, wins: 8, losses: 6, draws: 0, rank: 128 });
+  const f = normalizeRank({ top: [row(0, { face: "wolf" }), row(1, { face: "nope" }), row(2, { face: 7 })], me: { ...row(0, { face: "wolf" }), rank: 1 } }, "classic");
+  assert.deepEqual(f.top.map((r) => r.face), ["wolf", null, null], "그림은 우리 그림 이름만");
+  assert.equal(f.me.face, "wolf");
   const c = normalizeRank({ top, me: { name: "a", rating: 1000, games: 9, wins: 4, rank: 9, index: 8 } }, "classic");
   assert.equal(c.me.index, 8);
   assert.equal(normalizeRank({ top, me: { name: "a", rating: 1000, games: 9, wins: 4, rank: 99, index: null } }, "classic").me.index, null);

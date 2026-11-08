@@ -16,7 +16,7 @@ import { rankBox, rankGameOf } from "./rank-view.js";
 import { mineRows } from "./mine-view.js";
 import { myChallenges } from "./mine.js";
 import { randomGames, randomGame } from "./games.js";
-import { myName, playerId } from "./identity.js";
+import { playerId, meFields, meWho } from "./identity.js";
 import { hello } from "./net.js";
 import { noticeFor } from "./messages.js";
 import { createRoom } from "./api.js";
@@ -93,7 +93,7 @@ export function onlineHomeView(main, params = {}) {
   make.addEventListener("click", async () => {
     make.disabled = true;
     try {
-      const code = await createRoom({ rules: cleanRules(setting("online.rules", {})), name: myName(), pid: playerId() });
+      const code = await createRoom({ rules: cleanRules(setting("online.rules", {})), ...meFields(), pid: playerId() });
       location.hash = `#/room/${code}`;
     } catch (e) {
       const n = noticeFor(e.code);
@@ -199,7 +199,7 @@ export function onlineHomeView(main, params = {}) {
   /** 꾸밈 고리: 나(맨 아래, --focus 테두리) + 셋 */
   function deco(others) {
     const ring = peopleRing({ height: 124, size: 34, radius: 42, minWidth: 124, label: "" });
-    const people = [{ key: "me", who: { kind: "human", name: myName() }, me: true }, ...others];
+    const people = [{ key: "me", who: meWho(), me: true }, ...others];
     ring.set({ people });
     ring.el.setAttribute("aria-hidden", "true");
     ring.el.classList.add("pring-deco");
@@ -207,9 +207,9 @@ export function onlineHomeView(main, params = {}) {
     return ring;
   }
 
-  function rename(name) {
+  function rename() {
     for (const { ring, people } of rings) {
-      people[0] = { ...people[0], who: { kind: "human", name } };
+      people[0] = { ...people[0], who: meWho() };
       ring.set({ people });
     }
     board.rename();

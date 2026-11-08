@@ -1,5 +1,5 @@
 // 순위(디자인 시안2 ①, 온라인 규약 4.1): 게임마다 상위 50 과 내 기록. 점수 계산은 컨셉의 core/rating.js(Elo)를 서버가 쓴다.
-//   POST /api/rank {v, game, pid}(text/plain) → {game, n, top: [{name, rating, games, wins, losses, draws}], me: {…, rank} | null, now}
+//   POST /api/rank {v, game, pid}(text/plain) → {game, n, top: [{name, face?, rating, games, wins, losses, draws}], me: {…, rank} | null, now}
 //   n 은 순위표에 오른 사람 수(5경기 이상). me.rank 는 5경기 전이면 null, 점수·경기 수가 같으면 같은 순위. 기록이 없으면 me 가 null.
 //   me.index 는 top 안 내 줄 번호(0부터, 밖이면 null. 0d87250).
 // pid 는 주소에 싣지 않으려고 POST 로 보낸다. 무료 한도를 아끼려고 같은 게임은 1분 동안 다시 묻지 않는다(폴링하지 않는다).
@@ -8,7 +8,7 @@
 import { api } from "./net.js";
 import { PROTOCOL } from "./config.js";
 import { BOARD_MIN_GAMES } from "../core/rating.js";
-import { cleanName } from "./identity.js";
+import { cleanName, faceId } from "./identity.js";
 
 /** 순위표에 보이는 줄 수(서버 RANK_TOP 과 같다) */
 export const RANK_TOP = 50;
@@ -23,7 +23,7 @@ function record(x, { withRank = false } = {}) {
   const games = count(x.games);
   const wins = count(x.wins);
   if (rating === null || games === null || wins === null || wins > games) return null;
-  const r = { name: cleanName(x.name), rating, games, wins, losses: count(x.losses) || 0, draws: count(x.draws) || 0 };
+  const r = { name: cleanName(x.name), face: faceId(x.face), rating, games, wins, losses: count(x.losses) || 0, draws: count(x.draws) || 0 };
   if (withRank) {
     r.rank = Number.isInteger(x.rank) && x.rank > 0 ? x.rank : null;
     // 서버가 줄 번호를 안 주면(옛 서버) undefined 로 두고 이름·기록으로 찾는다

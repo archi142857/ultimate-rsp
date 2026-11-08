@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { parseOnline, normalizeCode, checkCode } from "../web/js/online/ids.js";
 import { pickServer, DEFAULT_SERVER, PROTOCOL } from "../web/js/online/config.js";
-import { cleanName, randomName, newId, playerId, NAME_MAX } from "../web/js/online/identity.js";
+import { cleanName, randomName, newId, playerId, NAME_MAX, faceId, myFace, setMyFace, setMyName, meWho, meFields } from "../web/js/online/identity.js";
 import { NICK_WORDS } from "../web/js/i18n/nicknames.js";
 import { resetTime, errorText } from "../web/js/online/messages.js";
 import { setLang } from "../web/js/i18n.js";
@@ -79,6 +79,28 @@ test("pid 는 22자 무작위이고 한 번 정하면 그대로", () => {
   assert.notEqual(a, newId());
   assert.match(playerId(), /^[A-Za-z0-9_-]{22}$/);
   assert.equal(playerId(), playerId());
+});
+
+test("프로필 그림: 게임 그림 이름만 받고, 고른 때만 서버에 싣는다", () => {
+  const mem = new Map();
+  globalThis.localStorage = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
+  try {
+    assert.equal(faceId("fox"), "fox");
+    for (const bad of ["", "nope", "../fox", "FOX", "fox.png", null, 7, {}]) assert.equal(faceId(bad), null, String(bad));
+    setMyName("날쌘 여우");
+    assert.equal(myFace(), null, "처음에는 고른 그림이 없다");
+    assert.deepEqual(meFields(), { name: "날쌘 여우" }, "안 골랐으면 face 를 보내지 않는다");
+    assert.equal(setMyFace("nope"), null);
+    assert.equal(setMyFace("tiger"), "tiger");
+    assert.deepEqual(meFields(), { name: "날쌘 여우", face: "tiger" });
+    assert.deepEqual(meWho(), { kind: "human", name: "날쌘 여우", face: "tiger" });
+    mem.set("ursp.set.online.face", JSON.stringify("../evil"));
+    assert.equal(myFace(), null, "저장된 값도 거른다");
+    setMyFace(null);
+    assert.equal(myFace(), null);
+  } finally {
+    delete globalThis.localStorage;
+  }
 });
 
 test("연결 실패 문구와 한도가 풀리는 시각", () => {

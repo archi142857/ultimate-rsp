@@ -17,7 +17,7 @@ import { peopleRing } from "./people-ring.js";
 import { emoteIcon, emoteLabel, isEmote } from "./emotes.js";
 import { scroll } from "./parchment.js";
 import { variantOf } from "./games.js";
-import { myName, playerId } from "./identity.js";
+import { myName, playerId, meFields, meWho } from "./identity.js";
 import { fetchChallenge, answerChallenge } from "./api.js";
 import { myChallenge, rememberChallenge, noteChallenge, isFresh } from "./mine.js";
 import { errorText, noticeFor } from "./messages.js";
@@ -122,7 +122,7 @@ export function challengeView(main, code) {
       go.disabled = true;
       notices.set("wait", { title: t("겨루는 중…"), spin: true });
       try {
-        const done = await answerChallenge(c.code, { hands: [hand], name: myName(), pid: playerId() }, { signal: ctl.signal });
+        const done = await answerChallenge(c.code, { hands: [hand], ...meFields(), pid: playerId() }, { signal: ctl.signal });
         notices.clear("wait");
         rememberChallenge({ id: c.code, role: "taker", game: c.game, hand, at: Date.now(), label: labelOf(c, V), result: -done.cmp[0], vs: c.from });
         show(done, { reveal: true });
@@ -161,7 +161,7 @@ export function challengeView(main, code) {
           h(
             "div",
             { class: "parch-from" },
-            avatar({ kind: "human", name: c.from }, { size: 34 }),
+            avatar({ kind: "human", name: c.from, face: c.fromFace }, { size: 34 }),
             isEmote(c.e) ? h("span", { class: "from-emote", title: emoteLabel(c.e), role: "img", "aria-label": emoteLabel(c.e) }, emoteIcon(c.e)) : null,
           ),
           h("h2", { class: "parch-title" }, title),
@@ -255,7 +255,7 @@ export function challengeView(main, code) {
         h(
           "div",
           { class: "o-row" },
-          avatar({ kind: "human", name: c.from }, { size: 40 }),
+          avatar({ ...meWho(), name: c.from }, { size: 40 }),
           h("div", { class: "o-grow" }, h("p", { class: "o-strong" }, t("아직 아무도 안 받았다")), h("p", { class: "o-p o-small o-ell" }, meta)),
         ),
         linkBox(url, { ...share, showUrl: false }),
@@ -273,6 +273,7 @@ export function challengeView(main, code) {
     const taker = mine.role === "taker";
     const [myI, opI] = taker ? [ti, mi] : [mi, ti];
     const opName = taker ? c.from : c.to;
+    const opFace = taker ? c.fromFace : c.toFace;
     // 서버가 적어 둔 판정(만든 사람 쪽에서 본 값)을 내 쪽에서 본 값으로
     const cmp = taker ? -c.cmp[0] : c.cmp[0];
     noteChallenge(c.code, { result: cmp, vs: opName });
@@ -289,7 +290,7 @@ export function challengeView(main, code) {
       sentence,
       h("div", { class: "hand-ring-box" }, ring.el),
       ring.labels ? null : h("p", { class: "o-p o-center" }, `${t("나")}: ${V.hands[myI].name} · ${opName}: ${V.hands[opI].name}`),
-      card(h("div", { class: "o-row" }, avatar({ kind: "human", name: opName }, { size: 30 }), h("p", { class: "o-p o-grow" }, t("{name}도 이 링크에서 결과를 본다.", { name: opName })))),
+      card(h("div", { class: "o-row" }, avatar({ kind: "human", name: opName, face: opFace }, { size: 30 }), h("p", { class: "o-p o-grow" }, t("{name}도 이 링크에서 결과를 본다.", { name: opName })))),
       h("div", { class: "o-actions o-bottom two" }, h("a", { class: "btn btn-ink", href: again }, t("나도 도전장 보내기")), replay),
     ]);
     async function play(animate) {
@@ -299,7 +300,7 @@ export function challengeView(main, code) {
       word.className = "o-h1";
       if (animate) {
         const say = { say: (w) => (word.textContent = w) };
-        await chant(say, chantWords(V));
+        await chant(say, chantWords(V), 320); // 결과 보기는 천천히 센다(방의 공개와 같은 박자)
         if (ctl.signal.aborted) return;
       }
       word.textContent = RESULT_WORD[cmp];
@@ -323,8 +324,8 @@ export function challengeView(main, code) {
     const ring = peopleRing({ height: 172, size: 54, radius: 80, chords: false, start: 180, label: t("도전장") });
     ring.set({
       people: [
-        { key: "from", who: { kind: "human", name: c.from }, label: c.from, hand: { V, i: fi }, badge: win === 0 ? { text: t("@badge:승"), kind: "ok", say: t("이김") } : null },
-        { key: "to", who: { kind: "human", name: c.to }, label: c.to, hand: { V, i: ti }, badge: win === 1 ? { text: t("@badge:승"), kind: "ok", say: t("이김") } : null },
+        { key: "from", who: { kind: "human", name: c.from, face: c.fromFace }, label: c.from, hand: { V, i: fi }, badge: win === 0 ? { text: t("@badge:승"), kind: "ok", say: t("이김") } : null },
+        { key: "to", who: { kind: "human", name: c.to, face: c.toFace }, label: c.to, hand: { V, i: ti }, badge: win === 1 ? { text: t("@badge:승"), kind: "ok", say: t("이김") } : null },
       ],
       arrows: win === 0 ? [{ from: 0, to: 1, hand: { V, i: fi } }] : win === 1 ? [{ from: 1, to: 0, hand: { V, i: ti } }] : [],
     });

@@ -13,7 +13,7 @@ import { topBar, bigTitle, variantRow } from "./common.js";
 import { noticeSlot } from "./notice.js";
 import { peopleRing, timerDial } from "./people-ring.js";
 import { randomGames, randomGame } from "./games.js";
-import { myName, playerId } from "./identity.js";
+import { myName, playerId, meFields, meWho } from "./identity.js";
 import { openSocket } from "./socket.js";
 import { PROTOCOL } from "./config.js";
 import { MATCH_FORMATS, MATCH_BOT_OFFER_MS } from "./protocol.js";
@@ -90,7 +90,7 @@ export function matchView(main, params = {}) {
     ring = peopleRing({ height: 300, size: 60, chords: false, label: t("랜덤 매칭") });
     ring.set({
       people: [
-        { key: "me", who: { kind: "human", name: myName() }, me: true, label: t("나") },
+        { key: "me", who: meWho(), me: true, label: t("나") },
         { key: "q", empty: true, emptyText: "?", label: "" },
       ],
     });
@@ -148,7 +148,7 @@ export function matchView(main, params = {}) {
     offered = false;
     notices.clear("drop", "limit", "note");
     waitView();
-    sock = openSocket("/api/match/ws", { v: PROTOCOL, pid: playerId(), name: myName(), game, format }, { onMessage, onStatus });
+    sock = openSocket("/api/match/ws", { v: PROTOCOL, pid: playerId(), ...meFields(), game, format }, { onMessage, onStatus });
   }
 
   function onMessage(m) {

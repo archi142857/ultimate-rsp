@@ -14,7 +14,7 @@ import { noticeSlot } from "./notice.js";
 import { avatar, fillFace } from "./avatar.js";
 import { profileChip } from "./profile.js";
 import { randomGames, randomGame } from "./games.js";
-import { myName, playerId } from "./identity.js";
+import { myName, playerId, meWho } from "./identity.js";
 import { noticeFor } from "./messages.js";
 import { fetchRank, knownRank, winRate, gamesLeft, myIndex, RANK_TOP } from "./rank.js";
 
@@ -29,7 +29,8 @@ export function rankGameOf(id = null) {
   return [id, setting("online.rankGame", null), "classic"].find((x) => x && randomGame(x));
 }
 
-const leftText = (rec) => t("{n}경기 더 하면 오른다", { n: gamesLeft(rec) });
+// 순위표에 오르기 전: '순위표까지 4경기'(그냥 '오른다'면 점수가 오르는지 헷갈린다, 11-08 사용자)
+const leftText = (rec) => t("순위표까지 {n}경기", { n: gamesLeft(rec) });
 const statText = (rec) => [t("{n}경기", { n: rec.games }), t("승률 {n}%", { n: winRate(rec) })].join(" · ");
 const arrow = () => h("span", { "aria-hidden": "true" }, " →");
 
@@ -150,7 +151,7 @@ export function rankView(main, gameId = null) {
     // 좁은 화면의 내 순위 카드
     clear(mine);
     mine.append(
-      avatar({ kind: "human", name: myName() }, { size: 36 }),
+      avatar(meWho(), { size: 36 }),
       h(
         "div",
         { class: "o-grow" },
@@ -161,7 +162,7 @@ export function rankView(main, gameId = null) {
     // 표
     const rows = board.top.map((rec, k) => boardRow(rec, { me: k === at }));
     const empty = !board.top.length
-      ? h("div", { class: "lb-empty", role: "row" }, h("span", { role: "cell" }, t("아직 순위에 오른 사람이 없다. 랜덤 매칭에서 {n}경기를 하면 오른다.", { n: BOARD_MIN_GAMES })))
+      ? h("div", { class: "lb-empty", role: "row" }, h("span", { role: "cell" }, t("아직 순위표가 비었다.")))
       : null;
     const dots =
       board.top.length >= RANK_TOP
@@ -198,7 +199,7 @@ function headRow() {
   );
 }
 
-/** 표 한 줄. 좁은 화면에서는 경기·승률 칸을 이름 아래 작은 글로 옮긴다 */
+/** 표 한 줄. 좁은 화면에서는 경기·승률 칸을 이름 아래 작은 글로 옮긴다. 내 줄 그림은 지금 내 그림 */
 function boardRow(rec, { me = false } = {}) {
   const n = rec.rank;
   return h(
@@ -208,7 +209,7 @@ function boardRow(rec, { me = false } = {}) {
     h(
       "span",
       { class: "lb-name", role: "cell" },
-      avatar({ kind: "human", name: rec.name }, { size: 26 }),
+      avatar(me ? meWho() : { kind: "human", name: rec.name, face: rec.face }, { size: 26 }),
       h("span", { class: "lb-name-body" }, h("span", { class: "lb-nm" }, rec.name), h("small", { class: "lb-sub" }, statText(rec))),
     ),
     h("span", { class: "lb-score", role: "cell" }, String(rec.rating)),
@@ -227,7 +228,7 @@ function myRow(me) {
     h(
       "span",
       { class: "lb-name", role: "cell" },
-      avatar({ kind: "human", name }, { size: 26 }),
+      avatar(meWho(), { size: 26 }),
       h(
         "span",
         { class: "lb-name-body" },
@@ -258,30 +259,32 @@ export function rankBox({ onMissing = null } = {}) {
   let game = null;
   let loading = 0;
 
-  function line(n, name, right, { me = false, label = null } = {}) {
+  function line(n, who, right, { me = false, label = null } = {}) {
     return h(
       "li",
       { class: "rk" + (me ? " me" : "") },
       h("b", { class: "rk-n" }, n),
-      avatar({ kind: "human", name }, { size: 22 }),
-      h("span", { class: "rk-name" }, label || name),
+      avatar(who, { size: 22 }),
+      h("span", { class: "rk-name" }, label || who.name),
       right,
     );
   }
 
   function draw(board) {
     const at = myIndex(board);
-    const top = board.top.slice(0, 3).map((rec, k) => line(String(rec.rank), rec.name, h("span", { class: "rk-v" }, String(rec.rating)), { me: k === at }));
+    // 내 줄은 지금 내 그림(서버에 남은 그림보다 방금 고른 것)
+    const whoOf = (rec, k) => (k === at ? meWho() : { kind: "human", name: rec.name, face: rec.face });
+    const top = board.top.slice(0, 3).map((rec, k) => line(String(rec.rank), whoOf(rec, k), h("span", { class: "rk-v" }, String(rec.rating)), { me: k === at }));
     const me = board.me;
     const mine =
       at >= 0 && at < 3
         ? null
         : me && me.rank
-          ? line(String(me.rank), myName(), h("span", { class: "rk-v" }, String(me.rating)), { me: true, label: t("나") })
-          : line("–", myName(), h("span", { class: "rk-left" }, leftText(me)), { me: true, label: t("나") });
+          ? line(String(me.rank), meWho(), h("span", { class: "rk-v" }, String(me.rating)), { me: true, label: t("나") })
+          : line("–", meWho(), h("span", { class: "rk-left" }, leftText(me)), { me: true, label: t("나") });
     append(clear(list), [top, mine]);
     msg.hidden = board.top.length > 0;
-    msg.textContent = board.top.length ? "" : t("아직 순위에 오른 사람이 없다. 랜덤 매칭에서 {n}경기를 하면 오른다.", { n: BOARD_MIN_GAMES });
+    msg.textContent = board.top.length ? "" : t("아직 순위표가 비었다.");
   }
 
   async function load(id) {
@@ -313,7 +316,7 @@ export function rankBox({ onMissing = null } = {}) {
     rename() {
       for (const li of list.querySelectorAll(".rk.me")) {
         const av = li.querySelector(".av");
-        if (av) fillFace(av, { kind: "human", name: myName() });
+        if (av) fillFace(av, meWho());
       }
     },
     destroy() {

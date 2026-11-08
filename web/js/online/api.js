@@ -11,12 +11,14 @@
 
 import { api, OnlineError } from "./net.js";
 import { PROTOCOL } from "./config.js";
-import { cleanName } from "./identity.js";
+import { cleanName, faceId } from "./identity.js";
 
 const ROUNDS = [1, 3, 5];
 
-export async function createChallenge({ game, custom = null, hands, name, pid, e = null }, opts = {}) {
+// face(프로필 그림)는 골랐을 때만 싣는다. 서버가 아직 모르면 버린다(규약 제안, 백엔드에 쪽지 11-08)
+export async function createChallenge({ game, custom = null, hands, name, face = null, pid, e = null }, opts = {}) {
   const body = { v: PROTOCOL, pid, name, game, hands };
+  if (face) body.face = face;
   if (custom) body.custom = custom;
   if (e) body.e = e;
   const d = await api("/api/c", { ...opts, body });
@@ -29,9 +31,11 @@ export async function fetchChallenge(code, opts) {
 }
 
 /** 답하기. 다른 사람이 먼저 답했으면 OnlineError("closed") 의 result 에 그 결과를 싣는다 */
-export async function answerChallenge(code, { hands, name, pid }, opts = {}) {
+export async function answerChallenge(code, { hands, name, face = null, pid }, opts = {}) {
+  const body = { v: PROTOCOL, pid, name, hands };
+  if (face) body.face = face;
   try {
-    return readChallenge(await api(`/api/c/${encodeURIComponent(code)}/answer`, { ...opts, body: { v: PROTOCOL, pid, name, hands } }));
+    return readChallenge(await api(`/api/c/${encodeURIComponent(code)}/answer`, { ...opts, body }));
   } catch (e) {
     if (e.code === "closed" && e.detail && e.detail.result) {
       try {
@@ -62,6 +66,7 @@ export function readChallenge(d) {
     custom: d.custom && typeof d.custom === "object" ? { n: d.custom.n, k: d.custom.k, seed: d.custom.seed } : null,
     rounds: d.rounds,
     from: cleanName(d.from) || "?",
+    fromFace: faceId(d.fromFace),
     e: typeof d.e === "string" ? d.e : null,
     expires: Number.isFinite(d.expires) ? d.expires : null,
     open: d.open,
@@ -80,6 +85,7 @@ export function readChallenge(d) {
       [0, 1, -1].includes(d.winner);
     if (!fine) throw new OnlineError("bad_reply", d);
     c.to = cleanName(d.to) || "?";
+    c.toFace = faceId(d.toFace);
     c.hands = { from: h.from.slice(), to: h.to.slice() };
     c.cmp = d.cmp.slice();
     c.score = d.score.slice();
@@ -89,8 +95,10 @@ export function readChallenge(d) {
 }
 
 /** 방 만들기(규약 3.1): 만든 사람이 방장·0번 자리. 돌려주는 값은 4자 코드 */
-export async function createRoom({ rules, name, pid }, opts = {}) {
-  const d = await api("/api/rooms", { ...opts, body: { v: PROTOCOL, pid, name, rules } });
+export async function createRoom({ rules, name, face = null, pid }, opts = {}) {
+  const body = { v: PROTOCOL, pid, name, rules };
+  if (face) body.face = face;
+  const d = await api("/api/rooms", { ...opts, body });
   if (typeof d.code !== "string" || !d.code) throw new OnlineError("bad_reply", d);
   return d.code;
 }

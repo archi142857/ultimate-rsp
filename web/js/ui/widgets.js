@@ -190,12 +190,12 @@ export function stage({ meLabel = t("나"), opLabel = t("컴퓨터") } = {}) {
   };
 }
 
-/** 가위바위보 외치기(언어마다 다르다) */
-/** 셋을 세는 외침 */
+/** 셋을 세는 외침: 3, 2, 1 거꾸로 센다(11-08 사용자. 언어와 상관없이 숫자) */
 export function countChant() {
-  return isEn() ? ["One!", "Two!", "Three!"] : ["하나!", "둘!", "셋!"];
+  return ["3", "2", "1"];
 }
 
+/** 가위바위보 외치기(언어마다 다르다) */
 export function rpsChant() {
   return isEn() ? ["Rock!", "Paper!", "Scissors!", "Shoot!"] : ["가위!", "바위!", "보!"];
 }
@@ -205,8 +205,23 @@ export async function chant(st, words, step = 190) {
   if (fastMode() || reducedMotion()) return;
   for (const w of words) {
     st.say(w, "chant");
+    // 화면에 한 번은 그려진 뒤부터 센다(바쁜 폰에서 첫 마디가 건너뛰어지지 않게)
+    await painted();
     await sleep(step);
   }
+}
+
+/** 다음 화면이 그려질 때까지(숨은 탭이면 0.1초 뒤 그냥 넘어간다) */
+export function painted() {
+  return new Promise((ok) => {
+    const done = setTimeout(ok, 100);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        clearTimeout(done);
+        ok();
+      }),
+    );
+  });
 }
 
 export function fastMode() {

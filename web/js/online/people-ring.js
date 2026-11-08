@@ -117,7 +117,8 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
     for (const a of arrows) {
       if (!L.pos[a.from] || !L.pos[a.to]) continue;
       const p = arrowPath(L.pos[a.from], L.pos[a.to], size / 2 + 6, 3);
-      arrowsG.append(s("g", { class: "pring-arrow", style: styleOf(handVars(a.hand.V, a.hand.i)) }, s("line", p.line), s("path", { d: p.head })));
+      // pathLength 1: 공개할 때 화살 줄을 그어 나가는 움직임(online.css .revealing)
+      arrowsG.append(s("g", { class: "pring-arrow", style: styleOf(handVars(a.hand.V, a.hand.i)) }, s("line", { ...p.line, pathLength: 1 }), s("path", { d: p.head })));
     }
     svg.replaceChildren(lines, arrowsG);
     mid.style.left = `${L.cx}px`;

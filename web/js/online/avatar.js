@@ -1,9 +1,10 @@
-// 사람 그림(시안 ③ 고리): 이름 끝 동물(여우 → art/fox.svg), 컴퓨터는 로봇, 빈자리는 점선 동그라미.
-// 동물이 없는 이름(사용자가 직접 지은 이름)은 첫 글자를 쓴다. 같은 동물 둘보다 글자가 더 잘 갈린다.
+// 사람 그림(시안 ③ 고리): 고른 프로필 그림(face)이 있으면 그것, 없으면 이름 끝 동물(여우 → art/fox.svg),
+// 컴퓨터는 로봇, 빈자리는 점선 동그라미. 동물이 없는 이름(사용자가 직접 지은 이름)은 첫 글자를 쓴다.
 
 import { h } from "../ui/dom.js";
 import { artUrl, hasArt } from "../ui/art.js";
 import { NICK_ART, NICK_WORDS } from "../i18n/nicknames.js";
+import { faceId } from "./identity.js";
 
 const WORDS = new Map(); // 낱말(소문자) → 그림 이름
 for (const words of Object.values(NICK_WORDS)) words.noun.forEach((w, k) => WORDS.set(w.toLowerCase(), NICK_ART[k]));
@@ -43,6 +44,8 @@ export function faceOf(who) {
   if (!who || who.kind === "empty") return { text: "" };
   if (typeof who.art === "string") return { art: who.art };
   if (who.kind === "bot") return { art: "robot" };
+  const face = faceId(who.face);
+  if (face) return { art: face };
   const a = animalOf(who.name);
   return a ? { art: a } : { text: initialOf(who.name) };
 }

@@ -1,10 +1,12 @@
-// 로그인 없이 쓰는 나: 브라우저가 만든 무작위 id(pid)와 이름.
+// 로그인 없이 쓰는 나: 브라우저가 만든 무작위 id(pid)와 이름, 프로필 그림.
 // pid 는 비밀번호처럼 쓴다. 서버만 알고, 다시 들어올 때 내 자리를 찾는 데 쓴다. 화면에 보이지 않는다.
-// 둘 다 이 브라우저에만 남는다(ursp.online.pid, ursp.set.nick). 저장이 막혀 있으면 이 창이 열려 있는 동안만 쓴다.
+// 모두 이 브라우저에만 남는다(ursp.online.pid, ursp.set.nick, ursp.set.online.face). 저장이 막혀 있으면 이 창이 열려 있는 동안만 쓴다.
+// 프로필 그림은 게임 그림(web/art) 가운데 하나다. 고르지 않으면(null) 이름에서 정한다(avatar.js).
 
 import { load, save, setting, setSetting } from "../ui/store.js";
 import { lang } from "../i18n.js";
 import { NICK_WORDS } from "../i18n/nicknames.js";
+import { ART_FILES } from "../data/art-files.js";
 
 export const NAME_MAX = 20;
 const PID = /^[A-Za-z0-9_-]{22}$/;
@@ -74,4 +76,32 @@ export function setMyName(s) {
   nameMemo = n;
   setSetting("nick", n);
   return n;
+}
+
+/** 프로필 그림 이름이 게임 그림에 있으면 그대로, 아니면 null(서버가 준 값도 이걸로 거른다) */
+export function faceId(x) {
+  return typeof x === "string" && ART_FILES.has(x) ? x : null;
+}
+
+/** 내가 고른 프로필 그림. 고르지 않았으면 null(이름에서 정한다) */
+export function myFace() {
+  return faceId(setting("online.face", null));
+}
+
+/** 프로필 그림을 바꾼다. null 이면 이름에 맞춘다. 남긴 값을 돌려준다 */
+export function setMyFace(id) {
+  const f = faceId(id);
+  setSetting("online.face", f);
+  return f;
+}
+
+/** 나(사람 고리·그림에 넘기는 꼴) */
+export function meWho() {
+  return { kind: "human", name: myName(), face: myFace() };
+}
+
+/** 서버에 이름과 같이 보내는 값: 그림을 골랐을 때만 face 를 싣는다 */
+export function meFields() {
+  const face = myFace();
+  return face ? { name: myName(), face } : { name: myName() };
 }

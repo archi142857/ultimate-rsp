@@ -5,9 +5,9 @@
 // 손은 한 번 누르면 바로 낸다(한 판에 한 번, 못 바꾼다). 같은 화면이 둘이서(변종·직접 만들기)와 여럿이(group)를 다 그린다.
 // '준비'는 서버가 seats 에 ready 를 줄 때만 보인다(규약에 더해 달라고 백엔드에 부탁해 둠).
 
-import { h, clear, append, setTitle, sleep } from "../ui/dom.js";
+import { h, clear, append, setTitle, sleep, reducedMotion } from "../ui/dom.js";
 import { t } from "../i18n.js";
-import { handGrid, chant, fastMode, RESULT_WORD } from "../ui/widgets.js";
+import { handGrid, fastMode, painted, RESULT_WORD } from "../ui/widgets.js";
 import { handArt } from "../ui/art.js";
 import { setSetting } from "../ui/store.js";
 import { chantWords } from "../views/matrix.js";
@@ -19,7 +19,7 @@ import { avatar } from "./avatar.js";
 import { peopleRing, timerDial, midText } from "./people-ring.js";
 import { emoteRow, emoteLabel, isEmote } from "./emotes.js";
 import { variantOf } from "./games.js";
-import { myName, playerId } from "./identity.js";
+import { playerId, meFields, myFace } from "./identity.js";
 import { openSocket } from "./socket.js";
 import { PROTOCOL, shareLink } from "./config.js";
 import { CLOSE, EMOTE_GAP_MS, REVEAL_MS } from "./protocol.js";
@@ -27,6 +27,10 @@ import { serverNow } from "./net.js";
 import { rulesEditor, rulesRows, gameName, isGroup } from "./rules.js";
 import { sidesOf, seatName, seatBot, secondsLeft, canSit, finalFor, duelRound, groupRound, headcount, ringOrder, readyInfo, mmss, ranking } from "./room-model.js";
 import { closeText, wsErrorText, noticeFor } from "./messages.js";
+
+// 공개 연출: 한 마디 세는 시간, 결과를 적어도 보여 주는 시간. 셋을 세고(≈1.1초) 결과를 보여도 REVEAL_MS(2.5초) 안에 끝난다
+const COUNT_MS = 360;
+const SHOW_MS = 1300;
 
 export function roomView(main, code) {
   setTitle(t("방 {code}", { code }));
@@ -55,7 +59,7 @@ export function roomView(main, code) {
   notices.set("wait", { title: t("방에 들어가는 중…"), spin: true });
 
   // ── 연결 ─────────────────
-  const sock = openSocket(`/api/rooms/${code}/ws`, { v: PROTOCOL, pid: playerId(), name: myName() }, { onMessage, onStatus });
+  const sock = openSocket(`/api/rooms/${code}/ws`, { v: PROTOCOL, pid: playerId(), ...meFields() }, { onMessage, onStatus });
 
   function onStatus(st) {
     if (st.state === "open") {
@@ -209,6 +213,12 @@ export function roomView(main, code) {
    * phase: lobby | play | end. shown: 공개할 판 { hands: [손 번호|null], cmp?(0번 쪽), win?, out? }
    * 돌려주는 값: { people, order } (order[k] = 고리 k 번째 자리 번호)
    */
+  /** 자리의 그림 꼴. 내 사람 자리는 서버가 그림을 안 줘도(아직 모르는 서버) 내가 고른 그림을 쓴다 */
+  function whoOf(i) {
+    const seat = room.seats[i];
+    return i === you && seat.kind === "human" && !seat.face && myFace() ? { ...seat, face: myFace() } : seat;
+  }
+
   function seatPeople(phase, shown = null) {
     const n = room.seats.length;
     const order = ringOrder(n, you);
@@ -220,7 +230,7 @@ export function roomView(main, code) {
       const seat = room.seats[i];
       if (seat.kind === "empty") return { key: i, empty: true, emptyText: t("빈자리"), label: "", title: t("빈자리. 시작하면 컴퓨터가 앉는다.") };
       const me = i === you;
-      const p = { key: i, who: seat, me, label: me ? t("나") : nameOf(i) };
+      const p = { key: i, who: whoOf(i), me, label: me ? t("나") : nameOf(i) };
       const subs = [];
       const say = [];
       const out = group && room.alive && phase !== "lobby" && !room.alive.includes(i);
@@ -309,19 +319,38 @@ export function roomView(main, code) {
     return midText(RESULT_WORD[cmp], line, cmp > 0 ? "win" : cmp < 0 ? "lose" : "");
   }
 
-  /** 고리 가운데에서 외치고(가위! 바위! 보!) 판을 공개한다. 공개 화면은 hold ms 동안 둔다 */
+  /**
+   * 판 공개(11-08 사용자: "셋 둘 하나가 버벅인다, 3 2 1 로, 좀 더 박진감 있게"):
+   *   고리 가운데에서 3 → 2 → 1(가위바위보는 가위! 바위! 보!)을 한 마디씩 크게 세고(그려진 뒤부터 COUNT_MS),
+   *   모두의 손을 한꺼번에 뒤집듯 띄운 뒤 이긴 손 → 진 손 화살표를 긋고, 가운데에 결과를 쾅 찍는다.
+   *   서버는 공개 뒤 REVEAL_MS 만큼 다음 판 시간을 늘려 두므로 그 안에서 연출한다(결과는 적어도 SHOW_MS 보인다).
+   * 빨리 하기·움직임 줄이기면 세지 않고 바로 보인다. 더 새 공개가 시작되면(isLive 가 거짓) 그만둔다
+   */
   async function revealOn(ring, entry, { hold = REVEAL_MS, isLive = () => true } = {}) {
     const shown = shownOf(entry);
     if (!shown) return;
-    const say = { say: (w) => ring.center(midText(w, "", "chant")) };
     const t0 = Date.now();
-    await chant(say, chantWords(V));
+    const quick = fastMode() || reducedMotion();
+    if (!quick) {
+      for (const w of countWords()) {
+        ring.center(midText(w, "", "count"));
+        await painted();
+        await sleep(COUNT_MS);
+        if (!isLive()) return;
+      }
+    }
     if (!isLive()) return;
     const { people, order } = seatPeople("play", shown);
+    ring.el.classList.add("revealing");
     ring.set({ people, arrows: shownArrows(order, shown) });
     ring.center(shownText(shown));
-    const rest = (fastMode() ? 1200 : hold) - (Date.now() - t0);
+    const rest = quick ? (fastMode() ? 1200 : hold) - (Date.now() - t0) : Math.max(hold - (Date.now() - t0), SHOW_MS);
     if (rest > 0) await sleep(rest);
+    if (isLive()) ring.el.classList.remove("revealing");
+  }
+  /** 세는 말: 가위바위보 셋이면 가위! 바위! 보!(영어는 Rock! Paper! Scissors!), 아니면 3 2 1 */
+  function countWords() {
+    return chantWords(V).slice(0, 3);
   }
 
   // 위쪽 사람의 이름 줄이 가운데(시간 원·준비 수)와 겹치지 않을 만큼
@@ -448,6 +477,7 @@ export function roomView(main, code) {
     const hist = histBox();
     const leave = h("button", { type: "button", class: "btn btn-sm btn-quiet", onclick: leaveRoom }, t("방 나가기"));
     let revealing = false;
+    let revealSeq = 0; // 공개가 겹치면(판이 빨리 이어지면) 앞의 것은 그만둔다
     let live = true;
     let localPick = null; // 서버 답이 오기 전에 누른 손 { r, i }
 
@@ -478,11 +508,12 @@ export function roomView(main, code) {
       ring.center(dial.el);
     }
     async function reveal(entry) {
+      const my = ++revealSeq;
       revealing = true;
       if (grid) grid.lock(true);
       line.textContent = "";
-      await revealOn(ring, entry, { isLive: () => live });
-      if (!live) return;
+      await revealOn(ring, entry, { isLive: () => live && my === revealSeq });
+      if (!live || my !== revealSeq) return;
       revealing = false;
       update(null);
     }
@@ -649,7 +680,7 @@ export function roomView(main, code) {
             "li",
             { class: "rank" + (row.seat === you ? " me" : "") },
             h("span", { class: "rank-n" }, String(row.rank)),
-            avatar(s, { size: 28 }),
+            avatar(whoOf(row.seat), { size: 28 }),
             h("span", { class: "rank-name" }, name),
             h("b", { class: "rank-v" }, value),
           );
