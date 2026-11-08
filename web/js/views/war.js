@@ -27,7 +27,7 @@ export function warView(main, entry) {
   const W = 640;
   const H = 420;
 
-  const canvas = h("canvas", { width: W, height: H, role: "img", "aria-label": t("가위바위보 전쟁 판") });
+  const canvas = h("canvas", { width: W, height: H, role: "img", "aria-label": t("가위바위보 전쟁터") });
   const ctx = canvas.getContext("2d");
   const legend = h("ul", { class: "legend" });
   const status = h("p", { class: "note", "aria-live": "polite", style: { margin: "12px 0 0" } });
@@ -36,7 +36,7 @@ export function warView(main, entry) {
   const resetBtn = h("button", { class: "btn", type: "button", onclick: () => reset() }, t("처음부터"));
 
   const vSel = selectBox({
-    label: t("무엇끼리"),
+    label: t("변종"),
     value: variantId,
     options: choices.map((x) => ({ id: x.e.id, name: x.e.name })),
     onChange: (v) => ((variantId = v), reset()),
@@ -169,8 +169,8 @@ export function warView(main, entry) {
       entry,
       block(
         t("왜 매번 다를까"),
-        h("p", {}, t("셋이 서로 먹고 먹히니, 한 손이 늘면 그 손을 이기는 손이 곧 따라 는다. 그래서 수가 오르락내리락하다가, 우연히 한 손이 바닥나는 순간 승부가 정해진다.")),
-        h("p", {}, t("고르지 않은 판(우물, 다이너마이트)을 골라 보면 약한 손이 먼저 사라지는지 볼 수 있다.")),
+        h("p", {}, t("셋이 서로 먹고 먹히므로, 한 손이 늘면 그 손을 이기는 손도 곧 따라 는다. 그래서 수가 오르내리다가 우연히 한 손이 바닥나는 순간 승부가 난다.")),
+        h("p", {}, t("고르지 않은 변종(우물, 다이너마이트)을 고르면 약한 손이 먼저 사라지는지 볼 수 있다.")),
       ),
     ),
   );

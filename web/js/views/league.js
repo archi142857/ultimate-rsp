@@ -109,7 +109,7 @@ export function leagueView(main, entry) {
     const heat = h(
       "table",
       { class: "heat" },
-      h("caption", { class: "sr" }, t("맞대결 표. 줄의 전략이 칸의 전략과 겨뤄 이긴 판에서 진 판을 뺀 비율")),
+      h("caption", { class: "sr" }, t("맞대결 표. 줄 전략이 칸 전략과 겨뤄 이긴 판에서 진 판을 뺀 비율")),
       h("thead", {}, h("tr", {}, h("th", {}), names.map((n) => h("th", { class: "col", scope: "col" }, n)))),
       h(
         "tbody",

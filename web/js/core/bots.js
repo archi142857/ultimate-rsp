@@ -5,12 +5,12 @@ import { t } from "../i18n.js";
 
 const BOT_TEXT = [
   { id: "random", name: "주사위", desc: "아무 손이나 같은 확률로 낸다." },
-  { id: "nash", name: "계산기", desc: "최적 섞기대로 낸다. 길게 보면 누구에게도 지지 않는다." },
-  { id: "human", name: "사람 흉내", desc: "이기면 그 손을 또 내고, 지면 자기를 이긴 손을 이기는 손으로 바꾸는 버릇이 있다." },
+  { id: "nash", name: "계산기", desc: "최적 비율대로 낸다. 길게 보면 누구에게도 지지 않는다." },
+  { id: "human", name: "사람 흉내", desc: "이기면 같은 손을 또 내고, 지면 방금 자기를 이긴 손을 이기는 손으로 바꾼다." },
   { id: "freq", name: "버릇 읽기", desc: "상대가 요즘 자주 내는 손을 노린다." },
-  { id: "pattern", name: "수 읽기", desc: "상대가 내 온 차례를 외워서 다음 손을 짐작한다." },
+  { id: "pattern", name: "수 읽기", desc: "상대가 내 온 순서를 외워 다음 손을 짐작한다." },
   { id: "cycle", name: "돌림", desc: "고리 차례대로 돌아가며 낸다." },
-  { id: "stubborn", name: "고집", desc: "한 손만 고집한다." },
+  { id: "stubborn", name: "고집", desc: "한 손만 계속 낸다." },
   { id: "mirror", name: "따라쟁이", desc: "상대가 방금 낸 손을 따라 낸다." },
   { id: "avenger", name: "앙갚음", desc: "상대가 방금 낸 손을 이기는 손을 낸다." },
 ];
