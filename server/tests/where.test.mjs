@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { QUEUE_HINT, checkHint, pairHint, placeOf } from "../src/where.js";
+import { QUEUE_HINT, RANK_HINT, checkHint, pairHint, placeOf } from "../src/where.js";
 
 test("나라·대륙 → 자리 힌트", () => {
   assert.equal(placeOf({ country: "KR", continent: "AS" }), "apac-ne");
@@ -18,6 +18,7 @@ test("나라·대륙 → 자리 힌트", () => {
   assert.equal(placeOf({ country: "ZA", continent: "AF" }), "afr");
   for (const bad of [undefined, null, "KR", {}, { continent: "T1" }]) assert.equal(placeOf(bad), null);
   assert.equal(QUEUE_HINT, "apac-ne");
+  assert.equal(checkHint(RANK_HINT), "apac-ne", "순위표도 동북아");
 });
 
 test("랜덤 방 자리: 먼저 기다린 사람 쪽, 모르는 값은 건너뛴다", () => {

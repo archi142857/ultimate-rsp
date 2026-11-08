@@ -5,6 +5,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { Room } from "./room.js";
 import { Fail } from "./http.js";
+import { RANK_HINT } from "./where.js";
 import { CLOSE, EMOTE_GAP_MS, MSG_BURST, MSG_MAX, PING, PONG, PROTOCOL, ROOM_DELETE_MS, ROOM_SOCKETS } from "./protocol.js";
 
 const KEY = "room";
@@ -193,7 +194,7 @@ export class RoomHost extends DurableObject {
   async #rate(game, due) {
     let out = null;
     try {
-      out = await this.env.RANKS.get(this.env.RANKS.idFromName(due.game)).record(due);
+      out = await this.env.RANKS.get(this.env.RANKS.idFromName(due.game), { locationHint: RANK_HINT }).record(due);
     } catch (e) {
       console.error("rank error", (e && e.stack) || e);
     }

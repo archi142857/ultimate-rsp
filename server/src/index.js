@@ -5,7 +5,7 @@ import { Challenge } from "./challenge-do.js";
 import { RoomHost, refuse } from "./room-do.js";
 import { MatchQueue } from "./match-do.js";
 import { Ranking } from "./rank-do.js";
-import { QUEUE_HINT, placeOf } from "./where.js";
+import { QUEUE_HINT, RANK_HINT, placeOf } from "./where.js";
 import { makeChallenge } from "./challenge.js";
 import { checkFace, checkName, checkPid, makeCode, normCode } from "./check.js";
 import { normRules, warmUp } from "./games.js";
@@ -129,14 +129,14 @@ async function rankRoute(request, env, rest, url, now, origin) {
   if (rest.length === 1 && m === "GET") {
     checkVersion(url.searchParams.get("v"));
     const game = rankGame(rest[0]);
-    const r = await callDO(() => stub(env.RANKS, game).board());
+    const r = await callDO(() => stub(env.RANKS, game, RANK_HINT).board());
     return json({ game, ...r, now }, 200, origin);
   }
   if (rest.length === 0 && m === "POST") {
     const body = await readBody(request);
     const game = rankGame(body.game);
     const pid = checkPid(body.pid);
-    const r = await callDO(() => stub(env.RANKS, game).board({ pid }));
+    const r = await callDO(() => stub(env.RANKS, game, RANK_HINT).board({ pid }));
     return json({ game, ...r, now }, 200, origin);
   }
   throw new Fail("not_found");

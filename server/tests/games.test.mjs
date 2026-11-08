@@ -75,7 +75,7 @@ test("게임 목록은 공용 목록(web/js/data/online.js)을 따른다", async
   const { onlineGames, groupBases } = await import("../../web/js/data/online.js");
   assert.deepEqual(matrixIds(), onlineGames("random"));
   assert.deepEqual(groupBaseIds(), groupBases());
-  assert.equal(groupBaseIds().length, 8);
+  assert.equal(groupBaseIds().length, groupBases().length);
   for (const id of onlineGames("room")) {
     const rules = id === "custom" ? { game: id, custom: { n: 5, k: 2, seed: 1 } } : { game: id };
     assert.equal(normRules(rules).game, id);

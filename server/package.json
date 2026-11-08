@@ -1,6 +1,6 @@
 {
   "name": "ultimate-rsp-server",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "private": true,
   "description": "Ultimate RSP 온라인 대전 서버 (Cloudflare Workers + Durable Objects)",
   "author": "서울대학교 동물생명공학전공 25학번 이영표",
