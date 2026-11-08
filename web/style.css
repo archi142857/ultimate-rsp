@@ -151,6 +151,38 @@ select {
   gap: 4px;
   align-items: center;
 }
+/* 언어·밝기 단추. 넓은 화면은 메뉴 바로 옆(메뉴 사이 간격과 같게), 좁은 화면은 워드마크와 같은 줄 오른쪽 */
+.tools {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.nav + .tools {
+  margin-left: -12px;
+}
+/* 좁은 화면(720px 아래): 첫 줄에 워드마크와 단추, 둘째 줄에 메뉴 넷을 고르게 */
+@media (max-width: 719px) {
+  .top {
+    row-gap: 4px;
+    padding-top: 10px;
+    padding-bottom: 6px;
+  }
+  .nav + .tools {
+    margin-left: auto;
+    order: 1;
+  }
+  .nav {
+    order: 2;
+    flex: 1 0 100%;
+    margin: 0 -8px;
+  }
+}
+/* 폰 폭에서는 메뉴 넷을 줄 끝까지 고르게(탭처럼) */
+@media (max-width: 480px) {
+  .nav {
+    justify-content: space-between;
+  }
+}
 .nav a,
 .theme-btn {
   text-decoration: none;
@@ -1822,9 +1854,6 @@ table.grid td.s {
     font-size: 0.875rem;
     padding: 8px 7px;
   }
-  .brand span {
-    display: none;
-  }
   .stage {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
@@ -1851,15 +1880,13 @@ table.grid td.s {
   }
 }
 
-/* 메뉴 넷(도감·시뮬레이션·온라인·정보)과 단추 둘이 360px 에 들어가게. 더 좁으면 단추가 다음 줄로 */
+/* 320px 까지: 첫 줄에 워드마크와 단추 둘, 둘째 줄에 메뉴 넷(도감·시뮬레이션·온라인·정보)이 들어가게 */
 @media (max-width: 400px) {
   .top {
     column-gap: 10px;
   }
   .nav {
     gap: 0;
-    flex-wrap: wrap;
-    justify-content: flex-end;
   }
   .nav a,
   .theme-btn {
