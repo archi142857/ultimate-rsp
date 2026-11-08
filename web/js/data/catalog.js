@@ -775,7 +775,7 @@ const CATALOG_KO = [
     origin: "컴퓨터끼리",
     about: [
       "컴퓨터 전략끼리 수천 판씩 겨룬다. 아무렇게나 내는 전략은 누구에게도 크게 지지 않고, 버릇이 있는 전략은 그 버릇을 읽는 전략에게 진다.",
-      "전략끼리도 가위바위보처럼 물고 무는 사이가 생긴다.",
+      "전략끼리도 가위바위보처럼 물고 물리는 사이가 생긴다.",
     ],
     sources: [{ t: "Wang, Xu & Zhou (2014), Social cycling and conditional responses in the Rock-Paper-Scissors game", u: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5376050/" }],
   },
