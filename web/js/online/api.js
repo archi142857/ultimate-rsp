@@ -15,7 +15,7 @@ import { cleanName, faceId } from "./identity.js";
 
 const ROUNDS = [1, 3, 5];
 
-// face(프로필 그림)는 골랐을 때만 싣는다. 서버가 아직 모르면 버린다(규약 제안, 백엔드에 쪽지 11-08)
+// face(프로필 그림)는 골랐을 때만 싣는다(규약 1.2·2·3.1, 서버 9a0879a). 서버가 모르는 그림은 null 로 받는다
 export async function createChallenge({ game, custom = null, hands, name, face = null, pid, e = null }, opts = {}) {
   const body = { v: PROTOCOL, pid, name, game, hands };
   if (face) body.face = face;

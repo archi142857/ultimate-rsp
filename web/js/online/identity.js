@@ -100,7 +100,7 @@ export function meWho() {
   return { kind: "human", name: myName(), face: myFace() };
 }
 
-/** 서버에 이름과 같이 보내는 값: 그림을 골랐을 때만 face 를 싣는다 */
+/** 서버에 이름과 같이 보내는 값: 그림을 골랐을 때만 face 를 싣는다. 방은 들어올 때마다 그때 이름·그림으로 자리를 고친다(안 실으면 null) */
 export function meFields() {
   const face = myFace();
   return face ? { name: myName(), face } : { name: myName() };

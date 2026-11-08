@@ -213,7 +213,7 @@ export function roomView(main, code) {
    * phase: lobby | play | end. shown: 공개할 판 { hands: [손 번호|null], cmp?(0번 쪽), win?, out? }
    * 돌려주는 값: { people, order } (order[k] = 고리 k 번째 자리 번호)
    */
-  /** 자리의 그림 꼴. 내 사람 자리는 서버가 그림을 안 줘도(아직 모르는 서버) 내가 고른 그림을 쓴다 */
+  /** 자리의 그림 꼴(서버가 seats[].face 를 준다). 내 사람 자리는 서버 값이 비어도(옛 서버·들어오는 중) 내가 고른 그림 */
   function whoOf(i) {
     const seat = room.seats[i];
     return i === you && seat.kind === "human" && !seat.face && myFace() ? { ...seat, face: myFace() } : seat;
