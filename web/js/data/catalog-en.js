@@ -275,7 +275,7 @@ export const EN_CATEGORIES = {
   },
   cousin: {
     title: "RPS cousins",
-    blurb: "Coins, dice, finger counts, or soldiers instead of hands. There's never a move that always wins, and every move has one that beats it.",
+    blurb: "These use coins, dice, finger counts, or soldiers instead of hands. Whatever you pick, something beats it.",
   },
   group: {
     title: "Group games",
@@ -714,7 +714,7 @@ export const EN_ENTRIES = {
     sub: "どんじゃんけん, Hoop Hop Showdown",
     origin: "Japan, US PE classes",
     about: [
-      "Two teams start at bases at either end of a path. One player from each side runs out, and when they meet they play rock paper scissors. The winner keeps going, and the losing team sends its next player from base. Reach the other team's base to win.",
+      "Two teams start at bases at either end of a path. One player from each side runs out, and when they meet they play rock paper scissors. The winner keeps going, and the losing team sends its next player from base. The first team to reach the other base wins.",
       "FiveThirtyEight's puzzle column, the Riddler, built a puzzle on this game. Counting 1 second per step and 1 second per throw under this app's rules, an 8-space path takes about 2 minutes on average.",
     ],
   },
@@ -724,7 +724,7 @@ export const EN_ENTRIES = {
     origin: "Japanese manga",
     about: [
       "The emperor beats the citizen, the citizen beats the slave, and the slave beats the emperor. Two citizens draw. The emperor side holds 1 emperor and 4 citizens, the slave side holds 1 slave and 4 citizens, and both play one card at a time.",
-      "Play 12 rounds and switch sides every 3. A slave-side win is worth 4 points, an emperor-side win 1. With best play the slave side wins one round in five, so 4 points makes both sides even. It cuts E-Card from the manga Kaiji down to a two-player game. In the manga, a slave-side win pays five times as much.",
+      "Play 12 rounds and switch sides every 3. A slave-side win is worth 4 points, an emperor-side win 1. With best play, the slave side wins one round in five. Scoring that win as 4 points makes both sides even. It cuts E-Card from the manga Kaiji down to a two-player game. In the manga, a slave-side win pays five times as much.",
     ],
   },
   shogi: {
@@ -767,7 +767,7 @@ export const EN_ENTRIES = {
     origin: "Émile Borel (1921)",
     about: [
       "Both players secretly split 10 soldiers across 3 battlefields. Whoever sends more to a field takes it, and whoever takes more fields wins the round. First to win 3 rounds wins the match.",
-      "With enough soldiers, no split always wins. Spread them evenly and you lose to a split with a few more on two fields. Stack them and you give up the rest. The computer splits close to the best mix.",
+      "With enough soldiers, no split always wins. Spread them evenly and you lose to a split with a few more on two fields. Stack them and you give up the rest. The computer picks its splits close to the best mix.",
     ],
   },
   majority: {
