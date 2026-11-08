@@ -19,9 +19,10 @@ test("저장 열쇠: pid 의 해시(16진수 32자), 같은 pid 는 같고 다�
 
 test("저장된 줄 ↔ 기록, 순위표·방에 싣는 꼴에는 열쇠가 없다", () => {
   assert.deepEqual(fromRow(null), newRecord());
-  const row = { key: "k".repeat(32), name: "여우", rating: 1032, games: 6, wins: 4, losses: 2, draws: 0, at: 1 };
+  const row = { key: "k".repeat(32), name: "여우", face: "fox", rating: 1032, games: 6, wins: 4, losses: 2, draws: 0, at: 1 };
   assert.deepEqual(fromRow(row), { rating: 1032, games: 6, wins: 4, losses: 2, draws: 0 });
-  assert.deepEqual(boardEntry(row), { name: "여우", rating: 1032, games: 6, wins: 4, losses: 2, draws: 0 });
+  assert.deepEqual(boardEntry(row), { name: "여우", face: "fox", rating: 1032, games: 6, wins: 4, losses: 2, draws: 0 });
+  assert.equal(boardEntry({ ...row, face: undefined }).face, null, "예전 줄(그림 칸 없음)은 null");
   const out = rateMatch(fromRow(row), newRecord(), 1);
   assert.deepEqual(Object.keys(afterEntry(out.a)), ["rating", "delta", "games", "wins", "losses", "draws"]);
   assert.equal(afterEntry(out.a).games, 7);

@@ -45,15 +45,15 @@ test("만들기와 들어오기: 방장 0번, 빈자리, 꽉 차면 구경꾼", 
   let v = room.view(null);
   assert.equal(v.phase, "lobby");
   assert.equal(v.host, 0);
-  assert.deepEqual(v.seats[0], { kind: "human", name: "여우", on: false, until: T0 + GRACE_MS, ready: false });
+  assert.deepEqual(v.seats[0], { kind: "human", name: "여우", face: null, on: false, until: T0 + GRACE_MS, ready: false });
   assert.deepEqual(room.join(A, "여우", T0), { seat: 0, evs: [{ k: "back", s: 0 }] });
   assert.equal(room.s.cleanupAt, null);
   assert.deepEqual(room.join(B, "곰", T0), { seat: 1, evs: [{ k: "join", s: 1 }] });
   assert.deepEqual(room.join(C, "새", T0), { seat: null, evs: [{ k: "watch" }] });
   v = room.view(1, 1);
   assert.deepEqual(v.seats, [
-    { kind: "human", name: "여우", on: true, until: null, ready: false },
-    { kind: "human", name: "곰", on: true, until: null, ready: false },
+    { kind: "human", name: "여우", face: null, on: true, until: null, ready: false },
+    { kind: "human", name: "곰", face: null, on: true, until: null, ready: false },
   ]);
   assert.equal(v.watchers, 1);
   assert.equal(v.round, null);
@@ -185,7 +185,7 @@ test("둘 중 한 사람이 3번 연달아 넘기면 봇이 잇고, 돌아오면
 test("끊기면 60초 지키고 봇이 잇는다(다른 사람이 있을 때만). 돌아오면 되찾는다", () => {
   const room = twoPlayers({ timer: 0 });
   assert.deepEqual(room.leave(B, T0), [{ k: "off", s: 1 }]);
-  assert.deepEqual(room.view(0).seats[1], { kind: "human", name: "곰", on: false, until: T0 + GRACE_MS, ready: false });
+  assert.deepEqual(room.view(0).seats[1], { kind: "human", name: "곰", face: null, on: false, until: T0 + GRACE_MS, ready: false });
   assert.equal(room.nextWake(), T0 + GRACE_MS);
   assert.deepEqual(room.tick(T0 + GRACE_MS - 1), []);
   assert.deepEqual(room.tick(T0 + GRACE_MS), [{ k: "bot", s: 1, why: "left" }]);
@@ -387,7 +387,7 @@ test("랭킹: 랜덤 방 첫 경기만 센다. 이긴 쪽 1, 이름은 끝날 �
   thr(room, A, "rock");
   thr(room, B, "scissors");
   assert.equal(room.s.phase, "end");
-  assert.deepEqual(room.takeRank(), { game: "classic", a: { pid: A, name: "붉은여우" }, b: { pid: B, name: "곰" }, score: 1 });
+  assert.deepEqual(room.takeRank(), { game: "classic", a: { pid: A, name: "붉은여우", face: null }, b: { pid: B, name: "곰", face: null }, score: 1 });
   assert.equal(room.takeRank(), null, "한 번만");
   for (const you of [0, 1, null]) assert.ok(!JSON.stringify(room.view(you)).includes("player"), "방 꼴에 pid 는 안 실린다");
   room.handle(A, "붉은여우", { t: "start" }, T0);
@@ -402,7 +402,7 @@ test("랭킹: 끝날 때 봇이 잇던 자리(나감·안 옴)는 진다. 둘 �
   assert.equal(left.view(1).seats[0].kind, "bot");
   for (let k = 0; k < 60 && left.s.phase === "play"; k++) thr(left, B, "rock");
   assert.equal(left.s.phase, "end");
-  assert.deepEqual(left.takeRank(), { game: "classic", a: { pid: A, name: "여우" }, b: { pid: B, name: "곰" }, score: 0 }, "봇이 이겨도 나간 사람이 진다");
+  assert.deepEqual(left.takeRank(), { game: "classic", a: { pid: A, name: "여우", face: null }, b: { pid: B, name: "곰", face: null }, score: 0 }, "봇이 이겨도 나간 사람이 진다");
 
   const noShow = Room.create({ code: "R2D5", rules: { game: "rps101", format: "single" }, now: T0, seed: 5, reserve: pair, random: true });
   noShow.join(A, "여우", T0);
@@ -424,4 +424,26 @@ test("랭킹: 끝날 때 봇이 잇던 자리(나감·안 옴)는 진다. 둘 �
   solo.join(A, "여우", T0);
   assert.equal(solo.s.phase, "play");
   assert.equal(solo.view(0).rank, null, "봇 대전");
+});
+
+test("프로필 그림: 사람 자리 face, 다시 들어오면 바뀌고, 랜덤 방 예약·랭킹 결과에도 이어진다", () => {
+  const room = Room.create({ code: "F4C3", rules: { game: "classic" }, now: T0, seed: 3, host: { pid: A, name: "여우", face: "fox" } });
+  assert.equal(room.view(0).seats[0].face, "fox");
+  room.join(A, "여우", T0, "king");
+  room.join(B, "곰", T0);
+  assert.deepEqual(room.view(null).seats.map((x) => x.face), ["king", null]);
+  room.join(B, "곰", T0, "bear");
+  assert.equal(room.view(0).seats[1].face, "bear");
+
+  const faces = [{ pid: A, name: "여우", face: "fox" }, { pid: B, name: "곰", face: "bear" }];
+  const rnd = Room.create({ code: "F4C4", rules: { game: "classic", format: "single" }, now: T0, seed: 4, reserve: faces, random: true });
+  rnd.join(A, "여우", T0, "fox");
+  rnd.join(B, "곰", T0, "bear");
+  rnd.leave(B, T0, true);
+  assert.equal(rnd.view(0).seats[1].kind, "bot");
+  assert.ok(!("face" in rnd.view(0).seats[1]), "봇 자리에는 그림을 안 싣는다");
+  for (let k = 0; k < 60 && rnd.s.phase === "play"; k++) thr(rnd, A, "rock");
+  const due = rnd.takeRank();
+  assert.deepEqual(due.a, { pid: A, name: "여우", face: "fox" });
+  assert.deepEqual(due.b, { pid: B, name: "곰", face: "bear" }, "나간 사람은 시작 때 그림");
 });

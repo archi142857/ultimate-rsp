@@ -7,8 +7,8 @@ import { BOARD_MIN_GAMES, onBoard, rateMatch } from "../../web/js/core/rating.js
 import { afterEntry, boardEntry, fromRow, rankKey } from "./rank.js";
 import { RANK_TOP } from "./protocol.js";
 
-const UPSERT = `INSERT INTO players (key, name, rating, games, wins, losses, draws, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  ON CONFLICT(key) DO UPDATE SET name = excluded.name, rating = excluded.rating, games = excluded.games,
+const UPSERT = `INSERT INTO players (key, name, face, rating, games, wins, losses, draws, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ON CONFLICT(key) DO UPDATE SET name = excluded.name, face = excluded.face, rating = excluded.rating, games = excluded.games,
   wins = excluded.wins, losses = excluded.losses, draws = excluded.draws, at = excluded.at`;
 
 export class Ranking extends DurableObject {
@@ -19,26 +19,32 @@ export class Ranking extends DurableObject {
     this.board_ = null;
     this.sql.exec(`CREATE TABLE IF NOT EXISTS players (
       key TEXT PRIMARY KEY, name TEXT NOT NULL, rating INTEGER NOT NULL, games INTEGER NOT NULL,
-      wins INTEGER NOT NULL, losses INTEGER NOT NULL, draws INTEGER NOT NULL, at INTEGER NOT NULL
+      wins INTEGER NOT NULL, losses INTEGER NOT NULL, draws INTEGER NOT NULL, at INTEGER NOT NULL, face TEXT
     ) WITHOUT ROWID`);
+    // 11-08 에 그림(face) 칸을 더했다. 그 전에 만든 표에는 한 번만 붙인다
+    try {
+      this.sql.exec("SELECT face FROM players LIMIT 0");
+    } catch {
+      this.sql.exec("ALTER TABLE players ADD COLUMN face TEXT");
+    }
   }
 
   #row(key) {
     return this.sql.exec("SELECT * FROM players WHERE key = ?", key).toArray()[0] || null;
   }
 
-  #put(key, name, rec, at) {
-    this.sql.exec(UPSERT, key, name, rec.rating, rec.games, rec.wins, rec.losses, rec.draws, at);
+  #put(key, who, rec, at) {
+    this.sql.exec(UPSERT, key, who.name, who.face ?? null, rec.rating, rec.games, rec.wins, rec.losses, rec.draws, at);
   }
 
-  /** 한 경기 결과. a·b 는 {pid, name}, score 는 a 쪽에서 본 1·0.5·0. 돌려주는 값: 두 사람 새 기록(delta 포함) */
+  /** 한 경기 결과. a·b 는 {pid, name, face}, score 는 a 쪽에서 본 1·0.5·0. 돌려주는 값: 두 사람 새 기록(delta 포함) */
   async record({ a, b, score }) {
     const [ka, kb] = await Promise.all([rankKey(a.pid), rankKey(b.pid)]);
     if (ka === kb) return null;
     const out = rateMatch(fromRow(this.#row(ka)), fromRow(this.#row(kb)), score);
     const at = Date.now();
-    this.#put(ka, a.name, out.a, at);
-    this.#put(kb, b.name, out.b, at);
+    this.#put(ka, a, out.a, at);
+    this.#put(kb, b, out.b, at);
     this.board_ = null;
     return { a: afterEntry(out.a), b: afterEntry(out.b) };
   }

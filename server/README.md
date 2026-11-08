@@ -4,7 +4,7 @@
 
 - 주소: `https://ultimate-rsp.youngpyo.workers.dev`
 - 판정과 봇은 서버가 합니다. `web/js/core`·`data`·`games` 를 그대로 import 해서, 혼자 할 때와 같은 판정을 씁니다.
-- 로그인 없이 닉네임만 씁니다. 손은 모두 낼 때까지 서버만 압니다. 공유 링크에는 번호만 들어갑니다.
+- 로그인 없이 닉네임과 프로필 그림(`face`, `web/art` 그림 이름, 없어도 됨)만 씁니다. 손은 모두 낼 때까지 서버만 압니다. 공유 링크에는 번호만 들어갑니다.
 
 ## 지금 있는 것
 
@@ -32,7 +32,7 @@ POST 본문은 JSON 이고, CORS 미리 묻기를 줄이려고 `Content-Type: te
 - `src/room.js` 방 규칙(순수 모듈): 자리·방장, 손 내기와 공개, 시간 초과, 끊김과 봇 이음, 사람마다 보내는 방 꼴. `src/room-do.js` 방 Durable Object(WebSocket Hibernation, 저장 한 줄, 알람 하나).
 - `src/match-do.js` 랜덤 매칭 Durable Object(기다리는 사람은 연결 첨부로만 두어 저장소를 안 쓴다).
 - `src/rank.js` 랭킹 순수 함수(pid 해시 열쇠, 줄 꼴), `src/rank-do.js` 랭킹 Durable Object(게임마다 하나, SQLite 표 하나, 경기 하나에 두 줄).
-- `src/games.js` 온라인에서 고를 수 있는 게임·방 규칙과 판정 자료, `src/check.js` 코드·pid·닉네임 검사, `src/http.js` 응답과 오류.
+- `src/games.js` 온라인에서 고를 수 있는 게임·방 규칙과 판정 자료, `src/check.js` 코드·pid·닉네임·그림 검사, `src/http.js` 응답과 오류.
 - `tests/` Cloudflare 없이 도는 시험. 레포 루트의 `node --test` 가 같이 돌린다.
 
 ## 돌려 보기

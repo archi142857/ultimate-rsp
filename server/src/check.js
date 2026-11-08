@@ -2,6 +2,7 @@
 
 import { Fail } from "./http.js";
 import { CODE_ABC, EMOTES, NAME_MAX } from "./protocol.js";
+import { ART_FILES } from "../../web/js/data/art-files.js";
 
 function randomBytes(n) {
   const a = new Uint8Array(n);
@@ -55,6 +56,11 @@ export function checkName(name) {
 }
 
 /** 이모트 id. optional 이면 빈 값은 null */
+/** 프로필 그림(web/art 그림 이름). 이름처럼 남에게 보이는 값. 없거나 모르는 값은 오류 없이 null */
+export function checkFace(face) {
+  return typeof face === "string" && ART_FILES.has(face) ? face : null;
+}
+
 export function checkEmote(e, optional = false) {
   if (optional && (e === undefined || e === null)) return null;
   if (typeof e !== "string" || !EMOTES.includes(e)) throw new Fail("bad_request");

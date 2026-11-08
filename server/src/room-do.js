@@ -48,11 +48,12 @@ export class RoomHost extends DurableObject {
     return { taken: false };
   }
 
-  /** WebSocket 들어오기. 입구가 출처·규약 번호·pid·이름 꼴을 이미 봤다 */
+  /** WebSocket 들어오기. 입구가 출처·규약 번호·pid·이름·그림 꼴을 이미 봤다 */
   async fetch(request) {
     const url = new URL(request.url);
     const pid = url.searchParams.get("pid");
     const name = url.searchParams.get("name");
+    const face = url.searchParams.get("face") || null;
     if (!this.room) return refuse("not_found", CLOSE.not_found);
     const open = this.#sockets();
     const same = open.filter((ws) => att(ws).pid === pid);
@@ -60,7 +61,7 @@ export class RoomHost extends DurableObject {
 
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
-    server.serializeAttachment({ pid, name });
+    server.serializeAttachment({ pid, name, face });
     for (const ws of same) {
       try {
         ws.close(CLOSE.replaced, "replaced");
@@ -69,7 +70,7 @@ export class RoomHost extends DurableObject {
       }
     }
     const now = Date.now();
-    const { seat, evs } = this.room.join(pid, name, now);
+    const { seat, evs } = this.room.join(pid, name, now, face);
     send(server, { t: "hello", v: PROTOCOL, now, you: seat, room: this.room.view(seat, this.#watchers()) });
     await this.#commit(evs, server);
     return new Response(null, { status: 101, webSocket: client });
@@ -95,14 +96,14 @@ export class RoomHost extends DurableObject {
     } catch {
       return send(ws, { t: "error", code: "bad_request" });
     }
-    const { pid, name } = att(ws);
+    const { pid, name, face = null } = att(ws);
     if (msg && msg.t === "emote" && now - m.emoteAt < EMOTE_GAP_MS) return;
     // 시간 초과로 봇에게 넘어간 자리의 임자가 무언가 보내면 먼저 자리를 돌려준다
-    const back = this.room.reclaim(pid, name, now);
+    const back = this.room.reclaim(pid, name, now, face);
     if (back.length) await this.#commit(back);
     let out;
     try {
-      out = this.room.handle(pid, name, msg, now);
+      out = this.room.handle(pid, name, msg, now, face);
     } catch (e) {
       if (e instanceof Fail) return send(ws, { t: "error", code: e.code });
       // 규칙 코드의 탈: 반쯤 바뀐 상태를 버리고 저장된 상태로 돌아간다

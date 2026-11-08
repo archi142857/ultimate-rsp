@@ -3,7 +3,7 @@
 
 import { createMatch } from "../../web/js/games/match.js";
 import { checkOnlineGame, resolveVariant, handIndex } from "./games.js";
-import { checkPid, checkName, checkEmote } from "./check.js";
+import { checkPid, checkName, checkEmote, checkFace } from "./check.js";
 import { Fail } from "./http.js";
 import { CHALLENGE_KEEP_MS, CHALLENGE_ROUNDS } from "./protocol.js";
 
@@ -30,7 +30,7 @@ export function makeChallenge(body, now) {
   const { game, custom, V } = resolveVariant(checkOnlineGame("challenge", body.game), body.custom);
   const hands = checkHands(V, body.hands, null);
   const e = checkEmote(body.e, true);
-  return { code: null, game, custom, from: { pid, name }, e, hands, made: now, expires: now + CHALLENGE_KEEP_MS, answer: null };
+  return { code: null, game, custom, from: { pid, name, face: checkFace(body.face) }, e, hands, made: now, expires: now + CHALLENGE_KEEP_MS, answer: null };
 }
 
 /**
@@ -49,7 +49,7 @@ export function answerChallenge(rec, body, now) {
   const hands = checkHands(V, body.hands, rec.hands.length);
   // 판정은 답할 때 한 번 하고 적어 둔다(나중에 도감 규칙이 바뀌어도 지난 결과는 그대로)
   const result = judge(V, rec.hands, hands);
-  return { rec: { ...rec, answer: { pid, name, hands, at: now, ...result } }, changed: true };
+  return { rec: { ...rec, answer: { pid, name, face: checkFace(body.face), hands, at: now, ...result } }, changed: true };
 }
 
 /** 화면에 보여 줄 꼴. pid 는 절대 안 싣고, 답이 오기 전에는 만든 사람 손도 안 싣는다 */
@@ -60,6 +60,7 @@ export function viewChallenge(rec) {
     custom: rec.custom,
     rounds: rec.hands.length,
     from: rec.from.name,
+    fromFace: rec.from.face ?? null,
     e: rec.e,
     made: rec.made,
     expires: rec.expires,
@@ -69,6 +70,7 @@ export function viewChallenge(rec) {
     const a = rec.answer;
     Object.assign(v, {
       to: a.name,
+      toFace: a.face ?? null,
       answered: a.at,
       hands: { from: rec.hands.slice(), to: a.hands.slice() },
       cmp: a.cmp.slice(),

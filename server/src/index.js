@@ -6,7 +6,7 @@ import { RoomHost, refuse } from "./room-do.js";
 import { MatchQueue } from "./match-do.js";
 import { Ranking } from "./rank-do.js";
 import { makeChallenge } from "./challenge.js";
-import { checkName, checkPid, makeCode, normCode } from "./check.js";
+import { checkFace, checkName, checkPid, makeCode, normCode } from "./check.js";
 import { normRules, warmUp } from "./games.js";
 import { isOnlineGame } from "../../web/js/data/online.js";
 import { Fail, allowedOrigin, checkVersion, json, originList, preflight, readBody } from "./http.js";
@@ -112,7 +112,7 @@ async function challengeRoute(request, env, rest, url, now, origin) {
 // POST /api/rooms: 새 방. 만든 사람이 방장(0번 자리)
 async function createRoom(request, env, now, origin) {
   const body = await readBody(request);
-  const host = { pid: checkPid(body.pid), name: checkName(body.name) };
+  const host = { pid: checkPid(body.pid), name: checkName(body.name), face: checkFace(body.face) };
   const rules = normRules(body.rules);
   for (let i = 0; i < TRIES; i++) {
     const code = makeCode(CODE_LEN.room);
@@ -164,6 +164,9 @@ async function socketRoute(request, env, url, parts, okOrigin) {
   let id;
   const fwd = new URL(url);
   fwd.searchParams.set("name", name);
+  const face = checkFace(q.get("face"));
+  if (face) fwd.searchParams.set("face", face);
+  else fwd.searchParams.delete("face");
   if (parts[0] === "api" && parts[1] === "rooms" && parts[3] === "ws" && parts.length === 4) {
     const code = normCode(parts[2], CODE_LEN.room);
     if (!code) return refuse("not_found", CLOSE.not_found);

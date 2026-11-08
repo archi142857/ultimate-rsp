@@ -41,7 +41,7 @@ export class MatchQueue extends DurableObject {
   /** 대기열에 들어오기. 입구가 출처·규약 번호·pid·이름·게임·판 수를 이미 봤다 */
   async fetch(request) {
     const q = new URL(request.url).searchParams;
-    const me = { pid: q.get("pid"), name: q.get("name"), game: q.get("game"), format: q.get("format"), at: Date.now() };
+    const me = { pid: q.get("pid"), name: q.get("name"), face: q.get("face") || null, game: q.get("game"), format: q.get("format"), at: Date.now() };
     if (!me.pid) return refuse("bad_request", CLOSE.bad_request);
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
@@ -86,7 +86,7 @@ export class MatchQueue extends DurableObject {
 
   /** 짝(또는 혼자)으로 방을 만들고 방 코드를 준다. 먼저 온 사람이 0번 자리(방장) */
   async #pair(sockets) {
-    const people = sockets.map((ws) => ({ pid: att(ws).pid, name: att(ws).name }));
+    const people = sockets.map((ws) => ({ pid: att(ws).pid, name: att(ws).name, face: att(ws).face ?? null }));
     const { game, format } = att(sockets[0]);
     for (const p of people) this.busy.add(p.pid);
     try {

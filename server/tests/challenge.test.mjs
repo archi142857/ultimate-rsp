@@ -39,6 +39,7 @@ test("만들기: 기록에는 손과 pid, 보이는 꼴에는 둘 다 없다", (
     custom: null,
     rounds: 1,
     from: "날쌘 여우 42",
+    fromFace: null,
     e: "hi",
     made: NOW,
     expires: NOW + KEEP_MS,
@@ -135,4 +136,18 @@ test("기록은 JSON 으로 저장해도 그대로다(Durable Object 저장소)"
   const back = structuredClone(closed);
   assert.deepEqual(viewChallenge(back), viewChallenge(closed));
   assert.equal(failOf(() => answerChallenge(back, { v: 1, pid: C, name: "새", hands: ["rock"] }, NOW)).code, "closed");
+});
+
+test("프로필 그림: 만든 사람 fromFace, 답한 사람 toFace(모르는 값은 null)", () => {
+  const rec = make({ face: "fox" });
+  assert.equal(viewChallenge(rec).fromFace, "fox");
+  assert.equal(viewChallenge(rec).toFace, undefined, "답 전에는 없다");
+  const { rec: done } = answerChallenge(rec, { v: 1, pid: B, name: "곰", face: "king", hands: ["paper"] }, NOW + 1);
+  const v = viewChallenge(done);
+  assert.equal(v.fromFace, "fox");
+  assert.equal(v.toFace, "king");
+  assert.equal(viewChallenge(make({ face: "nope" })).fromFace, null);
+  const { rec: plain } = answerChallenge(make(), { v: 1, pid: B, name: "곰", face: 7, hands: ["paper"] }, NOW + 1);
+  assert.equal(viewChallenge(plain).toFace, null);
+  assert.ok(!JSON.stringify(v).includes(B));
 });

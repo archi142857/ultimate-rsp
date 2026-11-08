@@ -16,9 +16,9 @@ export function fromRow(row) {
   return { rating: row.rating, games: row.games, wins: row.wins, losses: row.losses, draws: row.draws };
 }
 
-/** 순위표 한 줄(이름과 기록만) */
+/** 순위표 한 줄(이름·그림과 기록만. 그림은 마지막 경기 때 것, 없으면 null) */
 export function boardEntry(row) {
-  return { name: row.name, rating: row.rating, games: row.games, wins: row.wins, losses: row.losses, draws: row.draws };
+  return { name: row.name, face: row.face ?? null, rating: row.rating, games: row.games, wins: row.wins, losses: row.losses, draws: row.draws };
 }
 
 /** 경기 뒤 방에 실을 기록(바뀐 점수 delta 포함) */

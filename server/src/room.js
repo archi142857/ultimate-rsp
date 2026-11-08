@@ -30,8 +30,8 @@ function mix(...xs) {
 }
 const rngFor = (...xs) => makeRng(mix(...xs));
 
-function human(pid, name, now, on) {
-  return { kind: "human", pid, name, on, off: on ? null : now, afk: 0, ready: false };
+function human(pid, name, now, on, face = null) {
+  return { kind: "human", pid, name, face, on, off: on ? null : now, afk: 0, ready: false };
 }
 
 export class Room {
@@ -66,11 +66,11 @@ export class Room {
       alarm: null,
     };
     if (host) {
-      seats[0] = human(host.pid, host.name, now, false);
+      seats[0] = human(host.pid, host.name, now, false, host.face ?? null);
       s.host = 0;
     }
     if (reserve) {
-      reserve.forEach((p, i) => (seats[i] = human(p.pid, p.name, now, false)));
+      reserve.forEach((p, i) => (seats[i] = human(p.pid, p.name, now, false, p.face ?? null)));
       s.reserve = reserve.map((p) => p.pid);
       s.startAt = now + MATCH_SHOW_MS;
       s.host = 0;
@@ -115,7 +115,7 @@ export class Room {
   // ---- 들어오고 나가기 ----
 
   /** pid 가 들어온다. 돌려주는 값: { seat, evs } (seat 가 null 이면 구경꾼) */
-  join(pid, name, now) {
+  join(pid, name, now, face = null) {
     const s = this.s;
     const evs = [];
     s.cleanupAt = null;
@@ -124,15 +124,15 @@ export class Room {
       const seat = s.seats[i];
       if (seat.kind === "human") {
         const was = seat.on;
-        Object.assign(seat, { on: true, off: null, name, ready: false });
+        Object.assign(seat, { on: true, off: null, name, face, ready: false });
         if (!was) evs.push({ k: "back", s: i });
       } else {
-        evs.push(...this.#takeBack(i, pid, name, now));
+        evs.push(...this.#takeBack(i, pid, name, now, face));
       }
     } else if (!s.reserve && (s.phase === "lobby" || s.phase === "end")) {
       i = freeSeat(s.seats);
       if (i >= 0) {
-        s.seats[i] = human(pid, name, now, true);
+        s.seats[i] = human(pid, name, now, true, face);
         evs.push({ k: "join", s: i });
       }
     }
@@ -147,9 +147,9 @@ export class Room {
   }
 
   /** 봇이 잇던 자리를 되찾는다. 봇이 이번 판에 낸 손은 지워서 사람이 고르게 한다 */
-  #takeBack(i, pid, name, now) {
+  #takeBack(i, pid, name, now, face = null) {
     const s = this.s;
-    s.seats[i] = human(pid, name, now, true);
+    s.seats[i] = human(pid, name, now, true, face);
     if (s.phase === "play") s.game.pend[i] = null;
     return [{ k: "back", s: i }];
   }
@@ -158,10 +158,10 @@ export class Room {
    * 연결된 채로 봇에게 자리를 넘긴 사람(3번 연달아 시간 초과)이 다시 무언가 보내면 자리를 돌려준다.
    * 화면은 메시지를 처리하기 전에 이것부터 부른다. 돌려줄 자리가 없으면 []
    */
-  reclaim(pid, name, now) {
+  reclaim(pid, name, now, face = null) {
     if (this.seatOf(pid) >= 0) return [];
     const i = this.s.seats.findIndex((x) => x.kind === "bot" && x.pid === pid);
-    return i < 0 ? [] : this.#takeBack(i, pid, name, now);
+    return i < 0 ? [] : this.#takeBack(i, pid, name, now, face);
   }
 
   /** pid 의 연결이 끊겼다. explicit 이면 스스로 나간 것(자리를 바로 비운다) */
@@ -179,7 +179,7 @@ export class Room {
     const x = s.seats[i];
     const evs = [];
     if (s.phase === "play") {
-      s.seats[i] = { kind: "bot", bot: s.rules.bot, pid: keep ? x.pid : null, name: x.name, why };
+      s.seats[i] = { kind: "bot", bot: s.rules.bot, pid: keep ? x.pid : null, name: x.name, face: x.face ?? null, why };
       evs.push({ k: "bot", s: i, why });
       const g = s.game;
       if (this.alive().includes(i) && g.pend[i] === null) g.pend[i] = this.#botPick(i);
@@ -206,7 +206,7 @@ export class Room {
    * 자리 임자(또는 구경꾼)의 메시지. 돌려주는 값: { evs, emote }
    * 틀리면 Fail(WebSocket 오류 코드)을 던진다. 상태는 바뀌지 않는다
    */
-  handle(pid, name, msg, now) {
+  handle(pid, name, msg, now, face = null) {
     const s = this.s;
     const i = this.seatOf(pid);
     switch (msg && msg.t) {
@@ -222,7 +222,7 @@ export class Room {
         this.#hostOnly(i);
         return { evs: this.start(now) };
       case "sit":
-        return { evs: this.#sit(i, pid, name, now) };
+        return { evs: this.#sit(i, pid, name, now, face) };
       case "ready":
         return { evs: this.#ready(i, msg.on) };
       default:
@@ -245,13 +245,13 @@ export class Room {
     return [{ k: "ready", s: i, on }];
   }
 
-  #sit(i, pid, name, now) {
+  #sit(i, pid, name, now, face = null) {
     const s = this.s;
     if (i >= 0 || s.phase === "play") throw new Fail("phase");
     if (s.reserve) throw new Fail("full");
     const j = freeSeat(s.seats);
     if (j < 0) throw new Fail("full");
-    s.seats[j] = human(pid, name, now, true);
+    s.seats[j] = human(pid, name, now, true, face);
     const evs = [{ k: "join", s: j }];
     if (s.host === null) {
       s.host = j;
@@ -290,14 +290,14 @@ export class Room {
     const botId = s.rules.bot;
     s.seats = s.seats.map((x) => {
       if (x.kind === "empty") return { kind: "bot", bot: botId, pid: null, name: null, why: "fill" };
-      if (auto && x.kind === "human" && !x.on) return { kind: "bot", bot: botId, pid: x.pid, name: x.name, why: "left" };
+      if (auto && x.kind === "human" && !x.on) return { kind: "bot", bot: botId, pid: x.pid, name: x.name, face: x.face ?? null, why: "left" };
       return x;
     });
     for (const x of s.seats) if (x.kind === "human") x.ready = false;
     // 랭킹: 랜덤 방 첫 경기이고 두 자리 다 사람 몫일 때(안 온 사람 자리도 그 사람 몫). 봇 대전은 안 센다
     let rank = null;
     if (s.ranked && !this.group) {
-      const who = s.seats.map((x) => (x.kind === "human" || (x.kind === "bot" && x.why !== "fill" && x.pid) ? { pid: x.pid, name: x.name } : null));
+      const who = s.seats.map((x) => (x.kind === "human" || (x.kind === "bot" && x.why !== "fill" && x.pid) ? { pid: x.pid, name: x.name, face: x.face ?? null } : null));
       if (who.every(Boolean)) rank = { who, done: false, skip: false, after: null };
     }
     s.ranked = false;
@@ -445,7 +445,7 @@ export class Room {
       for (const i of alive) {
         const x = s.seats[i];
         if (x.kind === "human" && x.afk >= AFK_LIMIT) {
-          s.seats[i] = { kind: "bot", bot: s.rules.bot, pid: x.pid, name: x.name, why: "afk" };
+          s.seats[i] = { kind: "bot", bot: s.rules.bot, pid: x.pid, name: x.name, face: x.face ?? null, why: "afk" };
           evs.push({ k: "bot", s: i, why: "afk" });
           if (s.host === i) evs.push(...this.#newHost());
         }
@@ -459,7 +459,7 @@ export class Room {
   /**
    * 랭킹에 넣을 결과. 랭킹 경기가 끝났을 때 한 번만 주고(부르면 done) 그 뒤엔 null.
    * 끝날 때 봇이 잇던 자리(나감·시간 초과·안 옴)는 진 것, 둘 다 그러면 안 센다(skip).
-   * 돌려주는 값: { game, a: {pid, name}, b: {pid, name}, score }(score 는 0번 자리 쪽 1·0.5·0)
+   * 돌려주는 값: { game, a: {pid, name, face}, b: {pid, name, face}, score }(score 는 0번 자리 쪽 1·0.5·0). 이름·그림은 끝날 때 것
    */
   takeRank() {
     const s = this.s;
@@ -471,7 +471,10 @@ export class Room {
       g.rank.skip = true;
       return null;
     }
-    const [a, b] = g.rank.who.map((w, i) => ({ pid: w.pid, name: s.seats[i].kind === "human" ? s.seats[i].name : w.name }));
+    const [a, b] = g.rank.who.map((w, i) => {
+      const x = s.seats[i];
+      return x.kind === "human" ? { pid: w.pid, name: x.name, face: x.face ?? null } : { pid: w.pid, name: w.name, face: w.face ?? null };
+    });
     const score = out[0] ? 0 : out[1] ? 1 : g.winner === 0 ? 1 : g.winner === 1 ? 0 : 0.5;
     return { game: s.rules.game, a, b, score };
   }
@@ -501,7 +504,7 @@ export class Room {
     const id = (h) => (h === null || h === undefined ? null : V.hands[h].id);
     const alive = this.group && e ? e.alive.slice() : null;
     const seats = s.seats.map((x) => {
-      if (x.kind === "human") return { kind: "human", name: x.name, on: x.on, until: x.on ? null : x.off + GRACE_MS, ready: !!x.ready };
+      if (x.kind === "human") return { kind: "human", name: x.name, face: x.face ?? null, on: x.on, until: x.on ? null : x.off + GRACE_MS, ready: !!x.ready };
       if (x.kind === "bot") return { kind: "bot", bot: this.group ? "random" : x.bot, name: x.name };
       return { kind: "empty" };
     });
