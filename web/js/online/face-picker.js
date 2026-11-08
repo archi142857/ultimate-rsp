@@ -52,8 +52,8 @@ const PEOPLE = [
   "satan",
   "death",
 ];
-// 손: 가위바위보 손 셋과 손 모양 그림(스팍 🖖, 기도 🙏, 힘 💪. 11-08 사용자: "스팍은 손으로 들어가는 게 맞지 않나")
-const HANDS = ["hand-rock", "hand-scissors", "hand-paper", "spock", "prayer", "power"];
+// 손: 가위바위보 손 셋과 손 모양 그림(스팍 🖖, 기도 🙏. 11-08 사용자: "스팍은 손으로 들어가는 게 맞지 않나", 힘 💪은 팔이라 그 밖)
+const HANDS = ["hand-rock", "hand-scissors", "hand-paper", "spock", "prayer"];
 const SKIP = new Set(["blood", "toilet"]);
 
 /** 묶음별 그림 이름. 그림 목록에 없는 이름은 뺀다 */

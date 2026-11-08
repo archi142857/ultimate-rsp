@@ -18,7 +18,8 @@ test("그림 묶음: 게임 그림을 한 번씩(피·변기만 빼고), 손 모
   const left = [...ART_FILES.keys()].filter((id) => !ids.includes(id)).sort();
   assert.deepEqual(left, ["blood", "toilet"]);
   const hands = groups.find((g) => g.label === "손").ids;
-  for (const id of ["hand-rock", "hand-scissors", "hand-paper", "spock", "prayer", "power"]) assert.ok(hands.includes(id), id);
+  for (const id of ["hand-rock", "hand-scissors", "hand-paper", "spock", "prayer"]) assert.ok(hands.includes(id), id);
+  assert.ok(!hands.includes("power") && groups.find((g) => g.label === "그 밖").ids.includes("power"), "힘(💪)은 팔이라 그 밖");
   assert.ok(!groups.find((g) => g.label === "사람").ids.includes("spock"), "스팍(🖖)은 사람이 아니라 손");
 });
 
