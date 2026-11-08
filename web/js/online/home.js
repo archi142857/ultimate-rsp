@@ -1,5 +1,5 @@
 // 온라인 첫 화면(#/play, 디자인 시안2 ① 깔끔한 세 칸). 맨 위 줄: 왼쪽 프로필 칩(누르면 이름 바꾸기), 오른쪽 '전체 순위표 →'.
-// 그 아래 제목과 세 칸: 랜덤 매칭(시작, 마지막에 고른 게임의 순위) · 방(만들기, 코드로 들어가기) · 도전장(쓰기, 내 도전장).
+// 그 아래 제목과 세 칸: 랜덤 매칭(시작, 마지막에 고른 게임의 순위) · 방(미리 채운 코드로 만들기·친구 코드로 들어가기) · 도전장(쓰기, 내 도전장).
 // 랜덤 칸에는 게임 고르는 칸을 두지 않는다. '시작'이 여는 매칭 화면에서 게임과 판 수를 고른다(11-08 사용자).
 // 폭 900px 이상이면 세 칸을 나란히, 그 아래에서는 랜덤 → 방 → 도전장 차례로 쌓는다.
 // 서버가 답하기 전에는 단추를 잠가 둔다(서버가 꺼졌거나 하루 한도를 넘었을 때 만들다가 막히지 않게).
@@ -18,10 +18,10 @@ import { mineRows } from "./mine-view.js";
 import { myChallenges } from "./mine.js";
 import { randomGame } from "./games.js";
 import { playerId, meFields, meWho } from "./identity.js";
-import { hello } from "./net.js";
+import { hello, OnlineError } from "./net.js";
 import { noticeFor } from "./messages.js";
 import { createRoom } from "./api.js";
-import { checkCode, normalizeCode, CODE_LEN } from "./ids.js";
+import { checkCode, normalizeCode, randomCode, CODE_LEN } from "./ids.js";
 import { cleanRules } from "./rules.js";
 
 const MINE_SHOWN = 3;
@@ -67,47 +67,65 @@ export function onlineHomeView(main, params = {}) {
     { key: "b", who: { art: "cat" } },
     { key: "c", who: { kind: "bot" } },
   ]);
-  const make = h("button", { type: "button", class: "btn btn-ink" }, t("방 만들기"));
-  gated.push(make);
-  make.addEventListener("click", async () => {
-    make.disabled = true;
-    try {
-      const code = await createRoom({ rules: cleanRules(setting("online.rules", {})), ...meFields(), pid: playerId() });
-      location.hash = `#/room/${code}`;
-    } catch (e) {
-      const n = noticeFor(e.code);
-      notices.set(n.kind, n);
-      make.disabled = false;
-    }
-  });
+  // 코드 칸에는 무작위 코드를 미리 채워 둔다(11-08 사용자). 그대로 누르면 그 코드로 방을 만들고(코드를 친구에게 알려 주면 된다),
+  // 친구 코드를 넣으면 그 방으로 들어간다. 이미 있는 코드면 서버가 만들지 않고 taken 으로 알려 준다(규약 3.1).
+  // 미리 채운 코드가 마침 남의 방이면 새 코드로 다시 한다. 단추 글은 코드를 고쳤는지에 따라 '방 만들기'·'들어가기'
+  let fresh = randomCode("room");
   const codeInput = h("input", {
     type: "text",
-    class: "text-input code-input o-grow",
+    class: "text-input code-input room-code",
     size: 1,
     maxlength: CODE_LEN.room + 2,
     autocomplete: "off",
     autocapitalize: "characters",
     spellcheck: "false",
     enterkeyhint: "go",
+    value: fresh,
     placeholder: t("코드 {n}자리", { n: CODE_LEN.room }),
     "aria-label": t("방 코드"),
+    "aria-describedby": "room-code-hint",
   });
-  const join = h("button", { type: "submit", class: "btn" }, t("들어가기"));
-  gated.push(join);
-  const form = h("form", { class: "code-form" }, codeInput, join);
-  form.addEventListener("submit", (e) => {
+  const go = h("button", { type: "submit", class: "btn btn-ink" }, t("방 만들기"));
+  gated.push(go);
+  const typed = () => {
+    const v = normalizeCode(codeInput.value);
+    return v !== "" && v !== fresh;
+  };
+  const relabel = () => (go.textContent = typed() ? t("들어가기") : t("방 만들기"));
+  const form = h("form", { class: "room-form" }, codeInput, go);
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const code = checkCode(codeInput.value, "room");
-    if (code) location.hash = `#/room/${code}`;
-    else {
+    if (go.disabled) return;
+    const friend = typed();
+    let code = friend ? checkCode(codeInput.value, "room") : fresh;
+    if (!code) {
       codeInput.setAttribute("aria-invalid", "true");
       notices.set("note", { title: t("방 코드는 {n}글자다. 받은 코드를 다시 확인하자.", { n: CODE_LEN.room }) });
+      return;
+    }
+    go.disabled = true;
+    try {
+      for (let k = 0; k < 3; k++) {
+        const r = await createRoom({ rules: cleanRules(setting("online.rules", {})), ...meFields(), pid: playerId(), code });
+        if (!r.taken || friend) {
+          location.hash = `#/room/${r.code}`;
+          return;
+        }
+        fresh = code = randomCode("room");
+        codeInput.value = fresh;
+      }
+      throw new OnlineError("busy");
+    } catch (err) {
+      const n = noticeFor(err.code);
+      notices.set(n.kind, n);
+      go.disabled = false;
     }
   });
   codeInput.addEventListener("input", () => {
     codeInput.removeAttribute("aria-invalid");
     const v = normalizeCode(codeInput.value);
     if (v !== codeInput.value) codeInput.value = v;
+    relabel();
   });
   const roomNote = h("p", { class: "o-p o-small o-col-foot", hidden: true }, t("방과 도전장 경기는 순위에 들지 않는다."));
   ranked.push(roomNote);
@@ -115,8 +133,8 @@ export function onlineHomeView(main, params = {}) {
     roomRing.el,
     h("h2", { class: "o-col-title" }, t("방")),
     h("p", { class: "o-p" }, t("코드로 친구와 모인다. 빈자리는 컴퓨터가 채운다.")),
-    make,
     form,
+    h("p", { class: "o-p o-small", id: "room-code-hint" }, t("그대로 누르면 이 코드로 방이 생긴다. 친구 코드를 넣으면 그 방으로 들어간다.")),
     roomNote,
   );
 

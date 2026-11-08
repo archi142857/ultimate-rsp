@@ -8,6 +8,8 @@
 // 닫힘 꼴은 더해서: { to, answered, hands: { from, to }, cmp, score, winner }
 //   cmp 는 판마다 만든 사람 쪽에서 본 결과(1·0·−1), winner 는 0 만든 사람, 1 받은 사람, −1 비김.
 //   판정은 서버가 답할 때 한 번 해서 적어 둔다. 화면은 다시 판정하지 않고 이 값을 쓴다.
+// 여럿이 도전장(규약 2.1–2.4, 11-08 밤): 만들 때 max(2–50). 보기 꼴에 max·count·answers(이름·그림·점수·이긴 쪽)가 오고
+//   손은 POST /api/c/<코드>/me {v, pid} 로만 온다: 만든 사람이면 you "from" 과 모든 답의 손·cmp, 답한 사람이면 you(번호)와 자기 결과.
 
 import { api, OnlineError } from "./net.js";
 import { PROTOCOL } from "./config.js";
@@ -16,11 +18,12 @@ import { cleanName, faceId } from "./identity.js";
 const ROUNDS = [1, 3, 5];
 
 // face(프로필 그림)는 골랐을 때만 싣는다(규약 1.2·2·3.1, 서버 9a0879a). 서버가 모르는 그림은 null 로 받는다
-export async function createChallenge({ game, custom = null, hands, name, face = null, pid, e = null }, opts = {}) {
+export async function createChallenge({ game, custom = null, hands, name, face = null, pid, e = null, max = 1 }, opts = {}) {
   const body = { v: PROTOCOL, pid, name, game, hands };
   if (face) body.face = face;
   if (custom) body.custom = custom;
   if (e) body.e = e;
+  if (max > 1) body.max = max;
   const d = await api("/api/c", { ...opts, body });
   if (typeof d.code !== "string" || !d.code) throw new OnlineError("bad_reply", d);
   return { code: d.code, expires: Number.isFinite(d.expires) ? d.expires : null };
@@ -28,6 +31,11 @@ export async function createChallenge({ game, custom = null, hands, name, face =
 
 export async function fetchChallenge(code, opts) {
   return readChallenge(await api(`/api/c/${encodeURIComponent(code)}?v=${PROTOCOL}`, opts));
+}
+
+/** 내 꼴(규약 2.4): 여럿이 도전장에서 만든 사람은 모든 답의 손, 답한 사람은 자기 결과가 실린다. pid 는 주소에 안 싣는다 */
+export async function fetchMyChallenge(code, { pid }, opts = {}) {
+  return readChallenge(await api(`/api/c/${encodeURIComponent(code)}/me`, { ...opts, body: { v: PROTOCOL, pid } }));
 }
 
 /** 답하기. 다른 사람이 먼저 답했으면 OnlineError("closed") 의 result 에 그 결과를 싣는다 */
@@ -70,35 +78,71 @@ export function readChallenge(d) {
     e: typeof d.e === "string" ? d.e : null,
     expires: Number.isFinite(d.expires) ? d.expires : null,
     open: d.open,
+    max: Number.isInteger(d.max) && d.max > 1 ? d.max : 1,
   };
-  if (!d.open) {
-    const n = d.rounds;
-    const h = d.hands || {};
-    const fine =
-      isHandList(h.from, n) &&
-      isHandList(h.to, n) &&
-      Array.isArray(d.cmp) &&
-      d.cmp.length === n &&
-      d.cmp.every((x) => x === 1 || x === 0 || x === -1) &&
-      Array.isArray(d.score) &&
-      d.score.length === 2 &&
-      [0, 1, -1].includes(d.winner);
-    if (!fine) throw new OnlineError("bad_reply", d);
-    c.to = cleanName(d.to) || "?";
-    c.toFace = faceId(d.toFace);
-    c.hands = { from: h.from.slice(), to: h.to.slice() };
-    c.cmp = d.cmp.slice();
-    c.score = d.score.slice();
-    c.winner = d.winner;
+  const results = (n) => Array.isArray(n) && n.length === d.rounds && n.every((x) => x === 1 || x === 0 || x === -1);
+  if (c.max > 1) {
+    // 여럿이: 답한 사람 줄(손은 만든 사람에게만), 내가 누구인지(you)
+    if (!Array.isArray(d.answers)) throw new OnlineError("bad_reply", d);
+    c.count = Number.isInteger(d.count) ? d.count : d.answers.length;
+    c.answers = d.answers.map((a) => {
+      const row = {
+        name: cleanName(a && a.name) || "?",
+        face: faceId(a && a.face),
+        at: Number.isFinite(a && a.at) ? a.at : null,
+        score: Array.isArray(a && a.score) && a.score.length === 2 ? a.score.slice() : [0, 0],
+        winner: [0, 1, -1].includes(a && a.winner) ? a.winner : -1,
+      };
+      if (isHandList(a && a.hands, d.rounds) && results(a.cmp)) {
+        row.hands = a.hands.slice();
+        row.cmp = a.cmp.slice();
+      }
+      return row;
+    });
+    if (d.you === "from") {
+      c.you = "from";
+      if (d.hands && isHandList(d.hands.from, d.rounds)) c.hands = { from: d.hands.from.slice() };
+      return c;
+    }
+    if (!Number.isInteger(d.you)) return c;
+    c.you = d.you;
+    return readResult(c, d);
   }
+  return d.open ? c : readResult(c, d);
+}
+
+/** 닫힘 꼴(여럿이 도전장이면 답한 사람의 자기 결과)을 더한다 */
+function readResult(c, d) {
+  const n = d.rounds;
+  const h = d.hands || {};
+  const fine =
+    isHandList(h.from, n) &&
+    isHandList(h.to, n) &&
+    Array.isArray(d.cmp) &&
+    d.cmp.length === n &&
+    d.cmp.every((x) => x === 1 || x === 0 || x === -1) &&
+    Array.isArray(d.score) &&
+    d.score.length === 2 &&
+    [0, 1, -1].includes(d.winner);
+  if (!fine) throw new OnlineError("bad_reply", d);
+  c.to = cleanName(d.to) || "?";
+  c.toFace = faceId(d.toFace);
+  c.hands = { from: h.from.slice(), to: h.to.slice() };
+  c.cmp = d.cmp.slice();
+  c.score = d.score.slice();
+  c.winner = d.winner;
   return c;
 }
 
-/** 방 만들기(규약 3.1): 만든 사람이 방장·0번 자리. 돌려주는 값은 4자 코드 */
-export async function createRoom({ rules, name, face = null, pid }, opts = {}) {
+/**
+ * 방 만들기(규약 3.1): 만든 사람이 방장·0번 자리. 돌려주는 값은 { code, taken }.
+ * code 를 주면 그 코드로 만든다. 그 코드 방이 이미 있으면 서버가 만들지 않고 taken: true 로 알려 준다(그 방에 들어가면 된다)
+ */
+export async function createRoom({ rules, name, face = null, pid, code = null }, opts = {}) {
   const body = { v: PROTOCOL, pid, name, rules };
   if (face) body.face = face;
+  if (code) body.code = code;
   const d = await api("/api/rooms", { ...opts, body });
   if (typeof d.code !== "string" || !d.code) throw new OnlineError("bad_reply", d);
-  return d.code;
+  return { code: d.code, taken: d.taken === true };
 }

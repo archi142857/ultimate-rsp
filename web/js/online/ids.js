@@ -21,6 +21,13 @@ export function normalizeCode(s) {
     .toUpperCase();
 }
 
+/** 화면이 뽑는 무작위 코드(규약 3.1: 방 코드를 미리 채울 때 CODE_ABC 로) */
+export function randomCode(kind = "room") {
+  const a = new Uint32Array(CODE_LEN[kind]);
+  crypto.getRandomValues(a);
+  return Array.from(a, (x) => CODE_ABC[x % CODE_ABC.length]).join("");
+}
+
 /** 코드 꼴이 맞으면 고친 코드, 아니면 null */
 export function checkCode(s, kind) {
   const c = normalizeCode(s);

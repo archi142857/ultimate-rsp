@@ -82,7 +82,7 @@ test("화면의 기본 서버 주소가 서버 README 의 주소와 같다", () 
 });
 
 test("방·매칭 수가 서버와 같다(규약 1.4·3·4·5장)", () => {
-  for (const k of ["EMOTES", "EMOTE_GAP_MS", "FORMATS", "MATCH_FORMATS", "TIMERS", "ROOM_DEFAULTS", "GROUP_SEATS", "GROUP_MODES", "GRACE_MS", "REVEAL_MS", "MATCH_BOT_OFFER_MS", "PING", "PONG", "PING_MS", "RETRY_MS", "CLOSE", "NO_RETRY"])
+  for (const k of ["EMOTES", "EMOTE_GAP_MS", "FORMATS", "MATCH_FORMATS", "TIMERS", "ROOM_DEFAULTS", "GROUP_SEATS", "GROUP_MODES", "GRACE_MS", "REVEAL_MS", "MATCH_BOT_OFFER_MS", "GROUP_MATCH_WAIT_MS", "PING", "PONG", "PING_MS", "RETRY_MS", "CLOSE", "NO_RETRY"])
     assert.deepEqual(C[k], P[k], k);
   for (const code of P.WS_ERRORS) assert.notEqual(wsErrorText(code), errorText("network"), code);
   assert.deepEqual(

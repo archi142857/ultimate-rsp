@@ -15,6 +15,8 @@ export const GROUP_MODES = ["survive", "loser"];
 export const GRACE_MS = 60_000;
 export const REVEAL_MS = 2500;
 export const MATCH_BOT_OFFER_MS = 20_000;
+/** 여럿이 랜덤 매칭: 최소 인원이 모인 뒤 더 기다리는 시간(규약 4.2) */
+export const GROUP_MATCH_WAIT_MS = 10_000;
 
 export const PING = "ping";
 export const PONG = "pong";

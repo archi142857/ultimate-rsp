@@ -27,7 +27,7 @@ const HANGUL = /[ㄱ-ㆎ가-힣]/;
 
 test("서버 답 읽기(규약 2장): 열린 것은 손이 없고, 닫힌 것은 두 손과 서버 판정", () => {
   const open = readChallenge({ code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: " 날쌘\n여우 42 ", e: "hi", made: 1, expires: 5, open: true, now: 1 });
-  assert.deepEqual(open, { code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: "날쌘 여우 42", fromFace: null, e: "hi", expires: 5, open: true });
+  assert.deepEqual(open, { code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: "날쌘 여우 42", fromFace: null, e: "hi", expires: 5, open: true, max: 1 });
   assert.ok(!("hands" in open));
   const closed = readChallenge({
     code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: "a", open: false, to: "느린 곰 7", answered: 9,
@@ -52,6 +52,35 @@ test("서버 답 읽기(규약 2장): 열린 것은 손이 없고, 닫힌 것은
     { ...base, open: false, hands: { from: ["rock"], to: ["paper"] }, cmp: [1], score: [1, 0], winner: 3 },
   ])
     assert.throws(() => readChallenge(bad), (e) => e.code === "bad_reply", JSON.stringify(bad));
+});
+
+test("여럿이 도전장 읽기(규약 2.2·2.4): 누구나 보는 꼴은 손 없이 답한 줄, 만든 사람은 모든 손, 답한 사람은 자기 결과", () => {
+  const head = { code: "7KQ2M9XA", game: "classic", custom: null, rounds: 1, from: "a", e: null, made: 1, expires: 5, open: true, max: 5, count: 2 };
+  const answers = [
+    { name: "느린 곰 7", face: "bear", at: 3, score: [1, 0], winner: 0 },
+    { name: "작은 새", face: null, at: 4, score: [0, 1], winner: 1 },
+  ];
+  const pub = readChallenge({ ...head, answers });
+  assert.equal(pub.max, 5);
+  assert.equal(pub.count, 2);
+  assert.deepEqual(
+    pub.answers.map((a) => [a.name, a.face, a.winner, "hands" in a]),
+    [
+      ["느린 곰 7", "bear", 0, false],
+      ["작은 새", null, 1, false],
+    ],
+  );
+  assert.ok(!("you" in pub) && !("hands" in pub), "누구나 보는 꼴에는 손이 없다");
+  const owner = readChallenge({ ...head, you: "from", hands: { from: ["rock"] }, answers: answers.map((a, k) => ({ ...a, hands: [["scissors", "paper"][k]], cmp: [[1, -1][k]] })) });
+  assert.equal(owner.you, "from");
+  assert.deepEqual(owner.hands, { from: ["rock"] });
+  assert.deepEqual(owner.answers.map((a) => [a.hands, a.cmp]), [[["scissors"], [1]], [["paper"], [-1]]]);
+  const me = readChallenge({ ...head, answers, you: 1, to: "작은 새", toFace: null, answered: 4, hands: { from: ["rock"], to: ["paper"] }, cmp: [-1], score: [0, 1], winner: 1 });
+  assert.equal(me.you, 1);
+  assert.equal(me.open, true, "자리가 남아 열려 있어도 내 결과가 실린다");
+  assert.deepEqual([me.hands, me.cmp, me.winner, me.to], [{ from: ["rock"], to: ["paper"] }, [-1], 1, "작은 새"]);
+  assert.throws(() => readChallenge({ ...head }), (e) => e.code === "bad_reply", "answers 가 없으면");
+  assert.throws(() => readChallenge({ ...head, answers, you: 0, hands: { from: ["rock"] } }), (e) => e.code === "bad_reply", "답한 사람 꼴인데 결과가 모자라면");
 });
 
 test("서버가 준 게임으로 판정 자료를 만든다(직접 만들기 포함)", () => {

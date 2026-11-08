@@ -8,6 +8,8 @@ import { myChallenges } from "./mine.js";
 import { challengeGame } from "./games.js";
 
 function chipOf(r) {
+  // 여럿이 받는 내 도전장은 마지막으로 열어 본 답 수
+  if (r.role === "maker" && r.max) return h("span", { class: "chip" }, Number.isInteger(r.n) ? t("답 {n}/{max}", { n: r.n, max: r.max }) : t("기다리는 중"));
   if (r.result === 1) return h("span", { class: "chip ok" }, t("@chip:이겼다"));
   if (r.result === -1) return h("span", { class: "chip no" }, t("@chip:졌다"));
   if (r.result === 0) return h("span", { class: "chip" }, t("@chip:비겼다"));
@@ -23,7 +25,8 @@ export function mineRows(list) {
     list.map((r) => {
       const e = challengeGame(r.game);
       const game = r.label || (e ? e.name : r.game);
-      return h("li", {}, h("a", { href: `#/c/${encodeURIComponent(r.id)}` }, h("span", { class: "mine-what" }, `${game} · ${r.vs || r.id}`), chipOf(r)));
+      const who = r.role === "maker" && r.max ? t("{n}명까지", { n: r.max }) : r.vs || r.id;
+      return h("li", {}, h("a", { href: `#/c/${encodeURIComponent(r.id)}` }, h("span", { class: "mine-what" }, `${game} · ${who}`), chipOf(r)));
     }),
   );
 }

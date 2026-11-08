@@ -78,22 +78,36 @@ export function rulesRows(rules) {
 /**
  * 방장이 규칙을 고르는 칸(시안 ③ 규칙 카드: 이름 + 고르기 한 줄씩). onChange(rules) 는 바뀐 규칙 전체(cleanRules 꼴).
  * set(rules) 로 서버가 돌려준 규칙에 맞춘다(고르던 칸을 다시 만들지 않아 초점이 그대로다).
+ * 인원을 먼저 고른다(11-08 사용자): 2명이면 게임 목록·판 수·컴퓨터, 3명부터는 여럿이 가위바위보의 게임(바탕)·정하기.
+ * 인원을 오가도 둘이서 고른 것과 여럿이 고른 것을 따로 기억해 둔다(인원이 바뀌어 대기실이 다시 그려져도: memo).
  */
+const memo = {
+  duo: { game: ROOM_DEFAULTS.game, custom: null, format: ROOM_DEFAULTS.format, bot: ROOM_DEFAULTS.bot },
+  many: { base: "classic", mode: GROUP_MODES[0], seats: GROUP_SEATS.default },
+};
 export function rulesEditor(initial, { onChange }) {
   let rules = cleanRules(initial);
+  const remember = () => {
+    if (isGroup(rules)) memo.many = { base: rules.base, mode: rules.mode, seats: rules.seats };
+    else memo.duo = { game: rules.game, custom: rules.custom || null, format: rules.format, bot: rules.bot };
+  };
+  remember();
   const el = h("div", { class: "rules-editor" });
   const emit = (patch) => {
     rules = cleanRules({ ...rules, ...patch });
+    remember();
     onChange(rules);
   };
   const gameSel = selectBox({
     label: t("게임"),
     value: rules.game,
-    options: roomGameIds().map((id) => ({ id, name: gameName({ game: id, base: "classic" }) })),
-    onChange: (id) => emit(id === "group" ? { game: "group", custom: null } : { game: id, custom: null }),
+    options: roomGameIds()
+      .filter((id) => id !== "group")
+      .map((id) => ({ id, name: gameName({ game: id }) })),
+    onChange: (id) => emit({ game: id, custom: null }),
   });
   const baseSel = selectBox({
-    label: t("바탕"),
+    label: t("게임"),
     value: rules.base || "classic",
     options: groupBases().map((e) => ({ id: e.id, name: e.name })),
     onChange: (id) => emit({ base: id }),
@@ -121,11 +135,12 @@ export function rulesEditor(initial, { onChange }) {
   const seatsSeg = segmented({
     label: t("인원"),
     value: String(rules.seats),
-    options: Array.from({ length: GROUP_SEATS.max - GROUP_SEATS.min + 1 }, (_, k) => {
-      const n = String(GROUP_SEATS.min + k);
-      return { id: n, name: n };
-    }),
-    onChange: (id) => emit({ seats: Number(id) }),
+    options: [2, ...Array.from({ length: GROUP_SEATS.max - GROUP_SEATS.min + 1 }, (_, k) => GROUP_SEATS.min + k)].map((n) => ({ id: String(n), name: String(n) })),
+    onChange: (id) => {
+      const n = Number(id);
+      if (n === 2) emit({ ...memo.duo, seats: 2 });
+      else emit({ game: "group", custom: null, base: memo.many.base, mode: memo.many.mode, seats: n });
+    },
     small: true,
   });
   const timerSeg = segmented({
@@ -139,11 +154,12 @@ export function rulesEditor(initial, { onChange }) {
   function layout() {
     const group = isGroup(rules);
     // 여럿이 할 때 컴퓨터는 늘 아무 손이나 낸다(규약 3.2)
-    clear(el).append(gameSel.el, ...(group ? [baseSel.el, modeSeg.el, seatsSeg.el] : [formatSeg.el, botSel.el]), timerSeg.el);
+    clear(el).append(seatsSeg.el, ...(group ? [baseSel.el, modeSeg.el] : [gameSel.el, formatSeg.el, botSel.el]), timerSeg.el);
   }
   function set(next) {
     const wasGroup = isGroup(rules);
     rules = cleanRules(next);
+    remember();
     if (rules.game !== "custom") gameSel.sel.value = rules.game;
     if (rules.format) formatSeg.set(rules.format);
     if (rules.base) baseSel.sel.value = rules.base;

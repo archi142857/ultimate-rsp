@@ -465,7 +465,9 @@ export function roomView(main, code) {
         }
         sit.hidden = !(you === null && canSit(room));
         info.textContent = [room.random
-          ? t("랜덤 매칭 방이다. 둘 다 들어오면 바로 시작한다.")
+          ? n > 2
+            ? t("랜덤 매칭 방이다. 다 들어오면 바로 시작한다.")
+            : t("랜덤 매칭 방이다. 둘 다 들어오면 바로 시작한다.")
           : you === null
             ? t("구경하는 중이다.")
             : host

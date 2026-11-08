@@ -1,13 +1,13 @@
 // 도전장 만들기(디자인 시안 ③ 2–3번). 세 단계:
 //  1. #/c/new        변종 고르기(랜덤 매칭 목록과 같은 모양). 누르면 2단계로
-//  2. #/c/new?v=게임  손 고르기 + 같이 보낼 이모트(안 골라도 된다) → '링크 만들기'
+//  2. #/c/new?v=게임  손 고르기 + 같이 보낼 이모트(안 골라도 된다) + 받을 사람(한 명·여럿이) → '링크 만들기'
 //  3. #/c/번호        서버가 번호를 주면 그 도전장 화면이 '도전장이 준비됐다'(3/3)로 보인다(challenge.js)
 // 내 손은 서버와 이 브라우저(mine.js)에만 남는다. 링크에는 번호만 들어간다.
 
 import { h, setTitle } from "../ui/dom.js";
 import { t } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
-import { handGrid } from "../ui/widgets.js";
+import { handGrid, segmented } from "../ui/widgets.js";
 import { setting, setSetting } from "../ui/store.js";
 import { topBar, bigTitle, variantRow, handRing } from "./common.js";
 import { noticeSlot } from "./notice.js";
@@ -17,6 +17,9 @@ import { myName, playerId, meFields } from "./identity.js";
 import { createChallenge } from "./api.js";
 import { rememberChallenge, markFresh } from "./mine.js";
 import { noticeFor } from "./messages.js";
+
+/** 받을 사람 수: 1(보통 도전장)과 여럿이(서버는 2–50) */
+const MAXES = [1, 5, 10, 50];
 
 const compiled = new Map();
 const variant = (entry) => {
@@ -44,7 +47,7 @@ function gameStep(main) {
       { class: "online" },
       topBar({ href: "#/play", label: t("온라인") }, stepText(1)).el,
       bigTitle(t("무엇으로 겨룰까?")),
-      h("p", { class: "o-p" }, t("손을 숨겨 링크로 보낸다. 처음 답한 한 사람과 겨룬다.")),
+      h("p", { class: "o-p" }, t("손을 숨겨 링크로 보낸다. 한 사람이나 여럿이 받을 수 있다.")),
       list,
     ),
   );
@@ -65,6 +68,20 @@ function handStep(main, entry) {
   // 손이 많으면 고리를 누르기 어렵다. 그때는 지금의 손 단추로 고른다
   const grid = V.n > 7 ? handGrid(V, { onPick: (i) => choose(i, "grid") }) : null;
   const emotes = emoteRow({ selectable: true, label: t("같이 보낼 이모트") });
+  // 받을 사람(규약 2.1 max): 한 명이면 처음 답한 사람과, 여럿이면 그 수까지 답마다 따로 겨룬다(11-08 사용자)
+  let max = [setting("online.challengeMax", 1), 1].find((n) => MAXES.includes(n));
+  const maxSeg = segmented({
+    label: t("받을 사람"),
+    value: String(max),
+    options: MAXES.map((n) => ({ id: String(n), name: n === 1 ? t("한 명") : t("@seats:{n}명", { n }) })),
+    onChange: (id) => {
+      max = Number(id);
+      setSetting("online.challengeMax", max);
+      maxNote.textContent = maxText();
+    },
+  });
+  const maxText = () => (max > 1 ? t("{n}명까지 답하고, 답마다 따로 겨룬다. 답한 사람 이름과 결과는 링크를 가진 사람 모두에게 보인다.", { n: max }) : t("처음 답한 한 사람과 겨룬다."));
+  const maxNote = h("p", { class: "o-p o-small" }, maxText());
 
   function choose(i, from) {
     picked = i;
@@ -85,8 +102,8 @@ function handStep(main, entry) {
     notices.set("wait", { title: t("도전장을 만드는 중…"), spin: true });
     try {
       const e = emotes.picked || undefined;
-      const { code } = await createChallenge({ game: entry.id, hands: [hand], ...meFields(), pid: playerId(), e }, { signal: ctl.signal });
-      rememberChallenge({ id: code, role: "maker", game: entry.id, hand, at: Date.now() });
+      const { code } = await createChallenge({ game: entry.id, hands: [hand], ...meFields(), pid: playerId(), e, max }, { signal: ctl.signal });
+      rememberChallenge({ id: code, role: "maker", game: entry.id, hand, at: Date.now(), max, n: max > 1 ? 0 : undefined });
       markFresh(code);
       location.hash = `#/c/${code}`;
     } catch (err) {
@@ -111,6 +128,7 @@ function handStep(main, entry) {
       grid ? grid.el : null,
       h("p", { class: "o-label" }, t("같이 보낼 이모트(안 골라도 된다)")),
       emotes.el,
+      h("div", { class: "o-card o-kv-card" }, maxSeg.el, maxNote),
       h("div", { class: "o-actions o-bottom" }, send),
       h("p", { class: "o-p o-small o-center" }, t("보내는 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play?name=1" }, t("이름 바꾸기"))),
     ),

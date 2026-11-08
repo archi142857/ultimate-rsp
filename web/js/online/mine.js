@@ -1,7 +1,8 @@
 // 이 브라우저가 만들거나 답한 도전장. 내가 만든 링크인지 알고(서버는 묻지 않는다), 내 손을 보여 주고,
 // 온라인 첫 화면에 '내 도전장'으로 늘어놓는 데 쓴다. ursp.online.challenges 에 최근 30개.
-// { id: 코드, role: "maker" | "taker", game, hand, at, label?, result?, vs? }
+// { id: 코드, role: "maker" | "taker", game, hand, at, label?, result?, vs?, max?, n? }
 //   label 은 직접 만들기의 이름(RPS-n), result 는 내 쪽에서 본 결과(1 이김, 0 비김, −1 짐), vs 는 상대 이름.
+//   max·n 은 여럿이 도전장(2–50명이 답한다)의 답할 수 있는 사람 수와 마지막으로 본 답 수.
 // 결과는 사람이 도전장을 열었을 때만 안다(폴링하지 않는다. 규약 6장). 그래서 만든 쪽은 열어 보기 전까지 '기다리는 중'.
 
 import { load, save } from "../ui/store.js";
@@ -20,6 +21,10 @@ function tidy(rec) {
   if (rec.result === 1 || rec.result === 0 || rec.result === -1) r.result = rec.result;
   const vs = cleanName(rec.vs);
   if (vs) r.vs = vs;
+  if (Number.isInteger(rec.max) && rec.max > 1) {
+    r.max = rec.max;
+    if (Number.isInteger(rec.n) && rec.n >= 0) r.n = Math.min(rec.n, rec.max);
+  }
   return r;
 }
 
@@ -65,7 +70,7 @@ export function noteChallenge(id, patch) {
   const old = myChallenge(id);
   if (!old) return null;
   const r = tidy({ ...old, ...patch });
-  if (r.result === old.result && r.vs === old.vs) return old;
+  if (r.result === old.result && r.vs === old.vs && r.max === old.max && r.n === old.n) return old;
   put(r, { front: false });
   return r;
 }
