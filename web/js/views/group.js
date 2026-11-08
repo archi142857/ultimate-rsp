@@ -55,7 +55,7 @@ export function groupView(main, entry, params, preset = {}) {
 
   const rSeg = rules
     ? segmented({
-        label: t("무엇이 이기나"),
+        label: t("이기는 손"),
         small: true,
         value: rule,
         options: [
@@ -212,7 +212,7 @@ export function groupView(main, entry, params, preset = {}) {
     rules !== null
       ? t("보통 가위바위보는 사람이 늘수록 승부가 잘 안 난다. 많은 손·적은 손 이기기는 5명 이상이어도 열 번에 여섯 번 넘게 승부가 난다. 둘만 남으면 보통 가위바위보로 겨룬다.")
       : tie3 === "scissors"
-        ? t("세 가지가 다 나와도 가위가 이기니, 모두 같은 손을 낼 때만 다시 한다. 대신 사람이 많을수록 세 가지가 다 나오기 쉬워 가위가 유리하다.")
+        ? t("세 가지가 다 나와도 가위가 이겨서, 모두 같은 손을 낼 때만 다시 한다. 대신 사람이 많을수록 세 가지가 다 나오기 쉬워 가위가 유리하다.")
         : t("한 번에 승부가 나려면 딱 두 가지 손만 나와야 한다. 셋이면 2/3 확률로 승부가 나지만, 사람이 늘수록 세 가지가 다 나오기 쉬워진다.");
   const side = h(
     "div",

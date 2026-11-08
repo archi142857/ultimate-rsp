@@ -22,7 +22,7 @@ export function blottoView(main, entry) {
   const score = scoreboard();
   const st = stage();
   st.el.classList.add("stage-solo");
-  const steps = stepList([t("병사 10명을 싸움터 3곳에 몰래 나눈다"), t("싸움터마다 많이 보낸 쪽이 차지한다"), t("싸움터를 더 많이 가진 쪽이 그 판을 이긴다")]);
+  const steps = stepList([t("병사 10명을 싸움터 3곳에 몰래 나눈다"), t("싸움터마다 많이 보낸 쪽이 차지한다"), t("더 많은 싸움터를 차지한 쪽이 그 판을 이긴다")]);
   const left = h("p", { class: "blotto-left", "aria-live": "polite" });
   const fields = h("div", { class: "blotto", role: "group", "aria-label": t("싸움터") });
   const log = logList();
@@ -35,7 +35,7 @@ export function blottoView(main, entry) {
 
   function draw() {
     const rest = TROOPS - sum();
-    left.textContent = rest > 0 ? t("남은 병사 {n}명", { n: rest }) : rest < 0 ? t("{n}명 넘었다", { n: -rest }) : t("{n}명을 다 나눴다", { n: TROOPS });
+    left.textContent = rest > 0 ? t("남은 병사 {n}명", { n: rest }) : rest < 0 ? t("{n}명이 넘친다", { n: -rest }) : t("{n}명을 다 나눴다", { n: TROOPS });
     left.classList.toggle("bad", rest !== 0);
     clear(fields).append(
       ...mine.map((x, i) => {
@@ -77,7 +77,7 @@ export function blottoView(main, entry) {
     log.clear();
     st.say("");
     st.sub(t("나눌 병사를 정하고 보내자."));
-    score.set(0, 0, t("{n}판 먼저", { n: TARGET }));
+    score.set(0, 0, t("먼저 {n}판", { n: TARGET }));
     steps.set(0);
     draw();
   }
@@ -92,16 +92,16 @@ export function blottoView(main, entry) {
     const r = game.play(mine.slice(), theirs);
     lastRound = r;
     const [a, b] = r.won;
-    st.say(r.cmp > 0 ? t("이 판은 내가") : r.cmp < 0 ? t("이 판은 컴퓨터가") : t("비겼다"), r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
+    st.say(r.cmp > 0 ? t("이 판은 내가 가져간다") : r.cmp < 0 ? t("이 판은 컴퓨터가 가져간다") : t("비겼다"), r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
     st.sub(t("싸움터 {a}곳 대 {b}곳", { a, b }));
     log.add(t("나 {x}, 컴퓨터 {y}: {a}곳 대 {b}곳.", { x: r.a.join("·"), y: r.b.join("·"), a, b }), r.cmp > 0 ? "w" : r.cmp < 0 ? "l" : "");
-    score.set(game.score[0], game.score[1], t("{n}판 먼저", { n: TARGET }));
+    score.set(game.score[0], game.score[1], t("먼저 {n}판", { n: TARGET }));
     steps.set(game.done ? 2 : 1);
     if (game.done) {
       const won = game.winner === 0;
       rec.textContent = recordLine(addRecord("blotto", won ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, won ? t("{n}판 먼저 이겼다", { n: TARGET }) : t("컴퓨터가 {n}판 먼저 이겼다", { n: TARGET })),
+        h("strong", {}, won ? t("내가 먼저 {n}판을 이겼다", { n: TARGET }) : t("컴퓨터가 먼저 {n}판을 이겼다", { n: TARGET })),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
@@ -117,8 +117,8 @@ export function blottoView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("늘 이기는 나눔은 없다. ")),
-      t("3·3·4로 고르게 나누면 4·4·2에 지고, 4·4·2는 5·5·0에, 5·5·0은 6·0·4에 진다. 어떤 나눔이든 그걸 이기는 나눔이 있다. 컴퓨터는 계산해 둔 비율대로 섞어 나눈다."),
+      h("b", {}, t("늘 이기는 배치는 없다. ")),
+      t("3·3·4로 고르게 나누면 4·4·2에 지고, 4·4·2는 5·5·0에, 5·5·0은 6·0·4에 진다. 어떤 배치든 그 배치를 이기는 배치가 있다. 컴퓨터는 미리 계산한 비율대로 배치를 섞어 고른다."),
     ),
   );
   const panel = h(

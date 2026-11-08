@@ -122,7 +122,7 @@ export function teamSplitView(main, entry) {
     "div",
     { class: "side-panel" },
     block(
-      t("몇 번 내야 갈리나"),
+      t("갈리기까지 내는 횟수"),
       h("p", {}, t("사람이 많을수록 한 번에 고르게 갈리기 어렵다. 홀수면 한 명 차이까지 고르게 본다.")),
       h("p", { class: "field-label", style: { margin: "4px 0 8px" } }, t("모두 아무렇게나 낼 때: 한 번에 갈릴 확률, 평균 내는 횟수")),
       h(

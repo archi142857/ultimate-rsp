@@ -43,7 +43,7 @@ export function hammerView(main, entry) {
 
   const score = scoreboard();
   const st = stage();
-  const steps = stepList([t("가위바위보"), t("이긴 쪽은 치기, 진 쪽은 막기를 누른다"), t("막기 전에 치면 1점, 3점 먼저")]);
+  const steps = stepList([t("가위바위보"), t("이긴 쪽은 치기, 진 쪽은 막기를 누른다"), t("막기 전에 치면 1점, 먼저 3점을 내면 이긴다")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("hammer")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -65,8 +65,8 @@ export function hammerView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(t("가위바위보부터. 이기면 치고, 지면 막는다."));
-    score.set(0, 0, t("{n}점 먼저", { n: TARGET }));
+    st.sub(t("가위바위보부터 한다. 이기면 치고, 지면 막는다."));
+    score.set(0, 0, t("먼저 {n}점", { n: TARGET }));
     steps.set(0);
   }
 
@@ -136,14 +136,14 @@ export function hammerView(main, entry) {
     } else say = iHit ? t("헛쳤다") : t("컴퓨터가 헛쳤다");
     st.say(say, tone);
     const said = { res: say, a: shown(mine), b: shown(comp) };
-    log.add(iHit ? t("내가 치기: {res} (나 {a}, 컴퓨터 {b})", said) : t("컴퓨터가 치기: {res} (나 {a}, 컴퓨터 {b})", said), r.result === "hit" ? (iHit ? "w" : "l") : "");
-    score.set(g.score[0], g.score[1], t("{n}점 먼저", { n: TARGET }));
+    log.add(iHit ? t("내가 쳤다: {res} (나 {a}, 컴퓨터 {b})", said) : t("컴퓨터가 쳤다: {res} (나 {a}, 컴퓨터 {b})", said), r.result === "hit" ? (iHit ? "w" : "l") : "");
+    score.set(g.score[0], g.score[1], t("먼저 {n}점", { n: TARGET }));
     if (g.done) {
       const won = g.winner === 0;
       st.say(won ? t("이겼다!") : t("졌다"), won ? "win" : "lose");
       rec.textContent = recordLine(addRecord("hammer", won ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, won ? t("{n}점 먼저 냈다", { n: TARGET }) : t("컴퓨터가 {n}점 먼저 냈다", { n: TARGET })),
+        h("strong", {}, won ? t("내가 먼저 {n}점을 냈다", { n: TARGET }) : t("컴퓨터가 먼저 {n}점을 냈다", { n: TARGET })),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
@@ -164,7 +164,7 @@ export function hammerView(main, entry) {
       "p",
       { class: "note" },
       h("b", {}, t("이긴 쪽도 서둘러야 한다. ")),
-      t("{s}초 안에 안 치면 헛친 것이다. 막기는 치기보다 먼저거나 같으면 된다. 컴퓨터는 빠르기에 따라 평균 {a}·{b}·{c}초에 누른다.", {
+      t("{s}초 안에 치지 않으면 헛친 것이다. 막기가 치기보다 먼저거나 동시면 막은 것이다. 컴퓨터는 빠르기에 따라 평균 {a}·{b}·{c}초에 누른다.", {
         s: secs(STRIKE_MS),
         a: secs(REACTION_LEVELS.easy),
         b: secs(REACTION_LEVELS.normal),

@@ -31,7 +31,7 @@ export function penneyView(main, entry) {
   const wins = [0, 0];
 
   const score = scoreboard();
-  const steps = stepList([t("앞뒤 세 개짜리 순서를 하나씩 고른다"), t("동전을 계속 던진다"), t("고른 순서가 먼저 나온 쪽이 이긴다")]);
+  const steps = stepList([t("앞앞뒤처럼 앞뒤 세 개의 순서를 하나씩 고른다"), t("동전을 계속 던진다"), t("고른 순서가 먼저 나온 쪽이 이긴다")]);
   const picks = h("div", { class: "seq-picks" });
   const vs = h("div", { class: "seq-vs", "aria-live": "polite" });
   const flips = h("div", { class: "flips", "aria-label": t("던진 동전") });
@@ -59,7 +59,7 @@ export function penneyView(main, entry) {
     clear(vs).append(
       h("div", { class: "seq-side me" }, h("span", { class: "seq-who" }, t("나")), a ? seqEl(a) : h("span", { class: "seq-empty" }, t("고르는 중"))),
       h("div", { class: "seq-odds" }, a && b ? t("내가 이길 확률 {p}", { p: pct(firstChance(a, b)) }) : ""),
-      h("div", { class: "seq-side op" }, h("span", { class: "seq-who" }, t("컴퓨터")), b ? seqEl(b) : h("span", { class: "seq-empty" }, first === "me" ? t("내가 고르면 고른다") : "")),
+      h("div", { class: "seq-side op" }, h("span", { class: "seq-who" }, t("컴퓨터")), b ? seqEl(b) : h("span", { class: "seq-empty" }, first === "me" ? t("내가 고른 뒤에 고른다") : "")),
     );
   }
 
@@ -76,7 +76,7 @@ export function penneyView(main, entry) {
       b.inert = false;
     });
     picks.hidden = false;
-    msg.textContent = first === "op" ? t("컴퓨터가 먼저 골랐다. 이걸 보고 내 순서를 고르자.") : t("내가 먼저 고른다. 컴퓨터는 내 순서를 보고 고른다.");
+    msg.textContent = first === "op" ? t("컴퓨터가 먼저 골랐다. 그 순서를 보고 내 순서를 고르자.") : t("내가 먼저 고른다. 컴퓨터는 내 순서를 보고 고른다.");
     score.set(wins[0], wins[1], t("이긴 판"));
     steps.set(0);
     drawVs();
@@ -94,7 +94,7 @@ export function penneyView(main, entry) {
     throwBtn.hidden = false;
     throwBtn.focus({ preventScroll: true });
     const p = firstChance(game.picks[0], game.picks[1]);
-    msg.textContent = p > 0.5 ? t("유리한 순서를 골랐다.") : p < 0.5 ? t("불리한 순서다. 상대 순서가 내 순서보다 먼저 나오기 쉽다.") : t("반반이다.");
+    msg.textContent = p > 0.5 ? t("내 순서가 유리하다.") : p < 0.5 ? t("내 순서가 불리하다. 컴퓨터 순서가 먼저 나오기 쉽다.") : t("반반이다.");
     steps.set(1);
     drawVs();
   }
@@ -149,7 +149,7 @@ export function penneyView(main, entry) {
     block(t("하는 법"), steps.el),
     block(
       t("나중에 고르는 쪽이 유리하다"),
-      h("p", {}, t("상대 순서의 가운데를 뒤집어 맨 앞에 두고, 상대 순서의 앞 두 개를 붙이면 된다.")),
+      h("p", {}, t("상대 순서의 가운데 것을 뒤집어 맨 앞에 두고, 그 뒤에 상대 순서의 앞 두 개를 붙이면 된다.")),
       table,
     ),
   );

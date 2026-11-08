@@ -152,14 +152,14 @@ export function shogiView(main, entry) {
     doneBar.hidden = true;
     log.clear();
     rec.textContent = recordLine(record(key()));
-    say(t("내 차례. 움직일 말을 누르자. 상대 왕을 잡으면 이긴다."));
+    say(t("내 차례다. 움직일 말을 누르자. 상대 왕을 잡으면 이긴다."));
     draw();
   }
 
   function pickDrop(tp) {
     if (busy || game.done || game.turn !== 0) return;
     sel = sel && sel.kind === "drop" && sel.type === tp ? null : { kind: "drop", type: tp };
-    say(sel ? t("{p:을를} 놓을 빈칸을 누르자.", { p: names()[tp] }) : t("내 차례."));
+    say(sel ? t("{p:을를} 놓을 빈칸을 누르자.", { p: names()[tp] }) : t("내 차례다."));
     draw();
   }
 
@@ -176,7 +176,7 @@ export function shogiView(main, entry) {
       const same = sel && sel.kind === "move" && sel.from[0] === x && sel.from[1] === y;
       sel = same ? null : { kind: "move", from: [x, y] };
       const can = sel ? targets().length : 0;
-      say(sel ? (can ? t("{p:이가} 갈 칸을 누르자.", { p: names()[top.type] }) : t("이 말은 지금 갈 데가 없다.")) : t("내 차례."));
+      say(sel ? (can ? t("{p:이가} 갈 칸을 누르자.", { p: names()[top.type] }) : t("이 말은 지금 갈 곳이 없다.")) : t("내 차례다."));
       draw();
     }
   }
@@ -199,7 +199,7 @@ export function shogiView(main, entry) {
     log.add(line(last), last.captured ? "w" : "");
     draw();
     if (g.done) return finish();
-    say(t("컴퓨터가 생각하는 중"));
+    say(t("컴퓨터가 수를 고르는 중"));
     await sleep(350);
     if (game !== g) return;
     const reply = shogiPick(g, rng, depth);
@@ -207,7 +207,7 @@ export function shogiView(main, entry) {
     log.add(line(last), last.captured ? "l" : "");
     busy = false;
     if (g.done) return finish();
-    say(last.captured ? t("컴퓨터가 {q:을를} 잡았다. 내 차례.", { q: names()[last.captured] }) : t("내 차례."));
+    say(last.captured ? t("컴퓨터가 내 {q:을를} 잡았다. 내 차례다.", { q: names()[last.captured] }) : t("내 차례다."));
     draw();
   }
 
@@ -222,12 +222,12 @@ export function shogiView(main, entry) {
           ? t("컴퓨터 왕을 잡았다!")
           : t("컴퓨터가 내 왕을 잡았다")
         : g.end === "repeat"
-          ? t("같은 판이 세 번 나와 비겼다")
+          ? t("같은 국면이 세 번 나와 비겼다")
           : g.end === "plies"
             ? t("{n}수가 지나 비겼다", { n: g.maxPlies })
             : won
-              ? t("컴퓨터가 둘 수가 없다")
-              : t("둘 수가 없다");
+              ? t("컴퓨터는 둘 수 있는 수가 없다")
+              : t("둘 수 있는 수가 없다");
     say(why);
     rec.textContent = recordLine(addRecord(key(), tie ? 0 : won ? 1 : -1));
     clear(doneBar).append(h("strong", {}, tie ? t("비겼다") : won ? t("이겼다!") : t("졌다")), h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")));
@@ -244,12 +244,12 @@ export function shogiView(main, entry) {
       h(
         "ul",
         { class: "shogi-moves" },
-        moveRow("king", t("왕: 여덟 방향 한 칸. 무엇이든 잡지만 무엇에게든 잡힌다")),
-        moveRow("rock", t("바위: 앞뒤옆 한 칸")),
+        moveRow("king", t("왕: 여덟 방향 한 칸. 무엇이든 잡지만 무엇에든 잡힌다")),
+        moveRow("rock", t("바위: 앞뒤와 양옆 한 칸")),
         moveRow("scissors", t("가위: 대각선 한 칸")),
         moveRow("paper", t("보: 앞쪽 세 칸과 양옆")),
       ),
-      h("p", {}, t("가위바위보로 이기는 말만 잡는다. 같은 말끼리는 위에 올라타고, 깔린 말은 못 움직인다. 잡은 말은 손에 들었다가 내 차례에 빈칸에 놓을 수 있다.")),
+      h("p", {}, t("가위바위보로 이기는 말만 잡는다. 같은 말끼리 만나면 움직인 말이 위에 올라타고, 깔린 말은 못 움직인다. 잡은 말은 손에 들었다가 내 차례에 빈칸에 놓을 수 있다.")),
     ),
   );
   const panel = h(
@@ -270,7 +270,7 @@ export function shogiView(main, entry) {
     onKey(e) {
       if (e.key === "Escape" && sel) {
         sel = null;
-        say(t("내 차례."));
+        say(t("내 차례다."));
         draw();
         return true;
       }

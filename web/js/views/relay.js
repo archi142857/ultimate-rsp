@@ -27,7 +27,7 @@ export function relayView(main, entry) {
   const st = stage({ meLabel: t("우리 편"), opLabel: t("상대 편") });
   const track = h("div", { class: "relay-track", role: "img" });
   const clock = h("p", { class: "note", style: { margin: "0 0 14px" }, "aria-live": "polite" });
-  const steps = stepList([t("한 명씩 달려 나간다"), t("만나면 가위바위보, 진 편은 다음 사람이 나온다"), t("상대 진지에 들어가면 1점")]);
+  const steps = stepList([t("한 명씩 달려 나간다"), t("만나면 가위바위보를 하고, 진 편은 다음 사람이 나온다"), t("상대 진지에 들어가면 1점")]);
   const log = logList();
   const rec = h("p", { class: "rec" });
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -78,11 +78,11 @@ export function relayView(main, entry) {
     track.setAttribute(
       "aria-label",
       g.done
-        ? t("길 {n}칸.", { n: g.cells })
-        : t("길 {n}칸. 우리 편 {a}번째 주자는 {x}칸째, 상대 편 {b}번째 주자는 {y}칸째.", { n: g.cells, a: g.runner[0], x: g.pos[0], b: g.runner[1], y: g.cells + 1 - g.pos[1] }),
+        ? t("길은 {n}칸이다.", { n: g.cells })
+        : t("길은 {n}칸이다. 우리 편 {a}번째 주자는 {x}칸째, 상대 편 {b}번째 주자는 {y}칸째에 있다.", { n: g.cells, a: g.runner[0], x: g.pos[0], b: g.runner[1], y: g.cells + 1 - g.pos[1] }),
     );
-    clock.textContent = t("지난 시간 {s}초(한 칸 1초, 가위바위보 한 번 1초). 가위바위보 {n}번.", { s: g.seconds(), n: g.throws });
-    score.set(g.score[0], g.score[1], target > 1 ? t("{n}점 먼저", { n: target }) : t("먼저 들어가기"));
+    clock.textContent = t("{s}초가 지났다(한 칸 1초, 가위바위보 한 번 1초). 가위바위보는 {n}번 했다.", { s: g.seconds(), n: g.throws });
+    score.set(g.score[0], g.score[1], target > 1 ? t("먼저 {n}점", { n: target }) : t("먼저 들어가기"));
   }
 
   async function runUntilMeet() {
@@ -198,9 +198,9 @@ export function relayView(main, entry) {
     { class: "side-panel" },
     block(t("하는 법"), steps.el),
     block(
-      t("얼마나 걸리나"),
-      h("p", {}, t("둘 다 아무렇게나 내면 길이 길수록 오래 걸린다. 진지에 막 나온 사람을 이겨야 들어가기 때문이다.")),
-      h("p", { class: "field-label", style: { margin: "4px 0 8px" } }, t("한 번 들어가면 끝날 때, 600판을 돌린 평균")),
+      t("걸리는 시간"),
+      h("p", {}, t("둘 다 아무렇게나 내면 길이 길수록 오래 걸린다. 진지에서 막 나온 사람을 이겨야 들어가기 때문이다.")),
+      h("p", { class: "field-label", style: { margin: "4px 0 8px" } }, t("한 번 들어가면 끝나는 규칙으로 600판을 돌린 평균")),
       statsBox,
     ),
   );

@@ -60,8 +60,8 @@ export function donpappaView(main, entry) {
     if (game.phase === "janken") return t("가위바위보! 이기는 쪽이 공격이 된다.");
     const now = callOf(game.current[game.attacker]);
     return game.attacker === 0
-      ? t("내가 공격. '{c}, {c}' 다음에 낼 손을 고르자.", { c: now })
-      : t("컴퓨터가 공격. '{c}, {c}' 다음에 낼 손을 고르자.", { c: now });
+      ? t("내가 공격이다. '{c}, {c}' 다음에 낼 손을 고르자.", { c: now })
+      : t("컴퓨터가 공격이다. '{c}, {c}' 다음에 낼 손을 고르자.", { c: now });
   }
 
   function newGame() {
@@ -163,14 +163,14 @@ export function donpappaView(main, entry) {
       line = meWon ? t("둘 다 {c}. 내가 먼저 '돈!' (나 {a}, 컴퓨터 {b})", said) : t("둘 다 {c}. 컴퓨터가 먼저 '돈!' (나 {a}, 컴퓨터 {b})", said);
     } else if (r.result === "missed") {
       st.say(t("아무도 안 외쳤다"));
-      line = t("둘 다 {c}. 아무도 '돈!'을 안 외쳐 다시.", { c: callOf(i) });
+      line = t("둘 다 {c}. 아무도 '돈!'을 외치지 않아 다시 한다.", { c: callOf(i) });
     } else if (r.result === "false") {
-      st.say(t("다른데 외쳤다! 졌다"), "lose");
+      st.say(t("손이 다른데 외쳐서 졌다"), "lose");
       st.sub(t("나 {a}", { a: shown(mine) }));
-      line = t("{a} 대 {b}. 다른데 '돈!'을 외쳐 졌다.", { a: callOf(i), b: callOf(j) });
+      line = t("{a} 대 {b}. 손이 다른데 '돈!'을 외쳐서 졌다.", { a: callOf(i), b: callOf(j) });
     } else {
-      st.say(g.attacker === 0 ? t("공격이 넘어왔다") : t("공격이 넘어갔다"), g.attacker === 0 ? "win" : "lose");
-      line = t("{a} 대 {b}. 공수가 바뀐다.", { a: callOf(i), b: callOf(j) });
+      st.say(g.attacker === 0 ? t("이제 내가 공격이다") : t("공격이 넘어갔다"), g.attacker === 0 ? "win" : "lose");
+      line = t("{a} 대 {b}. 공격과 수비가 바뀐다.", { a: callOf(i), b: callOf(j) });
     }
     log.add(line, g.done ? (g.winner === 0 ? "w" : "l") : "");
     roleTag();
@@ -197,7 +197,7 @@ export function donpappaView(main, entry) {
       "p",
       { class: "note" },
       h("b", {}, t("손마다 외치는 말이 있다. ")),
-      t("바위는 {r}, 가위는 {s}, 보는 {p}({kr}·{ks}·{kp}). 셋째 손이 같아지면 '{d}!'을 먼저 외친다. 같은 때면 공격이 이긴다.", {
+      t("바위는 {r}, 가위는 {s}, 보는 {p}({kr}·{ks}·{kp}). 셋째 손이 같아지면 '{d}!'을 먼저 외친다. 동시에 외치면 공격이 이긴다.", {
         r: donCalls().rock,
         s: donCalls().scissors,
         p: donCalls().paper,

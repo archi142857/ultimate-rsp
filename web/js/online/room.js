@@ -387,7 +387,7 @@ export function roomView(main, code) {
         });
         shownScore = sc;
         const f = formatById(room.rules.format);
-        note.textContent = Number.isFinite(f.target) && f.target > 1 ? t("{f} · {n}승 먼저", { f: f.name, n: f.target }) : f.name;
+        note.textContent = Number.isFinite(f.target) && f.target > 1 ? t("{f} · 먼저 {n}승", { f: f.name, n: f.target }) : f.name;
         el.setAttribute("aria-label", t("점수: {a} {x}, {b} {y}", { a: label[0], x: sc[0], b: label[1], y: sc[1] }));
       },
     };

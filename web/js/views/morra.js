@@ -44,7 +44,7 @@ export function morraView(main, entry) {
   const sumList = Array.from({ length: 2 * MAX_FINGERS + 1 }, (_, i) => i);
   const score = scoreboard();
   const st = stage();
-  const steps = stepList([t("손가락 몇 개를 펼지 정한다"), t("둘의 손가락 합을 외친다"), t("혼자 맞히면 1점, 3점을 먼저 내면 이긴다")]);
+  const steps = stepList([t("손가락 몇 개를 펼지 정한다"), t("두 사람 손가락 수의 합을 외친다"), t("혼자 맞히면 1점, 먼저 3점을 내면 이긴다")]);
   const log = logList();
   const rec = h("p", { class: "rec" });
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -103,10 +103,10 @@ export function morraView(main, entry) {
       mode === "morra"
         ? t("손가락 수와 외칠 합을 고르자.")
         : mySide === 0
-          ? t("합이 홀이면 내가, 짝이면 컴퓨터가 1점.")
-          : t("합이 짝이면 내가, 홀이면 컴퓨터가 1점."),
+          ? t("합이 홀이면 내가, 짝이면 컴퓨터가 1점을 얻는다.")
+          : t("합이 짝이면 내가, 홀이면 컴퓨터가 1점을 얻는다."),
     );
-    score.set(0, 0, t("{n}점 먼저", { n: TARGET }));
+    score.set(0, 0, t("먼저 {n}점", { n: TARGET }));
     rec.textContent = recordLine(record(key()));
     steps.set(0);
     sync();
@@ -144,14 +144,14 @@ export function morraView(main, entry) {
       line = t("{a} + {b} = {s}, {p}. {who}.", { a: fingers, b: c.fingers, s: r.sum, p: parity(r.sum), who: r.winner === 0 ? t("내가 1점") : t("컴퓨터가 1점") });
       log.add(line, r.winner === 0 ? "w" : "l");
     }
-    score.set(game.score[0], game.score[1], t("{n}점 먼저", { n: TARGET }));
+    score.set(game.score[0], game.score[1], t("먼저 {n}점", { n: TARGET }));
     steps.set(game.done ? 2 : 1);
     if (game.done) {
       const won = game.winner === 0;
       st.say(won ? t("이겼다!") : t("졌다"), won ? "win" : "lose");
       rec.textContent = recordLine(addRecord(key(), won ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, won ? t("{n}점 먼저 냈다", { n: TARGET }) : t("컴퓨터가 {n}점 먼저 냈다", { n: TARGET })),
+        h("strong", {}, won ? t("내가 먼저 {n}점을 냈다", { n: TARGET }) : t("컴퓨터가 먼저 {n}점을 냈다", { n: TARGET })),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
@@ -170,7 +170,7 @@ export function morraView(main, entry) {
       "p",
       { class: "note" },
       h("b", {}, t("합은 여섯 가지 가운데 하나다. ")),
-      t("내 손가락 수는 내가 아니까, 합은 내 손가락에 상대 손가락 0~5를 더한 수다. 상대가 아무렇게나 내면 그 여섯 가운데 무엇을 외쳐도 맞힐 확률은 1/6이다. 홀짝은 반반이다."),
+      t("내 손가락 수는 알고 있으니, 합은 내 손가락 수에 상대 손가락 0~5개를 더한 수다. 상대가 아무렇게나 내면 그 여섯 가운데 무엇을 외쳐도 맞힐 확률은 1/6이다. 홀짝은 반반이다."),
     ),
   );
   const panel = h(

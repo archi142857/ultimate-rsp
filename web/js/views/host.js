@@ -67,7 +67,7 @@ export function hostView(main, entry) {
     finishBtn.hidden = game.done || meIn;
     status.textContent = game.done
       ? t("{n}판 만에 끝났다.", { n: game.round })
-      : t("{r}판째. 남은 사람 {n}명, 내 점수 {s}점.", { r: game.round + 1, n: game.alive.length, s: game.score[0] });
+      : t("{r}판째다. 남은 사람은 {n}명, 내 점수는 {s}점이다.", { r: game.round + 1, n: game.alive.length, s: game.score[0] });
     steps.set(game.done ? 2 : 1);
   }
 

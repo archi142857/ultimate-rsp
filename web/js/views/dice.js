@@ -81,7 +81,7 @@ export function diceView(main, entry) {
     clear(vs).append(
       h("div", { class: "seq-side me" }, h("span", { class: "seq-who" }, t("나")), a ? dieEl(dieOf(set, a)) : h("span", { class: "seq-empty" }, t("고르는 중"))),
       h("div", { class: "seq-odds" }, odds ? t("한 번에 내가 이길 확률 {p}", { p: pct(odds.win) }) : ""),
-      h("div", { class: "seq-side op" }, h("span", { class: "seq-who" }, t("컴퓨터")), b ? dieEl(dieOf(set, b)) : h("span", { class: "seq-empty" }, first === "me" ? t("내가 고르면 고른다") : "")),
+      h("div", { class: "seq-side op" }, h("span", { class: "seq-who" }, t("컴퓨터")), b ? dieEl(dieOf(set, b)) : h("span", { class: "seq-empty" }, first === "me" ? t("내가 고른 뒤에 고른다") : "")),
     );
   }
 
@@ -118,7 +118,7 @@ export function diceView(main, entry) {
       ),
     );
     picks.hidden = false;
-    msg.textContent = first === "op" ? t("컴퓨터가 먼저 골랐다. 이걸 보고 내 주사위를 고르자.") : t("내가 먼저 고른다. 컴퓨터는 내 주사위를 보고 고른다.");
+    msg.textContent = first === "op" ? t("컴퓨터가 먼저 골랐다. 그 주사위를 보고 내 주사위를 고르자.") : t("내가 먼저 고른다. 컴퓨터는 내 주사위를 보고 고른다.");
     score.set(wins[0], wins[1], t("이긴 경기"));
     rec.textContent = recordLine(record(key()));
     steps.set(0);
@@ -134,7 +134,7 @@ export function diceView(main, entry) {
     rollBtn.hidden = false;
     rollBtn.focus({ preventScroll: true });
     const o = duelOdds(dieOf(set, game.dice[0]), dieOf(set, game.dice[1]), count);
-    msg.textContent = o.win > o.lose ? t("유리한 주사위다.") : o.win < o.lose ? t("불리한 주사위다. 컴퓨터 주사위가 더 자주 이긴다.") : t("반반이다.");
+    msg.textContent = o.win > o.lose ? t("내 주사위가 유리하다.") : o.win < o.lose ? t("내 주사위가 불리하다. 컴퓨터 주사위가 더 자주 이긴다.") : t("반반이다.");
     steps.set(1);
     drawVs();
   }

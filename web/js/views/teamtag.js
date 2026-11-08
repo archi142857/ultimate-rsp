@@ -27,7 +27,7 @@ export function teamTagView(main, entry) {
   const st = stage({ meLabel: t("우리 편"), opLabel: t("상대 편") });
   const board = h("div", { class: "teams", "aria-live": "polite" });
   const status = h("p", { class: "note", style: { margin: "0 0 14px" } });
-  const steps = stepList([t("편마다 손 하나를 몰래 정한다"), t("다 같이 낸다. 이긴 편이 쫓는다"), t("잡히면 상대 편이 된다. 한 편이 다 사라지면 끝")]);
+  const steps = stepList([t("편마다 손 하나를 몰래 정한다"), t("다 같이 낸다. 이긴 편이 쫓는다"), t("잡히면 상대 편이 된다. 한 편에 아무도 남지 않으면 끝난다")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("teamtag")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -79,7 +79,7 @@ export function teamTagView(main, entry) {
         ),
       ),
     );
-    status.textContent = game.done ? t("{n}판 만에 끝났다.", { n: game.round }) : t("{r}판째. {m}판이 지나면 사람이 많은 편이 이긴다.", { r: game.round + 1, m: game.maxRounds });
+    status.textContent = game.done ? t("{n}판 만에 끝났다.", { n: game.round }) : t("{r}판째다. {m}판이 지나면 사람이 많은 편이 이긴다.", { r: game.round + 1, m: game.maxRounds });
     grid.el.hidden = game.done;
   }
 
@@ -146,7 +146,7 @@ export function teamTagView(main, entry) {
         st.say(t("우리 편이 쫓는다"), "win");
         st.sub(names.length ? t("{names} 잡음.", { names: listWords(names) }) : t("아무도 못 잡았다."));
       } else if (caughtMe) {
-        st.say(t("잡혔다! 이제 상대 편"), "lose");
+        st.say(t("잡혔다. 이제 상대 편이다"), "lose");
       } else {
         st.say(t("달아났다"), "win");
       }

@@ -68,7 +68,7 @@ const META = {
   donpappa: "먼저 외치기",
   relay: "달려가 만나면 겨루기",
   ecard: "카드 다섯 장",
-  shogi: "3×4 판",
+  shogi: "3×4 장기판",
 };
 
 const compiled = new Map();
