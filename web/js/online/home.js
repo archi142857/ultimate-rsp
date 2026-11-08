@@ -1,5 +1,5 @@
 // 온라인 첫 화면(#/play, 디자인 시안2 ① 깔끔한 세 칸). 맨 위 줄: 왼쪽 프로필 칩(누르면 이름 바꾸기), 오른쪽 '전체 순위표 →'.
-// 그 아래 제목과 세 칸: 랜덤 매칭(게임 고르기 + 찾기, 이 게임 순위) · 방(만들기, 코드로 들어가기) · 도전장(쓰기, 내 도전장).
+// 그 아래 제목과 세 칸: 랜덤 매칭(게임 고르기 + 시작, 이 게임 순위) · 방(만들기, 코드로 들어가기) · 도전장(쓰기, 내 도전장).
 // 폭 900px 이상이면 세 칸을 나란히, 그 아래에서는 랜덤 → 방 → 도전장 차례로 쌓는다.
 // 서버가 답하기 전에는 단추를 잠가 둔다(서버가 꺼졌거나 하루 한도를 넘었을 때 만들다가 막히지 않게).
 // 순위 자리(순위표 링크, 이 게임 순위, 순위 안내 글)는 서버가 답한 뒤에 보인다(순위가 없는 옛 서버면 다시 거둔다).
@@ -59,12 +59,13 @@ export function onlineHomeView(main, params = {}) {
     randomGames().map((e) => h("option", { value: e.id }, e.name)),
   );
   select.value = game;
-  const find = h("a", { class: "btn btn-ink" }, t("찾기"));
+  // '시작'은 판 수와 게임을 고르는 랜덤 매칭 화면을 연다(고른 게임이 골라진 채, 11-08 사용자 요청)
+  const find = h("a", { class: "btn btn-ink" }, t("시작"));
   gated.push(find);
   const board = rankBox({ onMissing: () => showRanks(false) });
   const setGame = (id) => {
     game = id;
-    find.href = `#/match?v=${encodeURIComponent(id)}&go=1`;
+    find.href = `#/match?v=${encodeURIComponent(id)}`;
   };
   setGame(game);
   select.addEventListener("change", () => {

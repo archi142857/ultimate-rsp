@@ -1,4 +1,5 @@
-// 랜덤 매칭(#/match, #/match?v=게임&f=판수[&go=1], 디자인 시안 ③ 12–14번): 게임과 판 수를 고르면 같은 걸 고른 사람과 짝을 짓는다
+// 랜덤 매칭(#/match, #/match?v=게임&f=판수, 디자인 시안 ③ 12–14번): 게임과 판 수를 고르면 같은 걸 고른 사람과 짝을 짓는다.
+// 첫 화면 랜덤 칸의 '시작'은 고른 게임을 v 로 실어 이 고르기 화면을 연다(판 수를 여기서 고른다, 11-08 사용자 요청)
 // (온라인 규약 4장). 기다리는 동안 고리에 나와 빈자리 '?' 를 두고 가운데에 기다린 초를 센다.
 // 짝이 생기면(matched) 이 연결을 바로 닫고(1000) 그 방(#/room/코드)으로 간다. 20초가 지나면 아래 시트로 컴퓨터를 권한다.
 
@@ -202,12 +203,7 @@ export function matchView(main, params = {}) {
   }
 
   main.append(root);
-  // 첫 화면에서 게임을 고르고 '찾기'를 눌렀으면(#/match?v=게임&go=1) 바로 찾는다. 판 수는 마지막에 고른 것
-  if (params.go && params.v && game === params.v) {
-    // 새로고침했을 때 또 바로 찾지 않게 주소에서 go 를 뗀다
-    history.replaceState(null, "", `#/match?v=${encodeURIComponent(game)}`);
-    search();
-  } else pickView();
+  pickView();
 
   return {
     destroy() {

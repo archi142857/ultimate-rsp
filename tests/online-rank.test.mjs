@@ -38,6 +38,10 @@ test("서버 답 다듬기: 틀린 줄은 버리고 50위까지, 이름은 다�
   );
   assert.equal(b.n, 412);
   assert.deepEqual(b.me, { name: "Swift Fox 42", rating: 1032, games: 14, wins: 8, losses: 6, draws: 0, rank: 128 });
+  const c = normalizeRank({ top, me: { name: "a", rating: 1000, games: 9, wins: 4, rank: 9, index: 8 } }, "classic");
+  assert.equal(c.me.index, 8);
+  assert.equal(normalizeRank({ top, me: { name: "a", rating: 1000, games: 9, wins: 4, rank: 99, index: null } }, "classic").me.index, null);
+  assert.equal(normalizeRank({ top, me: { name: "a", rating: 1000, games: 9, wins: 4, rank: 99, index: -2 } }, "classic").me.index, null);
 });
 
 test("점수·경기 수가 같으면 같은 순위(서버와 같은 셈)", () => {
@@ -64,7 +68,16 @@ test("승률은 이긴 경기 / 경기(비김은 이긴 것이 아니다), 반�
   assert.equal(winRate(null), 0);
 });
 
-test("내 줄은 이름과 기록으로 찾는다(같은 순위가 여럿이어도)", () => {
+test("내 줄은 서버가 준 줄 번호(me.index)로 찾는다", () => {
+  const twins = [row(0), row(1, { name: "Same Name", rating: 1200, games: 9 }), row(2, { name: "Same Name", rating: 1200, games: 9 })];
+  const me = { ...twins[2], rank: 2 };
+  assert.equal(myIndex(normalizeRank({ top: twins, me: { ...me, index: 2 } }, "classic")), 2, "이름·기록이 같은 두 사람도 가른다");
+  assert.equal(myIndex(normalizeRank({ top: twins, me: { ...me, index: 1 } }, "classic")), 1);
+  assert.equal(myIndex(normalizeRank({ top: twins, me: { ...me, index: null } }, "classic")), -1, "순위표 밖");
+  assert.equal(myIndex(normalizeRank({ top: twins, me: { ...me, index: 7 } }, "classic")), -1, "목록보다 크면 없는 것으로");
+});
+
+test("옛 서버(me.index 없음)면 이름과 기록으로 찾는다(같은 순위가 여럿이어도)", () => {
   const top = [row(0), row(1, { rating: 1200, games: 9 }), row(2, { rating: 1200, games: 9 })];
   const me = { ...row(2, { rating: 1200, games: 9 }), rank: 2 };
   const b = normalizeRank({ top, me }, "classic");
