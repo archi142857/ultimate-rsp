@@ -27,7 +27,7 @@ export function entryBody(entry, ...extra) {
   return h(
     "div",
     { class: "entry-body" },
-    block(t("이 놀이는"), paragraphs(entry.about)),
+    block(t("소개"), paragraphs(entry.about)),
     ...extra,
     entry.sources && entry.sources.length ? block(t("출처"), sourcesList(entry.sources)) : null,
   );
@@ -53,7 +53,7 @@ export function scoreboard({ meLabel = t("나"), opLabel = t("컴퓨터") } = {}
       me.textContent = String(a);
       op.textContent = String(b);
       mid.textContent = note;
-      el.setAttribute("aria-label", t("점수 나 {a}, 상대 {b}", { a, b }));
+      el.setAttribute("aria-label", t("점수: 나 {a}, 상대 {b}", { a, b }));
     },
     labels(a, b) {
       meWho.textContent = a;

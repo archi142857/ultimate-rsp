@@ -59,9 +59,9 @@ function route() {
   } catch (e) {
     console.error(e);
     clear(main);
-    setTitle(t("화면을 그리지 못했다"));
+    setTitle(t("화면을 불러오지 못했다"));
     main.append(
-      h("div", { class: "entry-head" }, h("h1", { class: "entry-title" }, t("화면을 그리지 못했다")), h("p", {}, String(e && e.message))),
+      h("div", { class: "entry-head" }, h("h1", { class: "entry-title" }, t("화면을 불러오지 못했다")), h("p", {}, String(e && e.message))),
     );
   }
   document.querySelectorAll("[data-nav]").forEach((a) => {
@@ -76,14 +76,14 @@ function route() {
 }
 
 function notFound() {
-  setTitle(t("없는 화면"));
+  setTitle(t("화면을 찾을 수 없다"));
   main.append(
     h(
       "div",
       { class: "entry-head" },
       h("a", { class: "back", href: "#/" }, t("도감")),
-      h("h1", { class: "entry-title" }, t("없는 화면")),
-      h("p", { class: "entry-sub" }, t("주소를 다시 확인하거나 도감에서 골라 주세요.")),
+      h("h1", { class: "entry-title" }, t("화면을 찾을 수 없다")),
+      h("p", { class: "entry-sub" }, t("주소를 다시 확인하거나 도감에서 고르면 된다.")),
     ),
   );
 }
@@ -138,7 +138,7 @@ function applyLangChrome() {
   document.querySelectorAll("[data-i18n]").forEach((el) => (el.textContent = t(el.dataset.i18n)));
   document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
   const desc = document.querySelector('meta[name="description"]');
-  if (desc) desc.content = t("세계 곳곳의 가위바위보 변종을 모아, 누가 누구를 이기는지 고리 그림으로 보고 컴퓨터와 바로 겨룬다.");
+  if (desc) desc.content = t("세계 곳곳의 가위바위보 변종을 모았다. 누가 누구를 이기는지 고리 그림으로 보고, 컴퓨터나 친구와 바로 겨룬다.");
   // 단추는 바꿀 언어를 그 언어로 보여 준다
   const btn = document.getElementById("lang-btn");
   if (btn) {

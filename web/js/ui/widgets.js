@@ -252,7 +252,7 @@ export const RESULT_WORD = {
 };
 
 /** 섞기 막대(고르지 않은 판에서만 의미가 있다) */
-export function mixBar(V, mix, { label = t("최적 섞기") } = {}) {
+export function mixBar(V, mix, { label = t("최적 비율") } = {}) {
   const items = V.hands.map((hd) => ({ hd, p: mix[hd.i] })).filter((x) => x.p > 1e-9);
   const bar = h(
     "div",

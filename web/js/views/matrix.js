@@ -70,7 +70,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
   });
   const botDesc = h("p", { class: "rec" }, BOTS.find((b) => b.id === botId).desc);
   const fmtSeg = segmented({
-    label: t("판"),
+    label: t("판 수"),
     value: fmt.id,
     options: FORMATS.map((f) => ({ id: f.id, name: f.name })),
     onChange(id) {
@@ -140,7 +140,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
   const facts = [
     [t("손"), t("{n}개", { n: V.n })],
     [t("아무렇게나 낼 때 비길 확률"), frac(drawChance(V))],
-    [t("@fact:판"), V.balanced ? t("고르다, 저마다 {k}개를 이긴다", { k }) : t("고르지 않다")],
+    [t("@fact:균형"), V.balanced ? t("고르다(손마다 {k}개를 이긴다)", { k }) : t("고르지 않다")],
   ];
 
   const playPanel = h(
@@ -160,7 +160,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     "div",
     { class: "ring-panel" },
     h("div", { class: "ring-box" }, ring.el),
-    h("p", { class: "ring-note" }, t("화살표는 이기는 손에서 지는 손으로 간다. 손을 짚으면 그 손이 이기는 쪽은 그 손 색으로, 지는 쪽은 진하게 보인다.") + (hasDraws(V) ? t(" 선이 없는 두 손은 비긴다.") : "")),
+    h("p", { class: "ring-note" }, t("화살표는 이기는 손에서 지는 손으로 간다. 손을 누르면 그 손이 이기는 상대는 같은 색으로, 지는 상대는 진하게 보인다.") + (hasDraws(V) ? t(" 선이 없는 두 손은 비긴다.") : "")),
   );
 
   append(main, [
@@ -189,7 +189,7 @@ function relationsBlock(V) {
   if (V.n > 25 && V.cycle) {
     return block(
       t("누가 누구를 이기나"),
-      h("p", {}, t("손을 아래 차례로 고리에 늘어놓고, 손마다 그 뒤로 {k}개를 이긴다. 끝에 닿으면 처음으로 돌아간다. 고리 그림에서 손을 짚으면 누구를 이기는지 보인다.", { k: V.cycle })),
+      h("p", {}, t("손을 아래 차례대로 고리에 놓는다. 손마다 바로 뒤의 {k}개를 이기고, 끝에서는 처음으로 돌아가 센다. 고리 그림에서 손을 누르면 누구를 이기는지 보인다.", { k: V.cycle })),
       h("ol", { class: "ringlist" }, V.order.map((i) => h("li", {}, handArt(V.hands[i]), ` ${V.hands[i].name}`))),
     );
   }
@@ -273,10 +273,10 @@ function strategyBlock(V) {
   const zero = V.hands.filter((hd) => eq.mix[hd.i] < 1e-9).map((hd) => lower(hd.name, hd.proper));
   return block(
     t("어떻게 내야 할까"),
-    h("p", {}, t("이 판은 고르지 않아서 손마다 내야 할 몫이 다르다. 선형 계획법으로 푼 최적 섞기는 이렇다.")),
+    h("p", {}, t("이 변종은 고르지 않아서 손마다 낼 비율이 다르다. 선형 계획법으로 구한 최적 비율은 이렇다.")),
     mixBar(V, eq.mix),
     zero.length
-      ? h("p", { class: "note" }, h("b", {}, t("{z:은는} 내지 않는다.", { z: listWords(zero) })), t(" 어떤 손을 만나도 다른 손보다 못하거나 같기 때문이다."))
+      ? h("p", { class: "note" }, h("b", {}, t("{z:은는} 내지 않는다.", { z: listWords(zero) })), t(" 어떤 손을 만나도 다른 손보다 낫지 않기 때문이다."))
       : null,
   );
 }
