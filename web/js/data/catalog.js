@@ -131,28 +131,28 @@ const LOVELACE_SRC = { t: "David C. Lovelace, RPS 확장판 모음 (umop.com)", 
 const CATEGORIES_KO = [
   {
     id: "three",
-    title: "셋이 물고 무는 꼴",
+    title: "셋이 물고 물리는 놀이",
     blurb: "규칙은 가위바위보와 같고 손에 담은 이야기가 다르다. 일본에서는 이런 놀이를 산스쿠미켄(셋이 서로 꼼짝 못 하는 손 놀이)이라 불렀다.",
   },
   {
     id: "more",
-    title: "손을 더한 꼴",
-    blurb: "손을 넷, 다섯, 백한 개까지 늘렸다. 고르게 늘린 판도 있고, 일부러 한쪽으로 기운 판도 있다.",
+    title: "손을 더한 변종",
+    blurb: "손을 넷, 다섯, 백한 개까지 늘렸다. 고르게 늘린 것도 있고, 일부러 한쪽으로 기울인 것도 있다.",
   },
   {
     id: "flow",
     title: "가위바위보 위에 쌓은 놀이",
-    blurb: "가위바위보 한 판으로 끝나지 않는다. 공격과 수비를 바꾸고, 두 손을 내고, 계단을 오른다.",
+    blurb: "가위바위보 한 판에 규칙을 더 얹었다. 공격과 수비를 바꾸고, 두 손을 내고, 계단을 오른다.",
   },
   {
     id: "group",
     title: "여럿이 하는 놀이",
-    blurb: "셋 이상이 한꺼번에 하는 가위바위보. 직접 하거나, 여러 사람이 하는 모습을 지켜본다.",
+    blurb: "셋 이상이 한꺼번에 가위바위보를 한다. 직접 하거나 여러 사람이 하는 모습을 지켜본다.",
   },
   {
     id: "sim",
     title: "시뮬레이션",
-    blurb: "컴퓨터 전략끼리 수천 판을 겨루게 하고, 가위바위보처럼 서로 물고 무는 생물이 어떻게 함께 사는지 본다.",
+    blurb: "컴퓨터 전략끼리 수천 판을 겨루게 하고, 가위바위보처럼 물고 물리는 생물이 어떻게 함께 사는지 본다.",
   },
 ];
 
@@ -169,7 +169,7 @@ const CATALOG_KO = [
     order: ["rock", "scissors", "paper"],
     rel: CLASSIC_REL,
     about: [
-      "중국에서 일본으로 건너간 손 놀이가 19세기 말 일본에서 지금의 세 손 꼴로 굳었고, 20세기에 세계로 퍼졌다.",
+      "중국에서 일본으로 건너간 손 놀이가 19세기 말 일본에서 지금의 세 손 모양으로 굳었고, 20세기에 세계로 퍼졌다.",
       "한국말 '보'는 종이가 아니라 보자기다. 동아시아에서는 편 손바닥을 천으로 본다.",
     ],
     aka: [
@@ -245,9 +245,9 @@ const CATALOG_KO = [
     sub: "虎拳, 호랑이 권",
     origin: "일본",
     hands: [
-      { id: "watonai", name: "와토나이", emoji: "⚔️", how: "창을 든 무사 시늉" },
-      { id: "tiger", name: "호랑이", emoji: "🐯", how: "엎드려 기는 호랑이 시늉" },
-      { id: "mother", name: "어머니", emoji: "👵", how: "지팡이를 짚은 노모 시늉" },
+      { id: "watonai", name: "와토나이", emoji: "⚔️", how: "창을 든 무사 시늉을 한다" },
+      { id: "tiger", name: "호랑이", emoji: "🐯", how: "엎드려 기는 호랑이 시늉을 한다" },
+      { id: "mother", name: "어머니", emoji: "👵", how: "지팡이를 짚은 노모 시늉을 한다" },
     ],
     order: ["watonai", "tiger", "mother"],
     rel: [
@@ -284,7 +284,7 @@ const CATALOG_KO = [
       ["ant", "elephant", "괴롭힌다"],
     ],
     about: [
-      "인도네시아에서는 가위바위보를 흔히 수트(suit)라 부르고, 손가락 하나로 코끼리·사람·개미를 내는 꼴도 함께 한다.",
+      "인도네시아에서는 가위바위보를 흔히 수트(suit)라 부른다. 손가락 하나로 코끼리·사람·개미를 내는 수트도 함께 한다.",
       "작은 개미가 큰 코끼리를 이기는 게 재미다. 코나 귀로 기어 들어가 괴롭힌다고 한다.",
     ],
     sources: [
@@ -323,11 +323,11 @@ const CATALOG_KO = [
     kind: "matrix",
     cat: "three",
     name: "곰·사냥꾼·닌자",
-    origin: "몸으로 하는 판",
+    origin: "몸으로 하는 놀이",
     hands: [
-      { id: "hunter", name: "사냥꾼", emoji: "🏹", how: "총을 겨누는 자세" },
-      { id: "bear", name: "곰", emoji: "🐻", how: "두 팔을 들고 덮칠 듯한 자세" },
-      { id: "ninja", name: "닌자", emoji: "🥷", how: "칼을 뽑아 든 자세" },
+      { id: "hunter", name: "사냥꾼", emoji: "🏹", how: "총을 겨눈다" },
+      { id: "bear", name: "곰", emoji: "🐻", how: "두 팔을 들어 덮칠 듯이 선다" },
+      { id: "ninja", name: "닌자", emoji: "🥷", how: "칼을 뽑아 든다" },
     ],
     order: ["hunter", "bear", "ninja"],
     rel: [
@@ -382,7 +382,7 @@ const CATALOG_KO = [
     rel: [...CLASSIC_REL, ["well", "rock", "빠뜨린다"], ["well", "scissors", "빠뜨린다"], ["paper", "well", "덮는다"]],
     about: [
       "가위·바위·보에 우물을 더했다. 바위와 가위는 우물에 빠지고, 보는 우물을 덮는다.",
-      "넷이라 고르지 않다. 바위는 어떤 손을 만나도 우물보다 못하거나 같아서, 잘 두는 사람은 바위를 내지 않는다.",
+      "손이 넷이라 고르지 않다. 바위는 어떤 손을 만나도 우물보다 나을 게 없어서, 잘하는 사람은 바위를 내지 않는다.",
     ],
     sources: [{ t: "Wikipedia, Rock paper scissors (Additional weapons)", u: "https://en.wikipedia.org/wiki/Rock_paper_scissors" }],
   },
@@ -401,8 +401,8 @@ const CATALOG_KO = [
       ["scissors", "dynamite", null, "가위가 다이너마이트 심지를 자른다"],
     ],
     about: [
-      "놀이터에서 몰래 더하던 손. 바위를 날리고 보를 태우지만, 가위가 심지를 자른다. 진지한 대회에서는 반칙이다.",
-      "따져 보면 보는 다이너마이트보다 늘 못하거나 같다. 보를 빼면 바위·가위·다이너마이트가 셋이 물고 무는 꼴이 된다.",
+      "놀이터에서 아이들이 몰래 더하던 손이다. 바위를 날리고 보를 태우지만, 가위가 심지를 자른다. 진지한 대회에서는 반칙이다.",
+      "따져 보면 보는 다이너마이트보다 나을 때가 없다. 보를 빼면 바위·가위·다이너마이트 셋이 물고 물리는 고리가 된다.",
     ],
     sources: [
       { t: "The Straight Dope, Rock, paper, scissors – dynamite?", u: "https://boards.straightdope.com/t/rock-paper-scissors-dynamite-bird-spock/141800" },
@@ -429,7 +429,7 @@ const CATALOG_KO = [
     ],
     about: [
       "불은 물 말고는 다 이기고, 물은 불만 이긴다. 가위·바위·보끼리는 그대로다.",
-      "최적 섞기는 가위·바위·보를 1/9씩, 불과 물을 1/3씩 내는 것이다. 사람들은 물을 너무 적게 내는 버릇이 있다.",
+      "최적 비율로 내려면 가위·바위·보를 1/9씩, 불과 물을 1/3씩 낸다. 사람들은 물을 너무 적게 내는 버릇이 있다.",
     ],
     sources: [{ t: "Wikipedia, Rock paper scissors (Additional weapons)", u: "https://en.wikipedia.org/wiki/Rock_paper_scissors" }],
   },
@@ -488,7 +488,7 @@ const CATALOG_KO = [
       "rock>lizard": "깔아뭉갠다",
     },
     about: [
-      "샘 카스와 캐런 브라일라가 만든 다섯 손 꼴. 손이 다섯이라 비길 확률이 1/3에서 1/5로 준다.",
+      "샘 카스와 캐런 브라일라가 가위바위보에 도마뱀과 스팍을 더했다. 손이 다섯이라 비길 확률이 1/3에서 1/5로 준다.",
       "손마다 둘을 이기고 둘에 진다. 고리에서 바로 다음과 그다음을 이긴다.",
     ],
     sources: [{ t: "Wikipedia, Rock paper scissors (Additional weapons)", u: "https://en.wikipedia.org/wiki/Rock_paper_scissors" }],
@@ -502,7 +502,7 @@ const CATALOG_KO = [
     hands: objs(["rock", "fire", "scissors", "sponge", "paper", "air", "water"]),
     cycle: 3,
     verbs: OBJECT_VERBS,
-    about: ["가위·바위·보에 불·스펀지·공기·물을 더한 일곱 손 꼴. 손마다 셋을 이기고 셋에 진다."],
+    about: ["가위·바위·보에 불·스펀지·공기·물을 더했다. 손마다 셋을 이기고 셋에 진다."],
     sources: [{ t: "David C. Lovelace, RPS-7", u: "https://www.umop.com/rps7.htm" }, LOVELACE_SRC],
   },
   {
@@ -514,7 +514,7 @@ const CATALOG_KO = [
     hands: objs(["rock", "fire", "scissors", "human", "sponge", "paper", "air", "water", "gun"]),
     cycle: 4,
     verbs: OBJECT_VERBS,
-    about: ["RPS-7 에 사람과 총을 더했다. 손마다 넷을 이기고 넷에 진다."],
+    about: ["RPS-7에 사람과 총을 더했다. 손마다 넷을 이기고 넷에 진다."],
     sources: [{ t: "David C. Lovelace, RPS-9", u: "https://www.umop.com/rps9.htm" }, LOVELACE_SRC],
   },
   {
@@ -526,7 +526,7 @@ const CATALOG_KO = [
     hands: objs(["rock", "fire", "scissors", "human", "wolf", "sponge", "paper", "air", "water", "devil", "gun"]),
     cycle: 5,
     verbs: OBJECT_VERBS,
-    about: ["RPS-9 에 늑대와 악마를 더했다. 손마다 다섯을 이기고 다섯에 진다."],
+    about: ["RPS-9에 늑대와 악마를 더했다. 손마다 다섯을 이기고 다섯에 진다."],
     sources: [{ t: "David C. Lovelace, RPS-11", u: "https://www.umop.com/rps11.htm" }, LOVELACE_SRC],
   },
   {
@@ -538,7 +538,7 @@ const CATALOG_KO = [
     hands: objs(["rock", "fire", "scissors", "snake", "human", "tree", "wolf", "sponge", "paper", "air", "water", "dragon", "devil", "lightning", "gun"]),
     cycle: 7,
     verbs: OBJECT_VERBS,
-    about: ["RPS-11 에 뱀·나무·용·번개를 더했다. 손마다 일곱을 이기고 일곱에 진다. 고리 그림이 열다섯 꼭짓점 별이 된다."],
+    about: ["RPS-11에 뱀·나무·용·번개를 더했다. 손마다 일곱을 이기고 일곱에 진다. 고리 그림이 열다섯 꼭짓점 별이 된다."],
     sources: [{ t: "David C. Lovelace, RPS-15", u: "https://www.umop.com/rps15.htm" }, LOVELACE_SRC],
   },
   {
@@ -554,8 +554,8 @@ const CATALOG_KO = [
     cycle: 12,
     verbs: OBJECT_VERBS,
     about: [
-      "사람을 남자와 여자로 나누고 해·달·원숭이·바퀴벌레·외계인·핵폭탄 같은 손을 더한 스물다섯 손 꼴. 손마다 열둘을 이기고 열둘에 진다. 비길 확률은 1/25, 4%다.",
-      "러브레이스는 이어서 손 101개짜리 RPS-101 을 만들었다.",
+      "사람을 남자와 여자로 나누고, 해·달·원숭이·바퀴벌레·외계인·핵폭탄 같은 손을 더했다. 손마다 열둘을 이기고 열둘에 진다. 비길 확률은 1/25, 4%다.",
+      "러브레이스는 이어서 손 101개짜리 RPS-101을 만들었다.",
     ],
     sources: [{ t: "David C. Lovelace, RPS-25", u: "https://www.umop.com/rps25.htm" }, LOVELACE_SRC],
   },
@@ -581,8 +581,8 @@ const CATALOG_KO = [
     cycle: 50,
     verbs: OBJECT_VERBS,
     about: [
-      "러브레이스가 RPS-25 다음에 1년 가까이 들여 만든 손 101개짜리 판. 손마다 50개를 이기고 50개에 진다. 승부가 나는 짝은 5,050가지다.",
-      "RPS-25 의 손을 모두 담았지만 그대로 늘린 꼴은 아니다. 늑대와 핵폭탄은 승부가 뒤집혀서 여기서는 핵폭탄이 늑대를 이긴다.",
+      "러브레이스가 RPS-25 다음에 1년 가까이 들여 만들었다. 손마다 50개를 이기고 50개에 진다. 승부가 나는 짝은 5,050가지다.",
+      "RPS-25의 손을 모두 담았지만 그대로 늘린 것은 아니다. 늑대와 핵폭탄은 승부가 뒤집혀서 여기서는 핵폭탄이 늑대를 이긴다.",
       "러브레이스는 짝마다 이기는 까닭을 한 문장씩 썼다. 이 앱은 RPS-15 손끼리 만날 때만 새로 쓴 문장을 보여 주고, 나머지는 '이긴다'로 적는다.",
       "채찍·전기톱·철창·순무·백금·울타리·메두사·레이저·탱크처럼 이모지가 없는 손은 가까운 그림으로 대신했다.",
     ],
@@ -599,8 +599,8 @@ const CATALOG_KO = [
     sub: "RPS-n",
     origin: "고리 규칙으로",
     about: [
-      "손 개수를 정하면 고리 꼴 규칙을 만든다. 손마다 고리에서 다음 몇 개를 이긴다.",
-      "이기는 개수를 가장 크게 잡으면, 손이 홀수일 때는 같은 손끼리가 아니면 늘 승부가 나고 짝수일 때는 맞은편 손과도 비긴다.",
+      "손 개수를 정하면 고리 규칙을 만들어 준다. 손마다 고리에서 다음 몇 개를 이긴다.",
+      "이기는 개수를 가장 크게 잡으면 손이 홀수일 때는 같은 손끼리만 비긴다. 짝수일 때는 맞은편 손과도 비긴다.",
     ],
   },
 
@@ -648,7 +648,7 @@ const CATALOG_KO = [
     base: "classic",
     about: [
       "두 손으로 동시에 가위바위보를 낸다. 서로 두 손을 본 뒤 '하나 빼기!'에 한 손을 거두고, 남은 손끼리 겨룬다. 비기면 처음부터 다시 한다.",
-      "「오징어 게임」 시즌 2 에 나와 널리 알려졌다.",
+      "「오징어 게임」 시즌 2에 나와 널리 알려졌다.",
     ],
     sources: [
       { t: "Wikipedia, Rock paper scissors (Regional versions)", u: "https://en.wikipedia.org/wiki/Rock_paper_scissors" },
@@ -664,8 +664,8 @@ const CATALOG_KO = [
     origin: "일본",
     base: "classic",
     about: [
-      "계단 아래에서 가위바위보를 하고, 이긴 사람만 이긴 손에 따라 오른다. 바위로 이기면 グ·リ·コ 3칸, 가위는 チ·ヨ·コ·レ·イ·ト 6칸, 보는 パ·イ·ナ·ツ·プ·ル 6칸.",
-      "먼저 꼭대기에 닿으면 이긴다. 칸 수가 달라서 셋을 똑같이 섞는 게 더는 최선이 아니다.",
+      "계단 아래에서 가위바위보를 하고, 이긴 사람만 이긴 손에 따라 오른다. 바위는 グ·リ·コ 3칸, 가위는 チ·ヨ·コ·レ·イ·ト 6칸, 보는 パ·イ·ナ·ツ·プ·ル 6칸이다.",
+      "먼저 꼭대기에 닿으면 이긴다. 칸 수가 달라서 셋을 같은 비율로 내는 게 더는 최선이 아니다.",
     ],
     sources: [
       { t: "栃木県, じゃんけんグリコ", u: "https://www.pref.tochigi.lg.jp/m12/education/sports/genkikids/documents/jump7.pdf" },
@@ -682,7 +682,7 @@ const CATALOG_KO = [
     base: "classic",
     about: [
       "가위·바위·보 카드를 4장씩 12장, 별을 3개씩 들고 시작한다. 한 판에 카드 한 장씩 같이 내고, 이기면 상대 별 하나를 가져온다.",
-      "서로 남은 카드 수가 보인다. 카드를 다 쓰면 별이 많은 쪽이 이기고, 별을 다 잃으면 바로 진다. 만화 「도박묵시록 카이지」의 '한정 가위바위보'를 둘이 하는 판으로 줄였다.",
+      "서로 남은 카드 수가 보인다. 카드를 다 쓰면 별이 많은 쪽이 이기고, 별을 다 잃으면 바로 진다. 만화 「도박묵시록 카이지」의 '한정 가위바위보'를 둘이 하는 놀이로 줄였다.",
     ],
     sources: [{ t: "TVDB, 逆境無頼カイジ 1화 줄거리", u: "https://thetvdb.com/series/kaiji/episodes/357041" }],
   },
@@ -742,7 +742,7 @@ const CATALOG_KO = [
     base: "classic",
     about: [
       "가까운 사람과 가위바위보를 해서, 진 사람이 이긴 사람 뒤에 붙어 어깨를 잡는다. 맨 앞끼리 또 겨뤄 진 쪽 기차가 통째로 뒤에 붙는다.",
-      "모두가 한 줄이 되면 끝. 사람이 두 배가 될 때마다 겨루는 차례가 한 번쯤 는다.",
+      "모두 한 줄이 되면 끝난다. 사람이 두 배가 될 때마다 겨루는 차례가 한 번쯤 는다.",
     ],
     sources: [
       { t: "鳥取県, ジャンケン列車", u: "https://www.pref.tottori.lg.jp/secure/1185102/kosodate-3icebreak.pdf" },
@@ -758,7 +758,7 @@ const CATALOG_KO = [
     base: "classic",
     about: [
       "모두 알에서 시작한다. 같은 단계끼리 만나 가위바위보를 하고, 이기면 한 단계 오르고 지면 한 단계 내려간다. 알은 더 내려가지 않는다.",
-      "꼭대기에 오른 사람은 빠져서 구경한다. 더 겨룰 짝이 없으면 끝나는데, 끝나면 단계마다 많아야 한 사람씩 남는다.",
+      "꼭대기에 오른 사람은 빠져서 구경한다. 더 겨룰 짝이 없으면 끝난다. 끝나면 단계마다 많아야 한 사람씩 남는다.",
     ],
     sources: [
       { t: "playmeo, Evolution", u: "https://playmeo.com/?p=1105" },
@@ -774,7 +774,7 @@ const CATALOG_KO = [
     name: "전략 리그",
     origin: "컴퓨터끼리",
     about: [
-      "컴퓨터 전략들이 서로 수천 판씩 겨룬다. 아무렇게나 내는 전략은 누구에게도 크게 지지 않고, 버릇이 있는 전략은 그 버릇을 읽는 전략에게 진다.",
+      "컴퓨터 전략끼리 수천 판씩 겨룬다. 아무렇게나 내는 전략은 누구에게도 크게 지지 않고, 버릇이 있는 전략은 그 버릇을 읽는 전략에게 진다.",
       "전략끼리도 가위바위보처럼 물고 무는 사이가 생긴다.",
     ],
     sources: [{ t: "Wang, Xu & Zhou (2014), Social cycling and conditional responses in the Rock-Paper-Scissors game", u: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5376050/" }],
@@ -787,7 +787,7 @@ const CATALOG_KO = [
     sub: "격자 생태계",
     origin: "도마뱀과 대장균",
     about: [
-      "옆줄무늬도마뱀 수컷은 목 색에 따라 주황이 파랑을, 파랑이 노랑을, 노랑이 주황을 이긴다. 대장균도 독을 만드는 균, 독에 약한 균, 독을 견디는 균이 서로 물고 문다.",
+      "옆줄무늬도마뱀 수컷은 목 색에 따라 주황이 파랑을, 파랑이 노랑을, 노랑이 주황을 이긴다. 대장균도 독을 만드는 균, 독에 약한 균, 독을 견디는 균이 서로 물고 물린다.",
       "칸마다 생물이 살고 이웃끼리만 겨루면 셋이 소용돌이를 그리며 함께 산다. 많이 돌아다닐수록, 그리고 잘 섞일수록 한 종만 남기 쉽다.",
     ],
     sources: [
@@ -803,7 +803,7 @@ const CATALOG_KO = [
     name: "가위바위보 전쟁",
     origin: "부딪히면 바뀐다",
     about: [
-      "가위·바위·보가 판 위를 떠돌다 부딪히면 진 쪽이 이긴 쪽으로 바뀐다. 한 가지만 남으면 끝난다.",
+      "가위·바위·보가 화면 위를 떠돌다 부딪히면 진 쪽이 이긴 쪽으로 바뀐다. 한 가지만 남으면 끝난다.",
       "처음 수가 같아도 매번 다른 손이 이긴다. 한 가지가 먼저 사라지면 남은 둘 가운데 이기는 쪽이 판을 다 차지하므로, 우승은 '자기를 이기는 손이 먼저 사라진 손'에게 간다.",
     ],
   },

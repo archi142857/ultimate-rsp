@@ -202,7 +202,7 @@ export const EN_OBJECT_VERBS = {
   "paper>devil": "wards off",
   "paper>lightning": "catches",
   "paper>gun": "ties up",
-  "paper>rock": "wraps",
+  "paper>rock": "covers",
   "air>water": "ripples",
   "air>dragon": "blows away",
   "air>devil": "chokes",
@@ -247,7 +247,7 @@ export const EN_OBJECT_VERBS = {
   "gun>wolf": "shoots at",
 };
 
-const CLASSIC_VERBS = { "rock>scissors": "crushes", "scissors>paper": "cuts", "paper>rock": "wraps" };
+const CLASSIC_VERBS = { "rock>scissors": "crushes", "scissors>paper": "cuts", "paper>rock": "covers" };
 
 export const EN_CATEGORIES = {
   three: {
@@ -256,15 +256,15 @@ export const EN_CATEGORIES = {
   },
   more: {
     title: "More hands",
-    blurb: "Four hands, five, all the way to a hundred and one. Some grow evenly, some are lopsided on purpose.",
+    blurb: "These grow the hands to four, five, even 101. Some grow evenly, and some are lopsided on purpose.",
   },
   flow: {
     title: "Games built on RPS",
-    blurb: "One throw is not the end. Swap attack and defense, throw two hands, climb the stairs.",
+    blurb: "Rock paper scissors with more rules on top: swap attack and defense, throw two hands, climb the stairs.",
   },
   group: {
     title: "Group games",
-    blurb: "Rock paper scissors with three or more at once. Play yourself or watch a crowd play.",
+    blurb: "Three or more people play at once. Join in or watch a crowd play.",
   },
   sim: {
     title: "Simulations",
@@ -295,7 +295,7 @@ export const EN_ENTRIES = {
     sub: "虫拳, insect fist",
     origin: "Japan (from China)",
     about: [
-      "The oldest sansukumi-ken in Japan, brought straight from China. The thumb is a frog, the index finger a snake, and the little finger a slug.",
+      "It's the oldest sansukumi-ken in Japan, brought straight from China. The thumb is a frog, the index finger a snake, and the little finger a slug.",
       "The slug beats the snake because of an old belief that slug slime dissolves snakes.",
     ],
     how: { frog: "Thumb up", snake: "Index finger up", slug: "Little finger up" },
@@ -306,7 +306,7 @@ export const EN_ENTRIES = {
     sub: "狐拳, fox fist",
     origin: "Japan",
     about: [
-      "Once the most widely played sansukumi-ken in Japan, also called Tōhachi-ken (東八拳). Unlike the others, it uses both hands.",
+      "It was once the most widely played sansukumi-ken in Japan, also known as Tōhachi-ken (東八拳). Unlike the others, it uses both hands.",
       "The fox bewitches the village head, the village head orders the hunter around, and the hunter shoots the fox.",
     ],
     how: {
@@ -332,7 +332,7 @@ export const EN_ENTRIES = {
     sub: "Ant, human, elephant",
     origin: "Indonesia",
     about: [
-      "In Indonesia rock paper scissors is often called suit, and a version that shows an elephant, a human, or an ant with one finger is played too.",
+      "In Indonesia, rock paper scissors is often called suit. People also play a kind of suit where one finger shows an elephant, a human, or an ant.",
       "The fun is the tiny ant beating the big elephant. They say it crawls into the elephant's trunk or ear and torments it.",
     ],
     how: { elephant: "Thumb up", human: "Index finger up", ant: "Little finger up" },
@@ -363,7 +363,7 @@ export const EN_ENTRIES = {
     sub: "老虎·棒子·鸡",
     origin: "China",
     about: [
-      "Played with words instead of hands. Tap chopsticks together three times, then call out one of the three. Children play it, and so do people at the dinner table.",
+      "You play with words instead of hands. Tap chopsticks together three times, then call out one of the three. Children play it, and so do people at the dinner table.",
       "The stick beats the tiger thanks to the tale of Wu Song, who clubbed a tiger to death.",
     ],
     verbs: { "stick>tiger": "clubs", "tiger>chicken": "eats", "chicken>stick": "pecks apart" },
@@ -373,7 +373,7 @@ export const EN_ENTRIES = {
     sub: "Pierre-papier-ciseaux-puits",
     origin: "France",
     about: [
-      "A well added to rock, paper, and scissors. Rock and scissors fall into the well, and paper covers it.",
+      "It adds a well to rock, paper, and scissors. Rock and scissors fall into the well, and paper covers it.",
       "Four hands make it lopsided. Against any hand rock does no better than the well, so good players never throw rock.",
     ],
     how: { well: "Make a circle with your thumb and index finger" },
@@ -383,7 +383,7 @@ export const EN_ENTRIES = {
     name: "Dynamite",
     origin: "Playgrounds",
     about: [
-      "A hand sneaked in on playgrounds. It blows up rock and burns paper, but scissors cut its fuse. It's a foul in serious tournaments.",
+      "Kids sneak this hand into playground games. It blows up rock and burns paper, but scissors cut its fuse. It's a foul in serious tournaments.",
       "Do the math and paper is never better than dynamite. Drop paper, and rock, scissors, and dynamite form a three-way cycle.",
     ],
     how: { dynamite: "Make a fist with the thumb up. The thumb is the fuse" },
@@ -395,7 +395,7 @@ export const EN_ENTRIES = {
     origin: "Playgrounds",
     about: [
       "Fire beats everything but water, and water beats only fire. Rock, paper, and scissors stay as they are.",
-      "The best mix throws rock, paper, and scissors 1/9 each and fire and water 1/3 each. People tend to throw water too rarely.",
+      "For the best mix, throw rock, paper, and scissors 1/9 of the time each, and fire and water 1/3 each. People tend to throw water too rarely.",
     ],
     how: { fire: "Wiggle all five fingers" },
     verbs: {
@@ -423,7 +423,7 @@ export const EN_ENTRIES = {
     name: "Rock Paper Scissors Lizard Spock",
     origin: "USA (Sam Kass and Karen Bryla)",
     about: [
-      "A five-hand version by Sam Kass and Karen Bryla. With five hands the chance of a draw drops from 1/3 to 1/5.",
+      "Sam Kass and Karen Bryla added lizard and Spock to rock paper scissors. With five hands, the chance of a draw drops from 1/3 to 1/5.",
       "Each hand beats two and loses to two: on the ring it beats the next one and the one after that.",
     ],
     how: { lizard: "Make a mouth with your hand, like a sock puppet", spock: "Index and middle fingers together, ring and little fingers together, split in the middle" },
@@ -433,26 +433,26 @@ export const EN_ENTRIES = {
       "lizard>paper": "chews up",
       "lizard>spock": "bites",
       "paper>spock": "refutes",
-      "paper>rock": "wraps",
+      "paper>rock": "covers",
       "spock>rock": "evaporates",
       "spock>scissors": "breaks",
       "rock>scissors": "crushes",
       "rock>lizard": "squashes",
     },
   },
-  rps7: { name: "RPS-7", origin: "David C. Lovelace", about: ["Fire, sponge, air, and water added to rock, paper, and scissors. Each hand beats three and loses to three."] },
-  rps9: { name: "RPS-9", origin: "David C. Lovelace", about: ["RPS-7 plus human and gun. Each hand beats four and loses to four."] },
-  rps11: { name: "RPS-11", origin: "David C. Lovelace", about: ["RPS-9 plus wolf and devil. Each hand beats five and loses to five."] },
+  rps7: { name: "RPS-7", origin: "David C. Lovelace", about: ["Lovelace added fire, sponge, air, and water to rock, paper, and scissors. Each hand beats three and loses to three."] },
+  rps9: { name: "RPS-9", origin: "David C. Lovelace", about: ["Lovelace added human and gun to RPS-7. Each hand beats four and loses to four."] },
+  rps11: { name: "RPS-11", origin: "David C. Lovelace", about: ["Lovelace added wolf and devil to RPS-9. Each hand beats five and loses to five."] },
   rps15: {
     name: "RPS-15",
     origin: "David C. Lovelace",
-    about: ["RPS-11 plus snake, tree, dragon, and lightning. Each hand beats seven and loses to seven. The ring becomes a fifteen-pointed star."],
+    about: ["Lovelace added snake, tree, dragon, and lightning to RPS-11. Each hand beats seven and loses to seven. The ring becomes a fifteen-pointed star."],
   },
   rps25: {
     name: "RPS-25",
     origin: "David C. Lovelace",
     about: [
-      "Human split into man and woman, plus sun, moon, monkey, cockroach, alien, nuke, and more, for twenty-five hands. Each beats twelve and loses to twelve. The chance of a draw is 1/25, or 4%.",
+      "Lovelace split human into man and woman and added hands like sun, moon, monkey, cockroach, alien, and nuke. Each beats twelve and loses to twelve. The chance of a draw is 1/25, or 4%.",
       "Lovelace went on to make RPS-101, with 101 hands.",
     ],
   },
@@ -471,8 +471,8 @@ export const EN_ENTRIES = {
     sub: "RPS-n",
     origin: "By the ring rule",
     about: [
-      "Pick the number of hands and a ring rule is made: each hand beats the next few on the ring.",
-      "With the most wins allowed, an odd number of hands always has a winner unless both throw the same, and an even number also draws with the hand straight across the ring.",
+      "Pick the number of hands and the app builds a ring rule. Each hand beats the next few on the ring.",
+      "With the most wins allowed, an odd number of hands only draws when both throw the same. With an even number, the hand straight across the ring draws too.",
     ],
   },
   mukjjippa: {
@@ -506,8 +506,8 @@ export const EN_ENTRIES = {
     sub: "グリコ, staircase RPS",
     origin: "Japan",
     about: [
-      "Play rock paper scissors at the bottom of a staircase; only the winner climbs, by the hand they won with. Rock is グ·リ·コ (gu-ri-ko), 3 steps; scissors is チ·ヨ·コ·レ·イ·ト (chi-yo-ko-re-i-to), 6 steps; paper is パ·イ·ナ·ツ·プ·ル (pa-i-na-tsu-pu-ru), 6 steps.",
-      "First to the top wins. Because the steps differ, mixing the three evenly is no longer best.",
+      "Play rock paper scissors at the bottom of a staircase. Only the winner climbs, and the winning hand sets how far. Rock is グ·リ·コ (gu-ri-ko), 3 steps. Scissors is チ·ヨ·コ·レ·イ·ト (chi-yo-ko-re-i-to), 6 steps. Paper is パ·イ·ナ·ツ·プ·ル (pa-i-na-tsu-pu-ru), 6 steps.",
+      "First to the top wins. Because the steps differ, throwing all three equally often is no longer best.",
     ],
   },
   limited: {
@@ -516,7 +516,7 @@ export const EN_ENTRIES = {
     origin: "Japanese manga",
     about: [
       "Each player starts with 12 cards, four each of rock, paper, and scissors, and 3 stars. Both play one card per round, and the winner takes one of the other's stars.",
-      "Both can see how many cards the other has left. When the cards run out, more stars wins; lose all your stars and you lose at once. A two-player cut of 'Restricted Rock Paper Scissors' from the manga Kaiji.",
+      "Both can see how many cards the other has left. When the cards run out, the player with more stars wins. Lose all your stars and you lose at once. It cuts 'Restricted Rock Paper Scissors' from the manga Kaiji down to two players.",
     ],
   },
   dynamitewb: {
@@ -549,7 +549,7 @@ export const EN_ENTRIES = {
     sub: "じゃんけん列車",
     origin: "Japan",
     about: [
-      "Play rock paper scissors with someone nearby; the loser joins behind the winner, hands on their shoulders. Train leaders play again, and the losing train joins behind the winning one.",
+      "Play rock paper scissors with someone nearby. The loser joins behind the winner, hands on their shoulders. Train leaders play again, and the losing train joins behind the winning one.",
       "It ends when everyone is in one line. Each time the crowd doubles, it takes about one more round.",
     ],
   },
@@ -557,7 +557,7 @@ export const EN_ENTRIES = {
     name: "Evolution RPS",
     origin: "Group game",
     about: [
-      "Everyone starts as an egg. Players at the same stage play each other; winning moves you up a stage and losing moves you down. Eggs can't go lower.",
+      "Everyone starts as an egg. Players at the same stage play each other. Winning moves you up a stage, and losing moves you down. Eggs can't go lower.",
       "Whoever reaches the top steps out and watches. It ends when no one has a partner left, with at most one person at each stage.",
     ],
   },

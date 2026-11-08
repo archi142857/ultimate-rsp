@@ -13,7 +13,7 @@ export const OBJECT_VERBS = {
 
   "fire>scissors": "녹인다",
   "fire>snake": "그을린다",
-  "fire>human": "데게 한다",
+  "fire>human": "화상을 입힌다",
   "fire>tree": "태운다",
   "fire>wolf": "겁줘 쫓는다",
   "fire>sponge": "오그라뜨린다",
@@ -45,7 +45,7 @@ export const OBJECT_VERBS = {
 
   "tree>wolf": "막아선다",
   "tree>sponge": "말려 버린다",
-  "tree>paper": "낳는다",
+  "tree>paper": "만들어 낸다",
   "tree>air": "맑게 한다",
   "tree>water": "끌어올린다",
   "tree>dragon": "가지에 가둔다",
