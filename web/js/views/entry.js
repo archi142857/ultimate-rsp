@@ -23,6 +23,8 @@ import { morraView } from "./morra.js";
 import { penneyView } from "./penney.js";
 import { diceView } from "./dice.js";
 import { blottoView } from "./blotto.js";
+import { hammerView } from "./hammer.js";
+import { donpappaView } from "./donpappa.js";
 
 const VIEWS = {
   mukjjippa: mukjjippaView,
@@ -47,6 +49,8 @@ const VIEWS = {
   penney: penneyView,
   dice: diceView,
   blotto: blottoView,
+  hammer: hammerView,
+  donpappa: donpappaView,
 };
 
 export function entryView(main, entry, params) {

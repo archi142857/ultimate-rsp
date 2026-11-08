@@ -35,6 +35,8 @@ const ART = {
   dice: "🎲",
   morra: "🖐️",
   blotto: "🪖",
+  hammer: "🔨",
+  donpappa: "🗣️",
 };
 const META = {
   mukjjippa: "공격과 수비",
@@ -59,6 +61,8 @@ const META = {
   dice: "고리를 도는 주사위",
   morra: "손가락 합 맞히기",
   blotto: "병사 나누기",
+  hammer: "치기와 막기",
+  donpappa: "먼저 외치기",
 };
 
 const compiled = new Map();

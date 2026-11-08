@@ -66,15 +66,18 @@ export function pressPad(label, { cls = "" } = {}) {
   btn.addEventListener("click", (e) => e.detail === 0 && hit()); // 키보드로 누른 단추
   return {
     el: btn,
-    async wait(limit = Infinity) {
+    /** onStart: 단추가 보여 재기 시작할 때(컴퓨터 시계도 이때 맞춰 켠다) */
+    async wait(limit = Infinity, { onStart = null } = {}) {
       finish(Infinity);
       t0 = 0;
       btn.disabled = false;
       btn.classList.add("armed");
       const p = new Promise((ok) => (done = ok));
       await painted(); // 단추가 보인 때부터 잰다
+      if (!done) return p; // 그새 취소됐다
       t0 = performance.now();
       if (Number.isFinite(limit)) timer = setTimeout(() => finish(Infinity), limit);
+      if (onStart) onStart();
       return p;
     },
     cancel() {
