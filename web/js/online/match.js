@@ -123,7 +123,7 @@ export function matchView(main, params = {}) {
       topBar({ href: "#/play", label: t("랜덤 매칭") }).el,
       bigTitle(t("무엇으로 붙을까?")),
       h("div", { class: "o-card o-kv-card" }, kindSeg.el, second.el),
-      group ? h("p", { class: "o-p o-small" }, t("{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이는 순위에 들지 않는다.", { a: GROUP_SEATS.min, b: GROUP_SEATS.max, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) })) : null,
+      group ? h("p", { class: "o-p o-small" }, t("{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이 하는 경기는 순위에 들지 않는다.", { a: GROUP_SEATS.min, b: GROUP_SEATS.max, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) })) : null,
       list,
       h("div", { class: "o-actions o-sticky" }, find),
       h("p", { class: "o-p o-small o-center" }, t("내 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play?name=1" }, t("이름 바꾸기"))),
@@ -221,7 +221,7 @@ export function matchView(main, params = {}) {
           "p",
           { class: "o-p" },
           group
-            ? t("{n}초 동안 {min}명이 모이지 않았다. 모인 사람과 컴퓨터로 먼저 해도 된다.", { n, min: queue ? queue.min : GROUP_SEATS.min })
+            ? t("{n}초 동안 {min}명이 모이지 않았다. 지금 모인 사람에 컴퓨터를 더해 시작해도 된다.", { n, min: queue ? queue.min : GROUP_SEATS.min })
             : t("{n}초 동안 짝을 못 찾았다. 컴퓨터와 먼저 하고 있어도 된다.", { n }),
         ),
         bot,

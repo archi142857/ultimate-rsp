@@ -156,11 +156,11 @@ export const EN = {
   "{a}–{b}명": "{a}–{b} players",
   "둘이서": "Two",
   "여럿이": "Group",
-  "{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이는 순위에 들지 않는다.": "Starts {s} seconds after {a} people join, or right away at {b}. Group matches aren't ranked.",
+  "{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이 하는 경기는 순위에 들지 않는다.": "Starts {s} seconds after {a} people join, or right away at {b}. Group matches aren't ranked.",
   "사람을 모으는 중이다": "Gathering players",
   "{n}/{max}명이 모였다. 곧 시작한다.": "{n} of {max} here. Starting soon.",
   "{n}/{max}명이 모였다. {min}명이 되면 {s}초 뒤에 시작한다.": "{n} of {max} here. Starts {s} seconds after {min} have joined.",
-  "{n}초 동안 {min}명이 모이지 않았다. 모인 사람과 컴퓨터로 먼저 해도 된다.": "Fewer than {min} people joined in {n} seconds. You can start now with whoever's here plus the computer.",
+  "{n}초 동안 {min}명이 모이지 않았다. 지금 모인 사람에 컴퓨터를 더해 시작해도 된다.": "Fewer than {min} people joined in {n} seconds. You can start now with whoever's here plus the computer.",
 
   // 시안 ③ 고리(update16)
   "무엇으로 겨룰까?": "Which game?",
