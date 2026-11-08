@@ -29,7 +29,7 @@ const ART = {
   majority: "📊",
   choki: "✂️",
   host: "🎙️",
-  teamtag: "🏃",
+  teamtag: "👫",
   teamsplit: "🤚",
   penney: "🪙",
   dice: "🎲",
@@ -37,6 +37,9 @@ const ART = {
   blotto: "🪖",
   hammer: "🔨",
   donpappa: "🗣️",
+  relay: "🏃",
+  ecard: "👑",
+  shogi: "♟️",
 };
 const META = {
   mukjjippa: "공격과 수비",
@@ -63,6 +66,9 @@ const META = {
   blotto: "병사 나누기",
   hammer: "치기와 막기",
   donpappa: "먼저 외치기",
+  relay: "달려가 만나면 겨루기",
+  ecard: "카드 다섯 장",
+  shogi: "3×4 판",
 };
 
 const compiled = new Map();

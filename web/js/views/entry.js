@@ -25,6 +25,9 @@ import { diceView } from "./dice.js";
 import { blottoView } from "./blotto.js";
 import { hammerView } from "./hammer.js";
 import { donpappaView } from "./donpappa.js";
+import { relayView } from "./relay.js";
+import { ecardView } from "./ecard.js";
+import { shogiView } from "./shogi.js";
 
 const VIEWS = {
   mukjjippa: mukjjippaView,
@@ -51,6 +54,9 @@ const VIEWS = {
   blotto: blottoView,
   hammer: hammerView,
   donpappa: donpappaView,
+  relay: relayView,
+  ecard: ecardView,
+  shogi: shogiView,
 };
 
 export function entryView(main, entry, params) {
