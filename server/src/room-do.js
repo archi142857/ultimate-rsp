@@ -8,6 +8,8 @@ import { Fail } from "./http.js";
 import { CLOSE, EMOTE_GAP_MS, MSG_BURST, MSG_MAX, PING, PONG, PROTOCOL, ROOM_DELETE_MS, ROOM_SOCKETS } from "./protocol.js";
 
 const KEY = "room";
+/** 방 상태 쓰기는 확인을 기다리지 않고 바로 알린다(손 하나마다 몇 ms 아낌). 쓰기가 실패하면 DO 가 다시 시작하고 화면은 다시 붙는다 */
+const FAST = { allowUnconfirmed: true };
 
 function send(ws, obj) {
   try {
@@ -169,11 +171,11 @@ export class RoomHost extends DurableObject {
     const game = r.s.game;
     const next = r.nextWake();
     if (next !== r.s.alarm) {
-      if (next === null) await this.ctx.storage.deleteAlarm();
-      else await this.ctx.storage.setAlarm(next);
+      if (next === null) await this.ctx.storage.deleteAlarm(FAST);
+      else await this.ctx.storage.setAlarm(next, FAST);
       r.s.alarm = next;
     }
-    await this.ctx.storage.put(KEY, r.s);
+    await this.ctx.storage.put(KEY, r.s, FAST);
     if (evs.length) {
       const now = Date.now();
       const watchers = this.#watchers();

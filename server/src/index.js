@@ -5,6 +5,7 @@ import { Challenge } from "./challenge-do.js";
 import { RoomHost, refuse } from "./room-do.js";
 import { MatchQueue } from "./match-do.js";
 import { Ranking } from "./rank-do.js";
+import { QUEUE_HINT, placeOf } from "./where.js";
 import { makeChallenge } from "./challenge.js";
 import { checkFace, checkName, checkPid, makeCode, normCode } from "./check.js";
 import { normRules, warmUp } from "./games.js";
@@ -62,8 +63,8 @@ export default {
   },
 };
 
-function stub(ns, name) {
-  return ns.get(ns.idFromName(name));
+function stub(ns, name, locationHint = null) {
+  return locationHint ? ns.get(ns.idFromName(name), { locationHint }) : ns.get(ns.idFromName(name));
 }
 
 /** Durable Object 부르기. 한도에 닿거나 Cloudflare 쪽 탈이면 busy 로 답한다 */
@@ -162,6 +163,7 @@ async function socketRoute(request, env, url, parts, okOrigin) {
   }
   let ns;
   let id;
+  let hint = null;
   const fwd = new URL(url);
   fwd.searchParams.set("name", name);
   const face = checkFace(q.get("face"));
@@ -178,12 +180,17 @@ async function socketRoute(request, env, url, parts, okOrigin) {
     if (!isOnlineGame("random", game)) return refuse("bad_game", CLOSE.bad_request);
     if (!MATCH_FORMATS.includes(format)) return refuse("bad_rules", CLOSE.bad_request);
     ns = env.MATCH;
-    id = `${game}:${format}`;
+    // 11-08: 대기열을 동북아에 새로 둔다(처음 것은 시험 때 미국에 생겼다). 대기열은 저장하는 게 없어 이름만 바꾸면 된다
+    id = `2:${game}:${format}`;
+    hint = QUEUE_HINT;
+    const place = placeOf(request.cf);
+    if (place) fwd.searchParams.set("place", place);
+    else fwd.searchParams.delete("place");
   } else {
     return refuse("not_found", CLOSE.not_found);
   }
   try {
-    return await stub(ns, id).fetch(new Request(fwd, request));
+    return await stub(ns, id, hint).fetch(new Request(fwd, request));
   } catch (e) {
     console.error("durable object error", (e && e.stack) || e);
     return refuse("busy", CLOSE.busy);

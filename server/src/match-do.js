@@ -5,6 +5,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { refuse } from "./room-do.js";
 import { makeCode } from "./check.js";
+import { pairHint } from "./where.js";
 import { CLOSE, CODE_LEN, MATCH_TIMER, MSG_BURST, MSG_MAX, PING, PONG } from "./protocol.js";
 
 const TRIES = 4;
@@ -41,7 +42,7 @@ export class MatchQueue extends DurableObject {
   /** 대기열에 들어오기. 입구가 출처·규약 번호·pid·이름·게임·판 수를 이미 봤다 */
   async fetch(request) {
     const q = new URL(request.url).searchParams;
-    const me = { pid: q.get("pid"), name: q.get("name"), face: q.get("face") || null, game: q.get("game"), format: q.get("format"), at: Date.now() };
+    const me = { pid: q.get("pid"), name: q.get("name"), face: q.get("face") || null, place: q.get("place") || null, game: q.get("game"), format: q.get("format"), at: Date.now() };
     if (!me.pid) return refuse("bad_request", CLOSE.bad_request);
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
@@ -90,7 +91,8 @@ export class MatchQueue extends DurableObject {
     const { game, format } = att(sockets[0]);
     for (const p of people) this.busy.add(p.pid);
     try {
-      const code = await this.#makeRoom({ game, format, timer: MATCH_TIMER, bot: "human" }, people);
+      const hint = pairHint(sockets.map((ws) => att(ws).place));
+      const code = await this.#makeRoom({ game, format, timer: MATCH_TIMER, bot: "human" }, people, hint);
       for (const ws of sockets) {
         send(ws, { t: "matched", room: code, now: Date.now() });
         close(ws, CLOSE.matched, "matched");
@@ -104,10 +106,12 @@ export class MatchQueue extends DurableObject {
     }
   }
 
-  async #makeRoom(rules, reserve) {
+  /** 방은 두 사람 가까이 생기게 힌트를 준다(없으면 대기열 가까이) */
+  async #makeRoom(rules, reserve, hint = null) {
     for (let i = 0; i < TRIES; i++) {
       const code = makeCode(CODE_LEN.room);
-      const stub = this.env.ROOMS.get(this.env.ROOMS.idFromName(code));
+      const id = this.env.ROOMS.idFromName(code);
+      const stub = hint ? this.env.ROOMS.get(id, { locationHint: hint }) : this.env.ROOMS.get(id);
       const r = await stub.init({ code, rules, reserve, random: true });
       if (!r.taken) return code;
     }
