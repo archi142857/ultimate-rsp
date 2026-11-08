@@ -66,7 +66,7 @@ test("규칙: 기본값과 한 줄", () => {
   assert.equal(rulesLine(cleanRules({})), "가위바위보 · 삼세판 · 20초");
   assert.equal(rulesLine(cleanRules({ game: "group", mode: "loser", seats: 4, timer: 0 })), "여럿이 가위바위보 · 술래 한 명 · 4명 · 시간 제한 없음");
   assert.match(gameName({ game: "group", base: "mushiken" }), /\(/);
-  assert.equal(groupBases().length, 8);
+  assert.equal(groupBases().length, sharedBases().length, "방의 여럿이 바탕은 data/online.js 와 같다(손 셋 변종이 늘어도)");
   inEnglish(() => {
     for (const r of [{}, { game: "group", mode: "loser" }, { game: "rps101", format: "endless", timer: 60 }, { game: "custom", custom: { n: 7, k: 3, seed: 1 } }])
       assert.ok(!HANGUL.test(rulesLine(cleanRules(r))), JSON.stringify(r));
