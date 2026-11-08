@@ -113,3 +113,15 @@ test("방을 만들 때 화면이 고른 코드: 없으면 null, 소문자는 �
   assert.equal(checkRoomCode(makeCode(4)).length, 4);
   for (const bad of ["", "ABC", "ABCDE", "AB0D", "ABIO", 1234, {}, "가나다라"]) assert.equal(failCode(() => checkRoomCode(bad)), "bad_request", String(bad));
 });
+
+test("이름: 빈칸처럼 보이는 글자와 서식 문자는 안 받는다(이모지를 잇는 U+200D 는 받는다)", () => {
+  const hidden = ["\u3164", "\uFFA0", "\u115F", "\u1160", "\u2800", "\u034F", "\u200E", "\u200F", "\u00AD", "\u180E", "\u2061", "\u2064", "\u{E0001}", "\u{E007F}", "\u200B", "\u202E", "\uFEFF"];
+  for (const ch of hidden) {
+    assert.equal(failCode(() => checkName(ch.repeat(3))), "bad_name", `혼자: U+${ch.codePointAt(0).toString(16)}`);
+    assert.equal(failCode(() => checkName(`admin${ch}`)), "bad_name", `섞여도: U+${ch.codePointAt(0).toString(16)}`);
+  }
+  assert.equal(checkName("\u{1F468}\u200D\u{1F469}\u200D\u{1F467} 가족"), "\u{1F468}\u200D\u{1F469}\u200D\u{1F467} 가족");
+  assert.equal(checkName("날쌘 여우 42"), "날쌘 여우 42");
+  assert.equal(checkName("👍🏽 엄지"), "👍🏽 엄지", "피부색 이모지는 받는다");
+  assert.equal(checkName("1️⃣ 첫째"), "1️⃣ 첫째", "키캡 이모지는 받는다");
+});

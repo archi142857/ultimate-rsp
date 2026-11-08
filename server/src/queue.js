@@ -1,12 +1,10 @@
 // 여럿이 가위바위보 대기열이 할 일(순수 모듈, 시험이 바로 쓴다). 저장·연결은 match-do.js 가 한다.
 // 최대 인원이 차면 바로 시작, 최소 인원이 모이면 GROUP_MATCH_WAIT_MS 동안 사람을 더 받은 뒤 그때 모인 사람으로 시작.
 
-import { GROUP_MATCH_WAIT_MS, GROUP_SEATS } from "./protocol.js";
+import { GROUP_MATCH_WAIT_MS } from "./protocol.js";
+import { groupSeatRange } from "./games.js";
 
-/** 여럿이 할 때 자리 수 범위. 지금은 모든 바탕이 GROUP_SEATS(게임마다 인원을 정하면 그 값을 쓴다) */
-export function groupSeatRange() {
-  return { min: GROUP_SEATS.min, max: GROUP_SEATS.max };
-}
+export { groupSeatRange };
 
 /**
  * 기다리는 사람 n 명일 때. alarm 은 걸어 둔 시작 시각(없으면 null).

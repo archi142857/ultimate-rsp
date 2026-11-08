@@ -10,6 +10,23 @@ export async function rankKey(pid) {
   return Array.from(h.subarray(0, 16), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * 랜덤 매칭에서 두 사람이 같은 곳(IP)에서 왔는지 보려는 꼬리표. IP 를 그대로 두지 않고 날마다 바뀌는 해시(앞 8바이트)만
+ * 대기열 첨부에 둔다. 같은 날 같은 IP 면 같은 값. IP 가 없거나 이 컴퓨터(로컬 wrangler dev 시험)면 null(그때는 순위를 막지 않는다)
+ */
+export async function ipTag(ip, now) {
+  if (typeof ip !== "string" || !ip || ip === "127.0.0.1" || ip === "::1") return null;
+  const day = new Date(now).toISOString().slice(0, 10);
+  const data = new TextEncoder().encode(`ursp-ip:${day}:${ip}`);
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", data));
+  return Array.from(h.subarray(0, 8), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** 두 사람이 같은 곳에서 왔으면 순위에 안 넣는다(11-08 검수: pid 둘로 혼자 짜고 지면 순위가 올랐다) */
+export function sameHome(tags) {
+  return tags.length === 2 && !!tags[0] && tags[0] === tags[1];
+}
+
 /** 저장된 줄 → rating.js 기록(없으면 처음 기록) */
 export function fromRow(row) {
   if (!row) return newRecord();

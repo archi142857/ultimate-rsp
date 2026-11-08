@@ -6,6 +6,7 @@ import { RoomHost, refuse } from "./room-do.js";
 import { MatchQueue } from "./match-do.js";
 import { Ranking } from "./rank-do.js";
 import { QUEUE_HINT, RANK_HINT, placeOf } from "./where.js";
+import { ipTag } from "./rank.js";
 import { makeChallenge } from "./challenge.js";
 import { checkFace, checkName, checkPid, checkRoomCode, makeCode, normCode } from "./check.js";
 import { groupBaseIds, normRules, warmUp } from "./games.js";
@@ -85,7 +86,7 @@ function reply(r, now, origin) {
   return json({ ...r.view, now }, 200, origin);
 }
 
-// POST /api/c · GET /api/c/<코드> · POST /api/c/<코드>/answer · POST /api/c/<코드>/me(pid 로 묻는 꼴)
+// POST /api/c · GET /api/c/<코드> · POST /api/c/<코드>/answer · POST /api/c/<코드>/me(pid 로 묻는 꼴) · POST /api/c/<코드>/close(만든 사람이 닫기)
 async function challengeRoute(request, env, rest, url, now, origin) {
   const m = request.method;
   if (rest.length === 0 && m === "POST") {
@@ -110,6 +111,10 @@ async function challengeRoute(request, env, rest, url, now, origin) {
   if (rest.length === 2 && rest[1] === "me" && m === "POST") {
     const body = await readBody(request);
     return reply(await callDO(() => stub(env.CHALLENGES, code).mine(body)), now, origin);
+  }
+  if (rest.length === 2 && rest[1] === "close" && m === "POST") {
+    const body = await readBody(request);
+    return reply(await callDO(() => stub(env.CHALLENGES, code).close(body)), now, origin);
   }
   throw new Fail("not_found");
 }
@@ -208,6 +213,10 @@ async function socketRoute(request, env, url, parts, okOrigin) {
     const place = placeOf(request.cf);
     if (place) fwd.searchParams.set("place", place);
     else fwd.searchParams.delete("place");
+    // 같은 곳에서 온 두 사람은 순위에 안 넣는다(대기열은 IP 대신 날마다 바뀌는 해시만 본다)
+    const ip = await ipTag(request.headers.get("CF-Connecting-IP"), Date.now());
+    if (ip) fwd.searchParams.set("ip", ip);
+    else fwd.searchParams.delete("ip");
   } else {
     return refuse("not_found", CLOSE.not_found);
   }

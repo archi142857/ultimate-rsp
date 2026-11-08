@@ -2,7 +2,7 @@
 // 저장은 키 하나("c")에 기록 전체. 30일 뒤 알람으로 지운다.
 
 import { DurableObject } from "cloudflare:workers";
-import { answerChallenge, viewChallenge } from "./challenge.js";
+import { answerChallenge, closeChallenge, viewChallenge } from "./challenge.js";
 import { checkPid } from "./check.js";
 import { Fail } from "./http.js";
 
@@ -27,6 +27,20 @@ export class Challenge extends DurableObject {
     if (!rec) return { error: "not_found", status: 404 };
     try {
       const { rec: next, changed } = answerChallenge(rec, body, Date.now());
+      if (changed) await this.ctx.storage.put(KEY, next);
+      return { view: viewChallenge(next, body.pid) };
+    } catch (e) {
+      if (e instanceof Fail) return { error: e.code, status: e.status, ...(e.extra || {}) };
+      throw e;
+    }
+  }
+
+  /** 만든 사람이 여럿이 도전장을 닫는다(더 받지 않고 결과를 연다) */
+  async close(body) {
+    const rec = await this.#load();
+    if (!rec) return { error: "not_found", status: 404 };
+    try {
+      const { rec: next, changed } = closeChallenge(rec, body, Date.now());
       if (changed) await this.ctx.storage.put(KEY, next);
       return { view: viewChallenge(next, body.pid) };
     } catch (e) {

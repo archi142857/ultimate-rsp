@@ -45,7 +45,7 @@ export class Room {
    * 새 방. host: 방장 {pid, name}(0번 자리), reserve: 랜덤 매칭으로 잡아 둔 사람들 [{pid, name}]
    * 둘 다 처음엔 연결 전(on false)이라 들어오면 그 자리로 간다
    */
-  static create({ code, rules, now, seed, host = null, reserve = null, random = false }) {
+  static create({ code, rules, now, seed, host = null, reserve = null, random = false, ranked = true }) {
     const r = normRules(rules);
     const seats = Array.from({ length: r.seats }, () => ({ kind: "empty" }));
     const s = {
@@ -53,8 +53,8 @@ export class Room {
       code,
       random,
       seed: seed >>> 0,
-      // 랜덤 방은 첫 경기만 랭킹에 넣는다(다시 하기는 안 센다)
-      ranked: random,
+      // 랜덤 방은 첫 경기만 랭킹에 넣는다(다시 하기는 안 센다). 대기열이 같은 곳에서 온 두 사람이라고 하면 안 넣는다
+      ranked: random && ranked !== false,
       rules: r,
       phase: "lobby",
       host: null,
@@ -100,6 +100,13 @@ export class Room {
       for (const [a, b] of g.rounds) e.play(a, b);
     }
     return (this._e = e);
+  }
+
+  /** pid 가 들어오면 자리에 앉는가(제 자리가 있거나, 대기실·끝 화면에 빈자리가 있는 보통 방). 아니면 구경꾼 */
+  canSit(pid) {
+    const s = this.s;
+    if (s.seats.some((x) => x.pid === pid)) return true;
+    return !s.reserve && (s.phase === "lobby" || s.phase === "end") && freeSeat(s.seats) >= 0;
   }
 
   seatOf(pid) {
@@ -519,7 +526,8 @@ export class Room {
       hist = e.rounds.slice(from).map((r, k) => {
         const n = from + k + 1;
         if (!this.group) return { r: n, hands: [id(r.a), id(r.b)], cmp: r.cmp };
-        return { r: n, hands: s.seats.map((_, i) => (i in r.throws ? id(r.throws[i]) : null)), win: id(r.winnerHand), out: r.out.slice() };
+        // lose: 술래 정하기(점수 규칙)에서 가장 낮은 손. win 이 null 이어도 승부가 날 수 있다(컨셉 11-08 9901c37)
+        return { r: n, hands: s.seats.map((_, i) => (i in r.throws ? id(r.throws[i]) : null)), win: id(r.winnerHand), lose: id(r.loserHand), out: r.out.slice() };
       });
     }
     return {

@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { makeChallenge, answerChallenge, viewChallenge, judge } from "../src/challenge.js";
+import { makeChallenge, answerChallenge, closeChallenge, viewChallenge, judge } from "../src/challenge.js";
 import { CHALLENGE_KEEP_MS as KEEP_MS } from "../src/protocol.js";
 import { resolveVariant } from "../src/games.js";
 import { Fail } from "../src/http.js";
@@ -181,7 +181,8 @@ test("여럿이 도전장: max 명까지 답하고, 다 차면 closed. 같은 �
   const late = failOf(() => answerChallenge(cur, { v: 1, pid: C, name: "새", hands: ["rock", "rock", "rock"] }, NOW));
   assert.equal(late.code, "closed");
   assert.equal(late.extra.result.open, false);
-  assert.ok(!JSON.stringify(late.extra.result).includes("scissors"), "늦게 온 사람에게도 손은 안 보인다");
+  assert.deepEqual(late.extra.result.hands, { from: ["rock", "paper", "scissors"] }, "다 찼으면 끝난 도전장이라 손을 연다");
+  assert.deepEqual(late.extra.result.answers.map((a) => a.hands), throwsOf);
   v = viewChallenge(cur);
   assert.equal(v.count, 3);
   assert.equal(v.open, false);
@@ -228,4 +229,54 @@ test("여럿이 도전장 만들기 검사: max 는 1–50 정수, 안 주면 1(
   const { rec } = answerChallenge(old, { v: 1, pid: B, name: "곰", hands: ["paper"] }, NOW);
   assert.equal(viewChallenge(rec).open, false);
   assert.equal(viewChallenge(rec).max, 1);
+});
+
+test("여럿이 도전장 reveal end: 마감 전에는 답한 사람도 '냈다'만, 만든 사람이 닫으면 모두 공개", () => {
+  const P1 = "endPid_000000000000001";
+  const P2 = "endPid_000000000000002";
+  const rec = make({ hands: ["rock"], max: 5, reveal: "end" });
+  assert.equal(rec.reveal, "end");
+  // 버리는 pid 로 먼저 답해도 만든 사람 손이나 결과를 알 수 없다
+  let { rec: cur } = answerChallenge(rec, { v: 1, pid: P1, name: "버림", hands: ["paper"] }, NOW + 1);
+  ({ rec: cur } = answerChallenge(cur, { v: 1, pid: P2, name: "진짜", hands: ["scissors"] }, NOW + 2));
+  const p1 = viewChallenge(cur, P1);
+  assert.deepEqual([p1.you, p1.answered, p1.hands], [0, NOW + 1, { to: ["paper"] }]);
+  for (const k of ["cmp", "score", "winner"]) assert.equal(p1[k], undefined, k);
+  assert.deepEqual(p1.answers, [
+    { name: "버림", face: null, at: NOW + 1 },
+    { name: "진짜", face: null, at: NOW + 2 },
+  ]);
+  const anyone = viewChallenge(cur);
+  assert.equal(anyone.reveal, "end");
+  assert.ok(!JSON.stringify(anyone).includes("rock") && !JSON.stringify(anyone).includes("winner"), "누구나 보는 꼴에도 결과가 없다");
+  assert.deepEqual(viewChallenge(cur, A).answers.map((a) => a.winner), [1, 0], "만든 사람은 늘 본다");
+  // 닫기: 만든 사람만, 보통 도전장은 안 됨, 두 번 닫아도 그대로
+  assert.equal(failOf(() => closeChallenge(cur, { v: 1, pid: P1 }, NOW + 3)).code, "bad_pid");
+  assert.equal(failOf(() => closeChallenge(make(), { v: 1, pid: A }, NOW + 3)).code, "bad_request");
+  const shut = closeChallenge(cur, { v: 1, pid: A }, NOW + 3);
+  assert.equal(shut.changed, true);
+  assert.equal(closeChallenge(shut.rec, { v: 1, pid: A }, NOW + 4).changed, false);
+  cur = shut.rec;
+  const after = viewChallenge(cur);
+  assert.deepEqual([after.open, after.closed, after.count], [false, NOW + 3, 2]);
+  assert.deepEqual(after.hands, { from: ["rock"] });
+  assert.deepEqual(after.answers.map((a) => [a.hands, a.score, a.winner]), [[["paper"], [0, 1], 1], [["scissors"], [1, 0], 0]]);
+  const p2 = viewChallenge(cur, P2);
+  assert.deepEqual([p2.you, p2.hands, p2.winner], [1, { from: ["rock"], to: ["scissors"] }, 0]);
+  // 닫힌 뒤에는 답을 안 받는다(자리가 남아도)
+  assert.equal(failOf(() => answerChallenge(cur, { v: 1, pid: C, name: "새", hands: ["rock"] }, NOW + 5)).code, "closed");
+  // 같은 사람이 다시 보내면 그대로(닫힌 뒤에도)
+  assert.equal(answerChallenge(cur, { v: 1, pid: P1, name: "버림", hands: ["rock"] }, NOW + 6).changed, false);
+});
+
+test("여럿이 도전장 reveal: now·end 만, 안 주면 now. max 를 채우면 end 도 그때 연다", () => {
+  assert.equal(make({ max: 3 }).reveal, "now");
+  for (const bad of ["later", 1, true]) assert.equal(failOf(() => make({ max: 3, reveal: bad })).code, "bad_request", String(bad));
+  assert.equal(failOf(() => make({ reveal: "soon" })).code, "bad_request", "보통 도전장도 틀린 값은 안 받는다");
+  let cur = make({ hands: ["rock"], max: 2, reveal: "end" });
+  ({ rec: cur } = answerChallenge(cur, { v: 1, pid: B, name: "곰", hands: ["paper"] }, NOW));
+  assert.equal(viewChallenge(cur, B).winner, undefined);
+  ({ rec: cur } = answerChallenge(cur, { v: 1, pid: C, name: "새", hands: ["rock"] }, NOW + 1));
+  const v = viewChallenge(cur, B);
+  assert.deepEqual([v.open, v.closed, v.winner, v.hands.from], [false, undefined, 1, ["rock"]], "다 차면 닫는 사람 없이 연다");
 });

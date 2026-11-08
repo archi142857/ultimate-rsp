@@ -248,7 +248,7 @@ test("규칙을 바꾸면 자리 수가 바뀌고 사람은 남는다", () => {
   room.join(C, "새", T0);
   room.leave(A, T0, true);
   assert.equal(room.s.host, 1);
-  assert.equal(failCode(() => room.handle(B, "", { t: "rules", rules: { game: "group", seats: 3, base: "rps101" } }, T0)), "bad_game");
+  assert.equal(failCode(() => room.handle(B, "", { t: "rules", rules: { game: "group", seats: 3, base: "mukjjippa" } }, T0)), "bad_game");
   room.handle(B, "", { t: "rules", rules: { game: "classic" } }, T0);
   assert.deepEqual(kinds(room), ["human", "human"], "2번 자리 사람은 앞 빈자리로");
   assert.equal(room.s.host, 1);
@@ -277,6 +277,35 @@ test("여럿이 가위바위보: 사람이 빠지면 봇끼리 끝까지 돈다"
   assert.ok(v.hist.length >= 1 && v.hist.length <= 20);
   assert.equal(v.hist[v.hist.length - 1].r, lastRound);
   for (const h of v.hist) assert.equal(h.hands.length, 5);
+  for (const h of v.hist) assert.ok("lose" in h, "판마다 lose(술래 정하기에서 진 손, 없으면 null)");
+});
+
+test("여럿이 술래 정하기: hist 에 lose(가장 낮은 손)가 실린다", () => {
+  const room = make({ game: "group", seats: 3, mode: "loser" });
+  room.join(A, "여우", T0);
+  room.join(B, "곰", T0);
+  room.join(C, "새", T0);
+  room.handle(A, "", { t: "start" }, T0);
+  thr(room, A, "rock");
+  thr(room, B, "rock");
+  thr(room, C, "paper");
+  const h = room.view(0).hist[0];
+  assert.deepEqual([h.win, h.lose, h.out], ["paper", "rock", [2]]);
+});
+
+test("들어올 때 앉는가(canSit): 제 자리, 대기실 빈자리는 앉고, 꽉 찼거나 경기 중이거나 랜덤 방이면 구경꾼", () => {
+  const room = make();
+  assert.equal(room.canSit(A), true, "방장 자리");
+  assert.equal(room.canSit(B), true, "빈자리");
+  room.join(A, "여우", T0);
+  room.join(B, "곰", T0);
+  assert.equal(room.canSit(C), false, "꽉 참");
+  room.handle(A, "여우", { t: "start" }, T0);
+  assert.equal(room.canSit(B), true, "경기 중에도 제 자리는");
+  assert.equal(room.canSit(C), false);
+  const rnd = Room.create({ code: "R2E2", rules: { game: "group", seats: 3 }, now: T0, seed: 1, reserve: [{ pid: A, name: "여우" }], random: true });
+  assert.equal(rnd.canSit(A), true);
+  assert.equal(rnd.canSit(B), false, "랜덤 방은 잡아 둔 사람만");
 });
 
 test("랜덤 방: 잡아 둔 두 사람이 다 오면 시작, 안 오면 15초 뒤 봇", () => {
@@ -394,6 +423,18 @@ test("랭킹: 랜덤 방 첫 경기만 센다. 이긴 쪽 1, 이름은 끝날 �
   assert.equal(room.s.phase, "play");
   assert.equal(room.view(0).rank, null, "다시 하기는 랭킹 경기가 아니다");
   assert.equal(twoPlayers().view(0).rank, null, "보통 방도 아니다");
+});
+
+test("랭킹: 대기열이 같은 곳(IP)에서 온 두 사람이라고 하면 랜덤 방이라도 안 센다", () => {
+  const room = Room.create({ code: "R2E1", rules: { game: "classic", format: "single" }, now: T0, seed: 9, reserve: pair, random: true, ranked: false });
+  room.join(A, "여우", T0);
+  room.join(B, "곰", T0);
+  assert.equal(room.s.phase, "play");
+  assert.equal(room.view(0).random, true);
+  assert.equal(room.view(0).rank, null);
+  thr(room, A, "rock");
+  thr(room, B, "scissors");
+  assert.equal(room.takeRank(), null);
 });
 
 test("랭킹: 끝날 때 봇이 잇던 자리(나감·안 옴)는 진다. 둘 다면 안 센다. 봇 대전은 안 센다", () => {

@@ -9,6 +9,7 @@ import { refuse } from "./room-do.js";
 import { makeCode } from "./check.js";
 import { pairHint } from "./where.js";
 import { groupDue, groupPlan, groupSeatRange, groupSeatsWithBots } from "./queue.js";
+import { sameHome } from "./rank.js";
 import { CLOSE, CODE_LEN, GROUP_MATCH_WAIT_MS, MATCH_TIMER, MSG_BURST, MSG_MAX, PING, PONG } from "./protocol.js";
 
 const TRIES = 4;
@@ -56,7 +57,7 @@ export class MatchQueue extends DurableObject {
   /** 대기열에 들어오기. 입구가 출처·규약 번호·pid·이름·게임·판 수를 이미 봤다 */
   async fetch(request) {
     const q = new URL(request.url).searchParams;
-    const me = { pid: q.get("pid"), name: q.get("name"), face: q.get("face") || null, place: q.get("place") || null, game: q.get("game"), format: q.get("format"), at: Date.now() };
+    const me = { pid: q.get("pid"), name: q.get("name"), face: q.get("face") || null, place: q.get("place") || null, ip: q.get("ip") || null, game: q.get("game"), format: q.get("format"), at: Date.now() };
     if (me.game === "group") Object.assign(me, { base: q.get("base"), mode: q.get("mode") });
     if (!me.pid) return refuse("bad_request", CLOSE.bad_request);
     const [client, server] = Object.values(new WebSocketPair());
@@ -180,7 +181,8 @@ export class MatchQueue extends DurableObject {
     for (const p of people) this.busy.add(p.pid);
     try {
       const hint = pairHint(sockets.map((ws) => att(ws).place));
-      const code = await this.#makeRoom({ game, format, timer: MATCH_TIMER, bot: "human" }, people, hint);
+      const ranked = !sameHome(sockets.map((ws) => att(ws).ip));
+      const code = await this.#makeRoom({ game, format, timer: MATCH_TIMER, bot: "human" }, people, hint, ranked);
       for (const ws of sockets) done(ws, code);
     } catch (e) {
       // 방을 못 만들면(한도 등) 계속 기다리게 두고 알린다
@@ -192,12 +194,12 @@ export class MatchQueue extends DurableObject {
   }
 
   /** 방은 두 사람 가까이 생기게 힌트를 준다(없으면 대기열 가까이) */
-  async #makeRoom(rules, reserve, hint = null) {
+  async #makeRoom(rules, reserve, hint = null, ranked = true) {
     for (let i = 0; i < TRIES; i++) {
       const code = makeCode(CODE_LEN.room);
       const id = this.env.ROOMS.idFromName(code);
       const stub = hint ? this.env.ROOMS.get(id, { locationHint: hint }) : this.env.ROOMS.get(id);
-      const r = await stub.init({ code, rules, reserve, random: true });
+      const r = await stub.init({ code, rules, reserve, random: true, ranked });
       if (!r.taken) return code;
     }
     throw new Error("방 코드를 못 뽑았다");

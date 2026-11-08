@@ -2,12 +2,14 @@
 // 만든 사람의 손과 pid 는 기록에만 있고, 보여 주는 꼴(viewChallenge)에는 답이 오기 전까지 손이 없다.
 // max 가 2 이상이면 링크 하나에 여럿이 답한다(답마다 만든 사람과 따로 겨룬다). 그때는 아직 열린 도전장이라
 // 누구나 보는 꼴에 손이 없고, 손은 만든 사람(전부)과 답한 사람(자기 것)에게만 pid 로 물었을 때 보인다.
+// reveal "end"(11-08 검수: 버리는 pid 로 먼저 답해 손을 엿보고 진짜 pid 로 이길 수 있었다)면 마감 전에는 답한 사람도 '냈다'만 알고,
+// 마감(max 명이 다 답함, 만든 사람이 닫음)에 모두 공개한다. reveal "now" 는 답하자마자 자기 결과를 본다(화면이 바뀔 때까지의 기본값).
 
 import { createMatch } from "../../web/js/games/match.js";
 import { checkOnlineGame, resolveVariant, handIndex } from "./games.js";
 import { checkPid, checkName, checkEmote, checkFace } from "./check.js";
 import { Fail } from "./http.js";
-import { CHALLENGE_KEEP_MS, CHALLENGE_MAX, CHALLENGE_ROUNDS } from "./protocol.js";
+import { CHALLENGE_KEEP_MS, CHALLENGE_MAX, CHALLENGE_REVEAL, CHALLENGE_ROUNDS } from "./protocol.js";
 
 function checkHands(V, hands, count) {
   if (!Array.isArray(hands)) throw new Fail("bad_hand");
@@ -24,8 +26,17 @@ function checkMax(max) {
   return max;
 }
 
+/** 여럿이 도전장의 결과 공개 때. 안 주면 CHALLENGE_REVEAL[0], 틀리면 bad_request */
+function checkReveal(reveal) {
+  if (reveal === undefined || reveal === null) return CHALLENGE_REVEAL[0];
+  if (!CHALLENGE_REVEAL.includes(reveal)) throw new Fail("bad_request");
+  return reveal;
+}
+
 /** 기록의 max(11-08 전에 만든 기록에는 없다 = 1) */
 const maxOf = (rec) => rec.max || 1;
+/** 아직 답을 받는가: 만든 사람이 닫지 않았고 자리가 남았다 */
+const isOpen = (rec) => !rec.closed && (rec.answers || []).length < maxOf(rec);
 
 /** 판정: 판마다 만든 사람 쪽에서 본 결과(1·0·−1), 이긴 판 수, 이긴 쪽(0 만든 사람, 1 받은 사람, −1 비김) */
 export function judge(V, from, to) {
@@ -44,7 +55,8 @@ export function makeChallenge(body, now) {
   const e = checkEmote(body.e, true);
   const max = checkMax(body.max);
   const rec = { code: null, game, custom, from: { pid, name, face: checkFace(body.face) }, e, hands, made: now, expires: now + CHALLENGE_KEEP_MS, max, answer: null };
-  if (max > 1) rec.answers = [];
+  if (max > 1) Object.assign(rec, { answers: [], reveal: checkReveal(body.reveal), closed: false });
+  else if (body.reveal !== undefined) checkReveal(body.reveal);
   return rec;
 }
 
@@ -72,12 +84,24 @@ function answerMany(rec, pid, body, now) {
   const list = rec.answers || [];
   if (list.some((a) => a.pid === pid)) return { rec, changed: false };
   if (pid === rec.from.pid) throw new Fail("own");
-  if (list.length >= maxOf(rec)) throw new Fail("closed", { result: viewChallenge(rec) });
+  if (!isOpen(rec)) throw new Fail("closed", { result: viewChallenge(rec) });
   const name = checkName(body.name);
   const { V } = resolveVariant(rec.game, rec.custom);
   const hands = checkHands(V, body.hands, rec.hands.length);
   const result = judge(V, rec.hands, hands);
   return { rec: { ...rec, answers: [...list, { pid, name, face: checkFace(body.face), hands, at: now, ...result }] }, changed: true };
+}
+
+/**
+ * 만든 사람이 여럿이 도전장을 닫는다(더 받지 않고 결과를 모두에게 연다). 돌려주는 값: { rec, changed }.
+ * 만든 사람이 아니면 bad_pid, 보통 도전장(max 1)이면 bad_request. 이미 닫혔으면 그대로
+ */
+export function closeChallenge(rec, body, now) {
+  const pid = checkPid(body.pid);
+  if (maxOf(rec) === 1) throw new Fail("bad_request");
+  if (pid !== rec.from.pid) throw new Fail("bad_pid");
+  if (rec.closed) return { rec, changed: false };
+  return { rec: { ...rec, closed: true, closedAt: now }, changed: true };
 }
 
 /**
@@ -114,11 +138,18 @@ export function viewChallenge(rec, viewer = null) {
   return v;
 }
 
-/** 여럿이 도전장의 꼴. answers 는 답한 차례(이름·그림·때·점수·이긴 쪽). 손과 판마다 결과는 만든 사람에게만 */
+/**
+ * 여럿이 도전장의 꼴. answers 는 답한 차례(이름·그림·때, 결과를 열었으면 점수·이긴 쪽).
+ * 만든 사람은 늘 모든 답의 손·판마다 결과를 본다. 마감(open false) 뒤에는 누구나 모든 손과 결과를 본다.
+ * reveal "end" 인데 아직 열려 있으면 답한 사람도 자기 손과 '냈다'(answered)만 받는다
+ */
 function viewMany(rec, viewer) {
   const list = rec.answers || [];
   const owner = viewer !== null && viewer === rec.from.pid;
   const mine = viewer === null ? -1 : list.findIndex((a) => a.pid === viewer);
+  const open = isOpen(rec);
+  const reveal = rec.reveal || "now";
+  const results = !open || reveal !== "end";
   const v = {
     code: rec.code,
     game: rec.game,
@@ -129,17 +160,24 @@ function viewMany(rec, viewer) {
     e: rec.e,
     made: rec.made,
     expires: rec.expires,
-    open: list.length < maxOf(rec),
+    open,
     max: maxOf(rec),
     count: list.length,
+    reveal,
     answers: list.map((a) => {
-      const row = { name: a.name, face: a.face ?? null, at: a.at, score: a.score.slice(), winner: a.winner };
-      if (owner) Object.assign(row, { hands: a.hands.slice(), cmp: a.cmp.slice() });
+      const row = { name: a.name, face: a.face ?? null, at: a.at };
+      if (owner || results) Object.assign(row, { score: a.score.slice(), winner: a.winner });
+      if (owner || !open) Object.assign(row, { hands: a.hands.slice(), cmp: a.cmp.slice() });
       return row;
     }),
   };
+  if (rec.closed) v.closed = rec.closedAt;
   if (owner) Object.assign(v, { you: "from", hands: { from: rec.hands.slice() } });
-  else if (mine >= 0) {
+  else if (mine >= 0 && !results) {
+    const a = list[mine];
+    Object.assign(v, { you: mine, to: a.name, toFace: a.face ?? null, answered: a.at, hands: { to: a.hands.slice() } });
+  } else if (!open) v.hands = { from: rec.hands.slice() };
+  if (!owner && mine >= 0 && results) {
     const a = list[mine];
     Object.assign(v, {
       you: mine,

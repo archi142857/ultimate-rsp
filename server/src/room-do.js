@@ -6,7 +6,7 @@ import { DurableObject } from "cloudflare:workers";
 import { Room } from "./room.js";
 import { Fail } from "./http.js";
 import { RANK_HINT } from "./where.js";
-import { CLOSE, EMOTE_GAP_MS, MSG_BURST, MSG_MAX, PING, PONG, PROTOCOL, ROOM_DELETE_MS, ROOM_SOCKETS } from "./protocol.js";
+import { CLOSE, EMOTE_GAP_MS, MSG_BURST, MSG_MAX, PING, PONG, PROTOCOL, ROOM_DELETE_MS, ROOM_WATCHERS } from "./protocol.js";
 
 const KEY = "room";
 /** 방 상태 쓰기는 확인을 기다리지 않고 바로 알린다(손 하나마다 몇 ms 아낌). 쓰기가 실패하면 DO 가 다시 시작하고 화면은 다시 붙는다 */
@@ -43,10 +43,10 @@ export class RoomHost extends DurableObject {
   }
 
   /** 입구·매칭이 부른다: 새 방. 이미 쓰는 코드면 { taken: true } */
-  async init({ code, rules, host = null, reserve = null, random = false }) {
+  async init({ code, rules, host = null, reserve = null, random = false, ranked = true }) {
     if (this.room) return { taken: true };
     const seed = crypto.getRandomValues(new Uint32Array(1))[0];
-    this.room = Room.create({ code, rules, now: Date.now(), seed, host, reserve, random });
+    this.room = Room.create({ code, rules, now: Date.now(), seed, host, reserve, random, ranked });
     await this.#commit();
     return { taken: false };
   }
@@ -60,7 +60,8 @@ export class RoomHost extends DurableObject {
     if (!this.room) return refuse("not_found", CLOSE.not_found);
     const open = this.#sockets();
     const same = open.filter((ws) => att(ws).pid === pid);
-    if (!same.length && open.length >= ROOM_SOCKETS) return refuse("full", CLOSE.full);
+    // 자리가 있거나 지금 앉을 수 있는 사람은 늘 받고, 구경꾼만 ROOM_WATCHERS 명까지
+    if (!same.length && !this.room.canSit(pid) && this.#watchers() >= ROOM_WATCHERS) return refuse("full", CLOSE.full);
 
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);

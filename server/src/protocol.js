@@ -23,6 +23,8 @@ export const EMOTE_GAP_MS = 2000;
 export const CHALLENGE_ROUNDS = [1, 3, 5];
 /** 도전장 하나에 답할 수 있는 사람 수(max). 1 이 보통 도전장, 2 부터는 링크 하나에 여럿이 답한다 */
 export const CHALLENGE_MAX = { default: 1, max: 50 };
+/** 여럿이 도전장의 결과 공개(reveal): now 는 답하자마자 자기 결과, end 는 마감(다 참·만든 사람이 닫음) 때 모두. 맨 앞이 기본값 */
+export const CHALLENGE_REVEAL = ["now", "end"];
 export const CHALLENGE_KEEP_MS = 30 * 24 * 60 * 60 * 1000;
 
 // 방
@@ -44,8 +46,8 @@ export const ENDLESS_MAX = 999;
 export const HIST_MAX = 20;
 /** 모두 나간 뒤 방을 지우기까지 */
 export const ROOM_DELETE_MS = 10 * 60_000;
-/** 한 방의 연결 수(자리 + 구경꾼) */
-export const ROOM_SOCKETS = 16;
+/** 한 방의 구경꾼(자리 없는 연결) 수. 자리가 있거나 앉을 수 있는 사람은 늘 들어온다(11-08 검수: 구경꾼 16명으로 방을 막을 수 있었다) */
+export const ROOM_WATCHERS = 6;
 /** 한 연결이 이 시간 안에 이보다 많이 보내면 끊는다 */
 export const MSG_BURST = { count: 20, ms: 10_000 };
 

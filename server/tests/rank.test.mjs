@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { afterEntry, boardEntry, fromRow, rankKey } from "../src/rank.js";
+import { afterEntry, boardEntry, fromRow, ipTag, rankKey, sameHome } from "../src/rank.js";
 import { newRecord, rateMatch } from "../../web/js/core/rating.js";
 import { RANK_TOP } from "../src/protocol.js";
 
@@ -27,4 +27,25 @@ test("저장된 줄 ↔ 기록, 순위표·방에 싣는 꼴에는 열쇠가 없
   assert.deepEqual(Object.keys(afterEntry(out.a)), ["rating", "delta", "games", "wins", "losses", "draws"]);
   assert.equal(afterEntry(out.a).games, 7);
   assert.equal(RANK_TOP, 50);
+});
+
+test("IP 꼬리표: 같은 날 같은 IP 면 같고, 날이 바뀌거나 IP 가 다르면 다르다. IP 는 그대로 남지 않는다", async () => {
+  const day = Date.UTC(2026, 10, 8, 12);
+  const a = await ipTag("203.0.113.7", day);
+  assert.match(a, /^[0-9a-f]{16}$/);
+  assert.equal(await ipTag("203.0.113.7", day + 3600_000), a);
+  assert.notEqual(await ipTag("203.0.113.7", day + 24 * 3600_000), a);
+  assert.notEqual(await ipTag("203.0.113.8", day), a);
+  assert.ok(!a.includes("203"));
+  assert.equal(await ipTag(null, day), null);
+  assert.equal(await ipTag("", day), null);
+  assert.equal(await ipTag("127.0.0.1", day), null, "로컬 시험은 막지 않는다");
+  assert.equal(await ipTag("::1", day), null);
+});
+
+test("같은 곳: 둘 다 꼬리표가 있고 같을 때만", () => {
+  assert.equal(sameHome(["aa", "aa"]), true);
+  assert.equal(sameHome(["aa", "bb"]), false);
+  assert.equal(sameHome([null, null]), false, "모르면 막지 않는다");
+  assert.equal(sameHome(["aa"]), false, "봇과 하기");
 });

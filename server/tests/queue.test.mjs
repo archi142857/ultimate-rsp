@@ -9,8 +9,9 @@ import { normRules } from "../src/games.js";
 const R = { min: 3, max: 10 };
 const NOW = 1_800_000_000_000;
 
-test("자리 범위는 지금 GROUP_SEATS(방 규칙과 같은 범위)", () => {
-  assert.deepEqual(groupSeatRange("classic"), { min: GROUP_SEATS.min, max: GROUP_SEATS.max });
+test("대기열 자리 범위는 게임마다(컨셉 seatRange): 손 셋은 3–8, 바탕이 아니면 GROUP_SEATS", () => {
+  assert.deepEqual(groupSeatRange("classic"), { min: 3, max: 8 });
+  assert.deepEqual(groupSeatRange("mukjjippa"), { min: GROUP_SEATS.min, max: GROUP_SEATS.max });
 });
 
 test("최대 인원이 차면 바로, 최소 인원이면 알람(이미 걸려 있으면 그대로), 모자라면 알람 없음", () => {
@@ -37,7 +38,7 @@ test("봇과 하기: 모인 사람 수(최소 인원 이상, 최대 인원 이�
 });
 
 test("대기열이 만드는 방 규칙은 방 규칙 검사를 지난다", () => {
-  for (const seats of [3, 6, 10]) {
+  for (const seats of [3, 6, 8]) {
     const r = normRules({ game: "group", base: "classic", mode: "loser", seats, timer: 20, bot: "human" });
     assert.equal(r.seats, seats);
     assert.equal(r.mode, "loser");

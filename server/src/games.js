@@ -3,7 +3,7 @@
 
 import { compileVariant } from "../../web/js/core/engine.js";
 import { CATALOG, findEntry } from "../../web/js/data/catalog.js";
-import { groupBases, isOneHand, isOnlineGame } from "../../web/js/data/online.js";
+import { groupBases, isOneHand, isOnlineGame, seatRange } from "../../web/js/data/online.js";
 import { makeCustomDef, maxWins, CUSTOM_MIN, CUSTOM_MAX } from "../../web/js/data/custom.js";
 import { BOTS } from "../../web/js/core/bots.js";
 import { Fail } from "./http.js";
@@ -37,9 +37,27 @@ export function matrixIds() {
   return CATALOG.filter(isOneHand).map((e) => e.id);
 }
 
-/** 여럿이 가위바위보의 바탕이 될 수 있는 변종(손 셋 고리 8가지) */
+/** 여럿이 가위바위보의 바탕이 될 수 있는 변종(목록은 data/online.js 의 groupBases) */
 export function groupBaseIds() {
   return groupBases();
+}
+
+/**
+ * 여럿이 할 때 자리 수 범위 { min, max }. 게임마다 컨셉이 정한 값(data/online.js 의 seatRange, 손 셋은 3–8, 손이 많으면 3–50)이고
+ * 바탕이 될 수 없는 id 면 GROUP_SEATS
+ */
+export function groupSeatRange(base) {
+  const r = seatRange(base);
+  return r && Number.isInteger(r.min) && Number.isInteger(r.max) ? { min: r.min, max: r.max } : { min: GROUP_SEATS.min, max: GROUP_SEATS.max };
+}
+
+/**
+ * 방 규칙이 받는 여럿이 인원: groupSeatRange 에 더해 지금 화면이 고르게 하는 GROUP_SEATS.max(10)까지는 받는다.
+ * 11-08 컨셉이 손 셋 바탕을 8명까지로 정했는데, 화면이 seatRange 로 바꾸기 전에 9·10명 방이 오류가 나지 않게(그 뒤 줄인다)
+ */
+export function roomSeatRange(base) {
+  const r = groupSeatRange(base);
+  return { min: r.min, max: Math.max(r.max, GROUP_SEATS.max) };
 }
 
 /** kind(challenge·room·random)에서 고를 수 있는 게임인지. 아니면 bad_game */
@@ -84,7 +102,7 @@ export function handIndex(V, id) {
  * 방 규칙 정리. 빠진 값은 기본값, 틀린 값은 bad_game(게임) 또는 bad_rules(나머지).
  * 돌려주는 값: { game, custom, base, mode, format, seats, bot, timer }
  *  - 손 하나짜리 변종·직접 만들기: 둘이서(seats 2), base·mode 는 null
- *  - group(여럿이 가위바위보): base 는 손 셋인 변종, mode survive·loser, seats 3–10, format 은 single
+ *  - group(여럿이 가위바위보): base 는 groupBases(), mode survive·loser, seats 는 roomSeatRange(base), format 은 single
  */
 export function normRules(input) {
   const r = input && typeof input === "object" && !Array.isArray(input) ? input : {};
@@ -100,7 +118,8 @@ export function normRules(input) {
     const mode = r.mode === undefined ? GROUP_MODES[0] : r.mode;
     if (!GROUP_MODES.includes(mode)) throw new Fail("bad_rules");
     const seats = r.seats === undefined ? GROUP_SEATS.default : r.seats;
-    if (!Number.isInteger(seats) || seats < GROUP_SEATS.min || seats > GROUP_SEATS.max) throw new Fail("bad_rules");
+    const range = roomSeatRange(base);
+    if (!Number.isInteger(seats) || seats < range.min || seats > range.max) throw new Fail("bad_rules");
     return { game, custom: null, base, mode, format: "single", seats, bot, timer };
   }
   const { game: id, custom } = resolveVariant(game, r.custom);
