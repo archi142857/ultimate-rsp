@@ -19,6 +19,10 @@ import { warView } from "./war.js";
 import { hostView } from "./host.js";
 import { teamSplitView } from "./teamsplit.js";
 import { teamTagView } from "./teamtag.js";
+import { morraView } from "./morra.js";
+import { penneyView } from "./penney.js";
+import { diceView } from "./dice.js";
+import { blottoView } from "./blotto.js";
 
 const VIEWS = {
   mukjjippa: mukjjippaView,
@@ -39,6 +43,10 @@ const VIEWS = {
   host: hostView,
   teamtag: teamTagView,
   teamsplit: teamSplitView,
+  morra: morraView,
+  penney: penneyView,
+  dice: diceView,
+  blotto: blottoView,
 };
 
 export function entryView(main, entry, params) {

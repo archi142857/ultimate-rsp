@@ -1585,6 +1585,299 @@ table.grid td.s {
   }
 }
 
+/* 고르기 단추 줄(모라 손가락·합, 동전 순서, 주사위) */
+.picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pick {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-ctl);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.pick:hover:not(:disabled) {
+  border-color: var(--ink-2);
+}
+.pick[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.pick:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.panel > .field {
+  margin-bottom: 14px;
+}
+.panel > .btn-big {
+  margin-bottom: 14px;
+}
+
+/* 동전 순서 */
+.coin {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: 50%;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  border: 2px solid #c9962b;
+  background: #f4cf63;
+  color: #6b4a07;
+}
+.coin-t {
+  background: #d9dde7;
+  border-color: #9aa1b5;
+  color: #3d4256;
+}
+.seq {
+  display: inline-flex;
+  gap: 3px;
+}
+.seq-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.pick-seq {
+  padding: 10px 6px;
+}
+.seq-vs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 14px;
+  border-radius: var(--r-tile);
+  background: var(--sunk);
+}
+.seq-side {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.seq-who {
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+.seq-odds {
+  font-weight: 600;
+  text-align: center;
+  font-size: var(--step--1);
+  max-width: 9em;
+}
+.seq-empty {
+  font-size: var(--step--1);
+  color: var(--muted);
+  min-height: 1.75rem;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.seq-vs .coin {
+  font-size: 1rem;
+}
+.flips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+.flips:empty {
+  display: none;
+}
+.flips .coin.in {
+  animation: coin-in 0.2s ease-out;
+}
+.flips .coin.hit-me {
+  outline: 3px solid var(--win);
+  outline-offset: 1px;
+}
+.flips .coin.hit-op {
+  outline: 3px solid var(--lose);
+  outline-offset: 1px;
+}
+@keyframes coin-in {
+  from {
+    transform: rotateY(90deg);
+  }
+}
+.seq-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+}
+.seq-table th,
+.seq-table td {
+  padding: 5px 4px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.seq-table th {
+  color: var(--muted);
+  font-weight: 500;
+}
+.seq-table .coin {
+  font-size: 0.6875rem;
+}
+
+/* 주사위 */
+.dice-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.pick-die {
+  padding: 10px;
+  text-align: left;
+}
+.die {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.die-id {
+  font: 400 var(--step-2) / 1 var(--display);
+}
+.die-faces {
+  display: grid;
+  grid-template-columns: repeat(3, 1.6em);
+  gap: 3px;
+}
+.pip {
+  display: grid;
+  place-items: center;
+  height: 1.6em;
+  border-radius: 5px;
+  background: var(--sunk);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pick-die[aria-pressed="true"] .pip,
+.pick-die:disabled .pip {
+  background: transparent;
+}
+.rolls {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 4px;
+}
+.rolls li {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--sunk);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--step--1);
+  animation: coin-in 0.2s ease-out;
+}
+.rolls .roll-op {
+  text-align: right;
+}
+.rolls .roll-mid {
+  color: var(--muted);
+}
+.rolls li.w .roll-me,
+.rolls li.l .roll-op {
+  font-weight: 700;
+}
+.rolls li.w {
+  box-shadow: inset 3px 0 0 var(--win);
+}
+.rolls li.l {
+  box-shadow: inset -3px 0 0 var(--lose);
+}
+
+/* 블로토 */
+.blotto {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.field-box {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 12px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-tile);
+  background: var(--surface);
+  min-width: 0;
+}
+.field-box.won {
+  border-color: var(--win);
+  box-shadow: inset 0 0 0 1px var(--win);
+}
+.field-box.lost {
+  border-color: var(--lose);
+}
+.field-name,
+.field-op {
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+.field-box.won .field-op,
+.field-box.lost .field-op {
+  color: var(--ink);
+  font-weight: 600;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stepper .step {
+  min-height: 36px;
+  width: 36px;
+  padding: 0;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+@media (max-width: 520px) {
+  .stepper {
+    flex-direction: column-reverse; /* 좁으면 + 위, 수, − 아래 */
+  }
+}
+.troops {
+  min-width: 1.6em;
+  text-align: center;
+  font: 400 var(--step-3) / 1 var(--display);
+  font-variant-numeric: tabular-nums;
+}
+.blotto-left {
+  margin: 0 0 10px;
+  font-size: var(--step--1);
+  color: var(--muted);
+  text-align: center;
+}
+.blotto-left.bad {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 /* 편 두 줄(편 술래잡기·편 가르기) */
 .teams {
   display: grid;

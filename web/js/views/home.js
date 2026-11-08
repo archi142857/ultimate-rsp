@@ -31,6 +31,10 @@ const ART = {
   host: "🎙️",
   teamtag: "🏃",
   teamsplit: "🤚",
+  penney: "🪙",
+  dice: "🎲",
+  morra: "🖐️",
+  blotto: "🪖",
 };
 const META = {
   mukjjippa: "공격과 수비",
@@ -51,6 +55,10 @@ const META = {
   host: "진행자에게 지면 탈락",
   teamtag: "편끼리 쫓고 달아나기",
   teamsplit: "바위와 보로 편 나누기",
+  penney: "나중에 고르는 쪽이 유리",
+  dice: "고리를 도는 주사위",
+  morra: "손가락 합 맞히기",
+  blotto: "병사 나누기",
 };
 
 const compiled = new Map();
