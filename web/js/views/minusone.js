@@ -25,7 +25,7 @@ export function minusOneView(main, entry) {
 
   const st = stage();
   const score = scoreboard();
-  const steps = stepList([t("두 손으로 가위바위보를 낸다"), t("서로 두 손을 보고 '하나 빼기!'에 맞춰 한 손을 거둔다"), t("남은 손끼리 겨룬다. 비기면 1번부터")]);
+  const steps = stepList([t("두 손으로 가위바위보를 냄"), t("서로 두 손을 보고 '하나 빼기!'에 맞춰 한 손을 거둠"), t("남은 손끼리 겨룸. 비기면 1번부터")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("minusone")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -103,7 +103,7 @@ export function minusOneView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(t("두 손을 골라 같이 낸다. 같은 손 둘도 된다."));
+    st.sub(t("두 손을 골라 같이 내기. 같은 손 둘도 됨"));
     log.clear();
     refresh();
   }
@@ -116,7 +116,7 @@ export function minusOneView(main, entry) {
     await chant(st, rpsChant());
     game.two(mine, theirs);
     st.say(t("하나 빼기!"), "chant");
-    st.sub(t("컴퓨터의 두 손을 보고 남길 손을 고른다."));
+    st.sub(t("컴퓨터의 두 손을 보고 남길 손 고르기"));
     clear(pairsView).append(pairLine(t("나"), mine), pairLine(t("컴퓨터"), theirs));
     clear(keepBtns).append(
       ...mine.map((x, side) =>
@@ -138,7 +138,7 @@ export function minusOneView(main, entry) {
         })),
         v: signed(kg.value),
       }),
-      kg.value > 1e-9 ? t("이 판은 내가 유리하다.") : kg.value < -1e-9 ? t("이 판은 컴퓨터가 유리하다.") : t("어느 쪽도 유리하지 않다."),
+      kg.value > 1e-9 ? t("이 판은 내가 유리") : kg.value < -1e-9 ? t("이 판은 컴퓨터가 유리") : t("어느 쪽도 유리하지 않음"),
     );
     refresh();
     busy = false;
@@ -173,7 +173,7 @@ export function minusOneView(main, entry) {
     st.op.set(V, r.b);
     if (r.cmp === 0) {
       st.say(t("무승부"));
-      st.sub(t("처음부터 다시 두 손을 낸다."));
+      st.sub(t("처음부터 다시 두 손 내기"));
       log.add(t("나 {a}, 컴퓨터 {b}. 비겨서 다시.", { a: lower(V.hands[r.a].name), b: lower(V.hands[r.b].name) }));
       resetPicks();
     } else {
@@ -206,8 +206,8 @@ export function minusOneView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("같은 손 둘은 손해다. ")),
-      t("두 손을 보고 고르는 2단계까지 끝까지 계산하면, 1단계에서는 서로 다른 두 손({pairs})을 같은 비율로 섞어 내야 가장 좋다. 같은 손 둘을 내면 상대가 그 손을 이기는 손을 남겨 버린다.", { pairs: pairFacts.join(", ") }),
+      h("b", {}, t("같은 손 둘은 손해입니다. ")),
+      t("두 손을 보고 고르는 2단계까지 끝까지 계산하면, 1단계에서는 서로 다른 두 손({pairs})을 같은 비율로 섞어 내야 가장 좋습니다. 같은 손 둘을 내면 상대가 그 손을 이기는 손을 남겨 버립니다.", { pairs: pairFacts.join(", ") }),
     ),
   );
   const panel = h(

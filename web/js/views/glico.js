@@ -109,7 +109,7 @@ export function glicoView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(t("이긴 사람만 이긴 손 글자 수만큼 오른다."));
+    st.sub(t("이긴 사람만 이긴 손 글자 수만큼 오름"));
     clear(kana);
     log.clear();
     drawTracks();
@@ -154,12 +154,12 @@ export function glicoView(main, entry) {
     st.op.set(V, j);
     if (r.cmp === 0) {
       st.say(t("무승부"));
-      st.sub(t("아무도 오르지 않는다."));
+      st.sub(t("아무도 못 오름"));
       clear(kana);
       log.add(t("둘 다 {h}. 그대로.", { h: lower(V.hands[i].name) }));
     } else {
       const meMoved = r.by === 0;
-      st.say(meMoved ? t("{n}칸 오른다", { n: r.moved }) : t("컴퓨터 {n}칸", { n: r.moved }), meMoved ? "win" : "lose");
+      st.say(meMoved ? t("{n}칸 오름", { n: r.moved }) : t("컴퓨터 {n}칸", { n: r.moved }), meMoved ? "win" : "lose");
       st.me.mark(meMoved ? "won" : "lost");
       st.op.mark(meMoved ? "lost" : "won");
       st.sub(`${V.sentence(i, j)}.`);
@@ -174,7 +174,7 @@ export function glicoView(main, entry) {
       st.say(meWon ? t("꼭대기!") : t("패배"), meWon ? "win" : "lose");
       rec.textContent = recordLine(addRecord("glico", meWon ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, meWon ? t("먼저 올랐다") : t("컴퓨터가 먼저 올랐다")),
+        h("strong", {}, meWon ? t("먼저 오름") : t("컴퓨터가 먼저 오름")),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
@@ -189,13 +189,13 @@ export function glicoView(main, entry) {
     "div",
     { class: "side-panel" },
     block(
-      t("계산기는 이렇게 본다"),
+      t("계산기가 보는 것"),
       h(
         "p",
         {},
-        t("바위는 3칸, 가위와 보는 6칸이다. 칸 차이만 따지면 가위·바위를 {a}씩, 보를 {b} 내는 게 최선이다. 6칸이나 오르는 보를 가장 적게 내야 한다는 점이 재미있다.", { a: pct(sm[V.index.scissors]), b: pct(sm[V.index.paper]) }),
+        t("바위는 3칸, 가위와 보는 6칸입니다. 칸 차이만 따지면 가위·바위를 {a}씩, 보를 {b} 내는 게 최선입니다. 6칸이나 오르는 보를 가장 적게 내야 한다는 점이 재미있습니다.", { a: pct(sm[V.index.scissors]), b: pct(sm[V.index.paper]) }),
       ),
-      h("p", {}, t("꼭대기가 가까워지면 셈이 달라진다. 아래 숫자는 지금 자리에서 끝까지 내다본 값이다.")),
+      h("p", {}, t("꼭대기가 가까워지면 셈이 달라집니다. 아래 숫자는 지금 자리에서 끝까지 내다본 값입니다.")),
       analysis,
     ),
   );

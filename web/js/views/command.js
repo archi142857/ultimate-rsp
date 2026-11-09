@@ -39,8 +39,8 @@ export function commandView(main, entry) {
   }
 
   function orderText(id, name) {
-    if (id === "draw") return t("{h:과와} 비겨라", { h: name });
-    return id === "win" ? t("{h}에게 이겨라", { h: name }) : t("{h}에게 져라", { h: name });
+    if (id === "draw") return t("{h:과와} 비기기", { h: name });
+    return id === "win" ? t("{h}에게 이기기", { h: name }) : t("{h}에게 지기", { h: name });
   }
 
   function show() {
@@ -78,8 +78,8 @@ export function commandView(main, entry) {
     const p = game.prompt;
     const ok = game.answer(i, ms);
     const v = { h: lower(V.hands[p.hand].name), a: listWords(game.answers(p).map((x) => lower(V.hands[x].name))) };
-    const miss = p.order.id === "draw" ? t("틀렸다. {h:과와} 비기려면 {a}.", v) : p.order.id === "win" ? t("틀렸다. {h}에게 이기려면 {a}.", v) : t("틀렸다. {h}에게 지려면 {a}.", v);
-    feedback.textContent = ok ? t("맞았다. {n}초", { n: (ms / 1000).toFixed(2) }) : miss;
+    const miss = p.order.id === "draw" ? t("틀림. {h:과와} 비기려면 {a}", v) : p.order.id === "win" ? t("틀림. {h}에게 이기려면 {a}", v) : t("틀림. {h}에게 지려면 {a}", v);
+    feedback.textContent = ok ? t("맞음. {n}초", { n: (ms / 1000).toFixed(2) }) : miss;
     feedback.style.color = ok ? "var(--win)" : "var(--lose)";
     show();
   }
@@ -111,9 +111,9 @@ export function commandView(main, entry) {
     "div",
     { class: "side-panel" },
     block(
-      t("해 보면 안다"),
-      h("p", {}, t("'이겨라'와 '져라' 가운데 어느 쪽에서 더 머뭇거리는지 재 보자. 끝나면 명령마다 몇 개를 맞혔는지 보여 준다.")),
-      h("p", {}, t("숫자 키 1, 2, 3으로도 낼 수 있다. 엔터를 누르면 시작한다.")),
+      t("직접 해 보기"),
+      h("p", {}, t("'이기기'와 '지기' 가운데 어느 쪽에서 더 머뭇거리는지 재 보십시오. 끝나면 명령마다 몇 개를 맞혔는지 보여 줍니다.")),
+      h("p", {}, t("숫자 키 1, 2, 3으로도 낼 수 있습니다. 엔터를 누르면 시작합니다.")),
     ),
   );
   const panel = h(

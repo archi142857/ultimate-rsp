@@ -30,7 +30,7 @@ export function donpappaView(main, entry) {
 
   const score = scoreboard();
   const st = stage();
-  const steps = stepList([t("가위바위보로 공격을 정한다"), t("공격이 지금 손을 두 번 외치고, 둘이 셋째 손을 같이 낸다"), t("셋째 손이 같으면 '돈!'을 먼저 누른 쪽이 이긴다")]);
+  const steps = stepList([t("가위바위보로 공격을 정함"), t("공격이 지금 손을 두 번 외치고, 둘이 셋째 손을 같이 낸다"), t("셋째 손이 같으면 '돈!'을 먼저 누른 쪽이 이긴다")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("donpappa")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -57,7 +57,7 @@ export function donpappaView(main, entry) {
   }
 
   function prompt() {
-    if (game.phase === "janken") return t("가위바위보! 이기는 쪽이 공격이 된다.");
+    if (game.phase === "janken") return t("가위바위보! 이기는 쪽이 공격");
     const now = callOf(game.current[game.attacker]);
     return game.attacker === 0
       ? t("내가 공격이다. '{c}, {c}' 다음에 낼 손을 고르자.", { c: now })
@@ -175,7 +175,7 @@ export function donpappaView(main, entry) {
       st.sub(t("나 {a}", { a: shown(mine) }));
       line = t("{a} 대 {b}. 손이 다른데 '돈!'을 외쳐서 졌다.", { a: callOf(i), b: callOf(j) });
     } else {
-      say(g.attacker === 0 ? t("이제 내가 공격이다") : t("공격이 넘어갔다"), g.attacker === 0 ? "win" : "lose");
+      say(g.attacker === 0 ? t("이제 내가 공격이다") : t("공격 넘어감"), g.attacker === 0 ? "win" : "lose");
       line = t("{a} 대 {b}. 공격과 수비가 바뀐다.", { a: callOf(i), b: callOf(j) });
     }
     log.add(line, g.done ? (g.winner === 0 ? "w" : "l") : "");

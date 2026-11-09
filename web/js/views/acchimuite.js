@@ -24,7 +24,7 @@ export function acchimuiteView(main, entry) {
 
   const st = stage();
   const score = scoreboard();
-  const steps = stepList([t("@step:가위바위보"), t("이긴 쪽이 가리키고, 진 쪽이 같은 순간 고개를 돌린다"), t("가리킨 쪽으로 고개를 돌리면 진다. 아니면 1번부터 다시")]);
+  const steps = stepList([t("@step:가위바위보"), t("이긴 쪽이 가리키고, 진 쪽이 같은 순간 고개를 돌림"), t("가리킨 쪽으로 고개를 돌리면 패배. 아니면 1번부터 다시")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("acchimuite")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -83,7 +83,7 @@ export function acchimuiteView(main, entry) {
       st.sub(t("다시 가위바위보."));
       log.add(t("가위바위보: 둘 다 {h}.", { h: lower(V.hands[i].name) }));
     } else {
-      st.say(game.pointer === 0 ? t("내가 가리킨다") : t("컴퓨터가 가리킨다"), game.pointer === 0 ? "win" : "lose");
+      st.say(game.pointer === 0 ? t("내가 가리킴") : t("컴퓨터가 가리킴"), game.pointer === 0 ? "win" : "lose");
       st.sub(game.pointer === 0 ? t("컴퓨터가 고개를 돌릴 쪽을 맞혀라.") : t("컴퓨터가 가리킬 쪽을 피해라."));
       log.add(t("가위바위보: {s}.", { s: V.sentence(i, j) }));
     }
@@ -107,8 +107,8 @@ export function acchimuiteView(main, entry) {
     if (r.hit) {
       const meWon = game.winner === 0;
       st.say(meWon ? t("승리!") : t("패배"), meWon ? "win" : "lose");
-      st.sub(pointer === 0 ? t("{d:을를} 가리켰는데 컴퓨터가 그쪽을 봤다.", { d: lower(meD.name) }) : t("컴퓨터가 {d:을를} 가리켰고 나도 그쪽을 봤다.", { d: lower(opD.name) }));
-      log.add(meWon ? t("호이! 둘 다 {d}. 내가 이겼다.", { d: lower(meD.name) }) : t("호이! 둘 다 {d}. 컴퓨터가 이겼다.", { d: lower(meD.name) }), meWon ? "w" : "l");
+      st.sub(pointer === 0 ? t("{d:을를} 가리켰고 컴퓨터가 그쪽을 봄", { d: lower(meD.name) }) : t("컴퓨터가 {d:을를} 가리켰고 나도 그쪽을 봄", { d: lower(opD.name) }));
+      log.add(meWon ? t("호이! 둘 다 {d}. 내가 승리", { d: lower(meD.name) }) : t("호이! 둘 다 {d}. 컴퓨터가 승리", { d: lower(meD.name) }), meWon ? "w" : "l");
       wins[game.winner] += 1;
       rec.textContent = recordLine(addRecord("acchimuite", meWon ? 1 : -1));
       clear(doneBar).append(
@@ -117,9 +117,9 @@ export function acchimuiteView(main, entry) {
       );
       doneBar.hidden = false;
     } else {
-      st.say(t("빗나갔다"));
+      st.say(t("빗나감"));
       st.sub(t("다시 가위바위보부터."));
-      log.add(t("호이! 나 {a}, 컴퓨터 {b}. 빗나갔다.", { a: lower(meD.name), b: lower(opD.name) }));
+      log.add(t("호이! 나 {a}, 컴퓨터 {b}. 빗나감", { a: lower(meD.name), b: lower(opD.name) }));
     }
     refresh();
     busy = false;
@@ -142,8 +142,8 @@ export function acchimuiteView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("가리키는 쪽이 한 번에 이길 확률은 1/4이다. ")),
-      t("그래서 가위바위보를 여러 번 이겨야 끝나는 경우가 많다. 교토 기온의 술자리 놀이에서 비롯됐다는 이야기가 있다."),
+      h("b", {}, t("가리키는 쪽이 한 번에 이길 확률은 1/4입니다. ")),
+      t("그래서 가위바위보를 여러 번 이겨야 끝나는 경우가 많습니다. 교토 기온의 술자리 놀이에서 비롯됐다는 이야기가 있습니다."),
     ),
   );
   const panel = h(

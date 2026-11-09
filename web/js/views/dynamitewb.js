@@ -66,7 +66,7 @@ export function dynamiteWbView(main, entry) {
     const dl = { a: match.uses[0][D], b: match.uses[1][D], p: pot };
     potLine.textContent = carry
       ? pot > 1
-        ? t("비긴 점수가 쌓였다. 다음 판에 이기면 {p}점. 내 다이너마이트 {a}개, 컴퓨터 {b}개.", dl)
+        ? t("비긴 점수가 쌓임. 다음 판에 이기면 {p}점. 내 다이너마이트 {a}개, 컴퓨터 {b}개", dl)
         : t("다음 판은 1점. 내 다이너마이트 {a}개, 컴퓨터 {b}개.", dl)
       : t("한 판에 1점. 내 다이너마이트 {a}개, 컴퓨터 {b}개.", dl);
   }
@@ -81,7 +81,7 @@ export function dynamiteWbView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(t("다이너마이트는 아껴 쓰고, 물풍선은 노려서 쓴다."));
+    st.sub(t("다이너마이트는 아껴 쓰고, 물풍선은 노려서 쓰기"));
     ring.clear();
     draw();
   }
@@ -100,7 +100,7 @@ export function dynamiteWbView(main, entry) {
     st.me.set(V, i);
     st.op.set(V, j);
     st.say(r.cmp === 0 ? t("무승부") : r.cmp > 0 ? t("+{n}점", { n: r.gain }) : t("−{n}점", { n: r.gain }), r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
-    st.sub(r.cmp === 0 && carry ? t("{s}. 점수가 다음 판으로 넘어간다.", { s: r.sentence }) : `${r.sentence}.`);
+    st.sub(r.cmp === 0 && carry ? t("{s}. 점수가 다음 판으로 넘어감", { s: r.sentence }) : `${r.sentence}.`);
     st.me.mark(r.cmp > 0 ? "won" : r.cmp < 0 ? "lost" : null);
     st.op.mark(r.cmp < 0 ? "won" : r.cmp > 0 ? "lost" : null);
     ring.bout(i, j);
@@ -110,7 +110,7 @@ export function dynamiteWbView(main, entry) {
       const won = match.winner === 0;
       rec.textContent = recordLine(addRecord("dynamitewb", won ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, won ? t("{n}점 먼저, 승리", { n: target }) : t("컴퓨터가 먼저 채웠다")),
+        h("strong", {}, won ? t("{n}점 먼저, 승리", { n: target }) : t("컴퓨터가 먼저 채움")),
         h("button", { class: "btn btn-ink", type: "button", onclick: newMatch }, t("새 경기")),
       );
       doneBar.hidden = false;
@@ -124,9 +124,9 @@ export function dynamiteWbView(main, entry) {
     { class: "side-panel" },
     h("div", { class: "ring-box", style: { width: "min(100%, 360px)", margin: "0 auto" } }, ring.el),
     block(
-      t("언제 터뜨릴까"),
-      h("p", {}, t("다이너마이트를 아무 때나 쓰면 금방 떨어진다. 점수가 쌓인 판에 쓰면 한 번에 여러 점을 가져온다.")),
-      h("p", {}, t("그 버릇을 읽으면 물풍선으로 받아칠 수 있다. 물풍선은 다이너마이트만 이기고 나머지에는 지므로 빗나가면 손해다. 컴퓨터 전략 '폭탄꾼'이 이렇게 둔다. 상대가 비긴 뒤에 다이너마이트를 자주 쓰면 물풍선을 꺼낸다.")),
+      t("터뜨릴 때"),
+      h("p", {}, t("다이너마이트를 아무 때나 쓰면 금방 떨어집니다. 점수가 쌓인 판에 쓰면 한 번에 여러 점을 가져옵니다.")),
+      h("p", {}, t("그 버릇을 읽으면 물풍선으로 받아칠 수 있습니다. 물풍선은 다이너마이트만 이기고 나머지에는 지므로 빗나가면 손해입니다. 컴퓨터 전략 '폭탄꾼'이 이렇게 둡니다. 상대가 비긴 뒤에 다이너마이트를 자주 쓰면 물풍선을 꺼냅니다.")),
     ),
   );
   const panel = h(

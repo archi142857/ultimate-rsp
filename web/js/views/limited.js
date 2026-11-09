@@ -58,7 +58,7 @@ export function limitedView(main, entry) {
       h("span", { class: "field-label" }, t("컴퓨터에게 남은 카드")),
       ...V.hands.map((hd) => h("span", {}, handArt(hd), " " + t("{h} {n}장", { h: hd.name, n: game.hand[1][hd.i] }))),
     );
-    leftLine.textContent = game.done ? "" : t("남은 카드 {n}장씩. 카드를 다 쓰면 별이 많은 쪽이 이긴다.", { n: game.left() });
+    leftLine.textContent = game.done ? "" : t("남은 카드 {n}장씩. 카드를 다 쓰면 별이 많은 쪽이 승리", { n: game.left() });
     score.set(wins[0], wins[1], wins[2] ? t("이긴 판, 비김 {n}", { n: wins[2] }) : t("이긴 판"));
     clear(analysis);
     if (!game.done) {
@@ -66,7 +66,7 @@ export function limitedView(main, entry) {
       analysis.append(
         h("p", { class: "field-label", style: { margin: 0 } }, t("끝까지 내다본 지금 내 기댓값 (이기면 +1, 지면 −1)")),
         h("div", { class: "big-num" }, signed(b.value)),
-        h("p", { class: "field-label", style: { margin: "6px 0 0" } }, t("계산기라면 이렇게 섞어 낸다")),
+        h("p", { class: "field-label", style: { margin: "6px 0 0" } }, t("계산기의 비율")),
         mixBar(V, b.mix),
       );
     }
@@ -81,7 +81,7 @@ export function limitedView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(t("카드는 가위·바위·보 4장씩. 이기면 상대 별 하나를 가져온다."));
+    st.sub(t("카드는 가위·바위·보 4장씩. 이기면 상대 별 하나를 가져옴"));
     log.clear();
     draw();
   }
@@ -107,11 +107,11 @@ export function limitedView(main, entry) {
     st.op.set(V, j);
     if (r.cmp === 0) {
       st.say(t("무승부"));
-      st.sub(t("별은 그대로, 카드만 한 장씩 줄었다."));
+      st.sub(t("별은 그대로, 카드만 한 장씩 줄어듦"));
       log.add(t("둘 다 {h}. 별 그대로.", { h: lower(V.hands[i].name) }));
     } else {
       const meWon = r.cmp > 0;
-      st.say(meWon ? t("별 하나!") : t("별을 잃었다"), meWon ? "win" : "lose");
+      st.say(meWon ? t("별 하나!") : t("별 하나 잃음"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
       st.sub(`${r.sentence}.`);
@@ -123,7 +123,7 @@ export function limitedView(main, entry) {
       else wins[w] += 1;
       rec.textContent = recordLine(addRecord("limited", w === 0 ? 1 : w === 1 ? -1 : 0));
       clear(doneBar).append(
-        h("strong", {}, w === 0 ? t("살아남았다") : w === 1 ? t("패배") : t("별이 같다, 비김")),
+        h("strong", {}, w === 0 ? t("살아남음") : w === 1 ? t("패배") : t("별 수가 같아 비김")),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
@@ -136,9 +136,9 @@ export function limitedView(main, entry) {
     "div",
     { class: "side-panel" },
     block(
-      t("카드를 세면 보인다"),
-      h("p", {}, t("서로 남은 카드가 보이므로 판이 지날수록 상대가 낼 수 있는 손이 줄어든다. 마지막 한 장은 무엇인지 둘 다 안다.")),
-      h("p", {}, t("계산기는 남은 카드와 별 수로 나올 수 있는 끝을 모두 따져 비율을 정한다. 처음에는 고르게 섞으면 되지만, 몇 판만 지나도 비율이 달라진다.")),
+      t("카드 세기"),
+      h("p", {}, t("서로 남은 카드가 보이므로 판이 지날수록 상대가 낼 수 있는 손이 줄어듭니다. 마지막 한 장은 무엇인지 둘 다 압니다.")),
+      h("p", {}, t("계산기는 남은 카드와 별 수로 나올 수 있는 끝을 모두 따져 비율을 정합니다. 처음에는 고르게 섞으면 되지만, 몇 판만 지나도 비율이 달라집니다.")),
       analysis,
     ),
   );

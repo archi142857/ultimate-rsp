@@ -31,7 +31,7 @@ export function mukjjippaView(main, entry) {
 
   const st = stage();
   const score = scoreboard();
-  const steps = stepList([t("가위바위보로 공격을 정한다"), t("공격이 외치며 손을 바꾸고, 수비도 같이 바꾼다"), t("같은 손이 나오면 공격이 이긴다")]);
+  const steps = stepList([t("가위바위보로 공격을 정함"), t("공격이 외치며 손을 바꾸고, 수비도 같이 바꿈"), t("같은 손이 나오면 공격이 이김")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("mukjjippa")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -49,10 +49,10 @@ export function mukjjippaView(main, entry) {
   });
 
   function roleText() {
-    if (game.phase === "rps") return t("가위바위보! 이기는 쪽이 공격이 된다.");
+    if (game.phase === "rps") return t("가위바위보! 이기는 쪽이 공격");
     return game.attacker === 0
-      ? t("내가 공격. 외칠 손을 고르자. 컴퓨터가 같은 손을 내면 내가 이긴다.")
-      : t("컴퓨터가 공격. 같은 손을 내면 진다. 다른 손으로 이기면 공격을 빼앗는다.");
+      ? t("내가 공격. 외칠 손 고르기. 컴퓨터가 같은 손을 내면 내가 승리")
+      : t("컴퓨터가 공격. 같은 손을 내면 패배. 다른 손으로 이기면 공격을 빼앗음");
   }
 
   function refresh() {
@@ -114,10 +114,10 @@ export function mukjjippaView(main, entry) {
       st.say(meWon ? t("승리!") : t("패배"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
-      line = meWon ? t("둘 다 {h}! 공격하던 내가 이겼다.", { h: lower(V.hands[i].name) }) : t("둘 다 {h}! 공격하던 컴퓨터가 이겼다.", { h: lower(V.hands[i].name) });
+      line = meWon ? t("둘 다 {h}! 공격하던 내가 승리", { h: lower(V.hands[i].name) }) : t("둘 다 {h}! 공격하던 컴퓨터가 승리", { h: lower(V.hands[i].name) });
     } else {
       const s = V.sentence(i, j);
-      st.say(r.note === "keep" ? t("공격 그대로") : t("공격이 넘어갔다"), game.attacker === 0 ? "win" : "lose");
+      st.say(r.note === "keep" ? t("공격 그대로") : t("공격 넘어감"), game.attacker === 0 ? "win" : "lose");
       if (r.note === "keep") line = game.attacker === 0 ? t("{s}. 내가 계속 공격.", { s }) : t("{s}. 컴퓨터가 계속 공격.", { s });
       else line = game.attacker === 0 ? t("{s}. 이제 내가 공격.", { s }) : t("{s}. 이제 컴퓨터가 공격.", { s });
     }
@@ -143,8 +143,8 @@ export function mukjjippaView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("공격하는 쪽이 유리하다. ")),
-      t("둘 다 아무렇게나 내면 공격하는 쪽이 끝내 이길 확률은 2/3이다. 판마다 같은 손이 나올 확률, 공격을 지킬 확률, 빼앗길 확률이 모두 1/3이기 때문이다."),
+      h("b", {}, t("공격하는 쪽이 유리합니다. ")),
+      t("둘 다 아무렇게나 내면 공격하는 쪽이 끝내 이길 확률은 2/3입니다. 판마다 같은 손이 나올 확률, 공격을 지킬 확률, 빼앗길 확률이 모두 1/3이기 때문입니다."),
     ),
   );
   const panel = h(
