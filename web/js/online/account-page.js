@@ -312,13 +312,13 @@ function accountHome(main) {
       const l = linked.get(p);
       let right;
       if (l) {
-        const off = h("button", { type: "button", class: "btn btn-sm acct-off", disabled: only }, t("떼기"));
+        const off = h("button", { type: "button", class: "btn btn-sm acct-off", disabled: only }, t("해제"));
         off.addEventListener("click", async () => {
           off.disabled = true;
           err.clear();
           try {
             await unlinkLogin(p);
-            toast(t("{p} 로그인 뗌", { p: providerName(p) }));
+            toast(t("{p} 연결 해제됨", { p: providerName(p) }));
             draw();
           } catch (e) {
             err.show(loginErrorText(codeOf(e)));
@@ -327,7 +327,7 @@ function accountHome(main) {
         });
         right = h("span", { class: "acct-row-right" }, h("span", { class: "acct-on" }, t("연결됨")), off);
       } else {
-        const add = h("button", { type: "button", class: "acct-add" }, t("더하기"));
+        const add = h("button", { type: "button", class: "acct-add" }, t("연결"));
         add.addEventListener("click", async () => {
           if (p === "email") {
             location.hash = "#/account/email/link";
@@ -348,7 +348,7 @@ function accountHome(main) {
         "li",
         { class: "acct-row" },
         providerMark(p),
-        h("span", { class: "acct-row-text" }, h("b", {}, providerName(p)), h("small", {}, l ? t("{date}에 붙임", { date: dateText(l.made) }) : t("붙이지 않음"))),
+        h("span", { class: "acct-row-text" }, h("b", {}, providerName(p)), h("small", {}, l ? t("{date} 연결", { date: dateText(l.made) }) : t("연결 안 됨"))),
         right,
       );
     });
@@ -358,7 +358,7 @@ function accountHome(main) {
       const a = await askDialog({
         title: t("로그아웃하시겠습니까?"),
         text: t("이 기기에서만 로그아웃됩니다. 다른 기기는 그대로입니다."),
-        check: { label: t("새 손님으로 시작"), note: t("여럿이 쓰는 기기라면 권합니다"), on: true },
+        check: { label: t("새 손님으로 시작"), note: t("여럿이 쓰는 기기라면 권함"), on: true },
         yes: t("로그아웃"),
       });
       if (!a.ok) return;
@@ -371,7 +371,7 @@ function accountHome(main) {
       const a = await askDialog({
         title: t("계정을 지우시겠습니까?"),
         text: t("계정과 로그인 방법이 모두 지워지고, 모든 기기에서 로그아웃됩니다. 지운 계정은 되살릴 수 없습니다."),
-        check: { label: t("새 손님으로 시작"), note: t("여럿이 쓰는 기기라면 권합니다"), on: true },
+        check: { label: t("새 손님으로 시작"), note: t("여럿이 쓰는 기기라면 권함"), on: true },
         yes: t("@delete:지우기"),
         danger: true,
       });
@@ -393,7 +393,7 @@ function accountHome(main) {
       me,
       h("h2", { class: "acct-h2" }, t("로그인 방법")),
       h("ul", { class: "acct-rows" }, rows),
-      only ? h("p", { class: "o-p o-small" }, t("로그인 방법이 하나뿐이면 뗄 수 없습니다.")) : null,
+      only ? h("p", { class: "o-p o-small" }, t("로그인 방법이 하나뿐이면 해제할 수 없습니다.")) : null,
       err.el,
       h("div", { class: "acct-actions" }, out, del),
       h("p", { class: "o-p o-small acct-foot" }, privacyLink()),
@@ -507,7 +507,7 @@ function emailView(main, { link }) {
   const page = h("div", { class: "online acct" }, back.el);
   main.append(page);
   if (link && !signedIn()) {
-    page.append(h("p", { class: "o-p" }, t("로그인한 뒤에 이메일을 더할 수 있습니다.")), h("a", { class: "btn btn-ink btn-big", href: "#/account" }, t("계정")));
+    page.append(h("p", { class: "o-p" }, t("로그인한 뒤에 이메일을 연결할 수 있습니다.")), h("a", { class: "btn btn-ink btn-big", href: "#/account" }, t("계정")));
     return {};
   }
   const body = h("div", { class: "acct-email" });
@@ -566,7 +566,7 @@ function emailView(main, { link }) {
     const pw = passwordInput("new-password");
     const pw2 = h("input", { type: "password", class: "text-input", autocomplete: "new-password", spellcheck: "false" });
     const name = h("input", { type: "text", class: "text-input", maxlength: NAME_MAX * 2, autocomplete: "nickname", spellcheck: "false", value: myName() });
-    const go = h("button", { type: "submit", class: "btn btn-ink btn-big" }, link ? t("더하기") : t("가입"));
+    const go = h("button", { type: "submit", class: "btn btn-ink btn-big" }, link ? t("연결") : t("가입"));
     const err = errLine();
     const consent = link ? null : consentBoxes(() => {});
     const form = h(
@@ -580,7 +580,7 @@ function emailView(main, { link }) {
       go,
       err.el,
     );
-    body.replaceChildren(h("h1", { class: "o-h1" }, link ? t("이메일 더하기") : t("이메일로 가입")), tabs("signup"), form);
+    body.replaceChildren(h("h1", { class: "o-h1" }, link ? t("이메일 연결") : t("이메일로 가입")), tabs("signup"), form);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       err.clear();
@@ -601,7 +601,7 @@ function emailView(main, { link }) {
       } catch (e2) {
         if (!alive) return;
         lockAll(form, false);
-        go.textContent = link ? t("더하기") : t("가입");
+        go.textContent = link ? t("연결") : t("가입");
         const code = codeOf(e2);
         if (code === "old_policy") {
           consent?.uncheckAgree();

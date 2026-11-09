@@ -185,16 +185,16 @@ export async function settleLogin(res) {
       title: t("이 계정으로 바꾸시겠습니까?"),
       text: t("다른 기기에서 만든 계정입니다. 바꾸면 그 계정의 이름과 기록이 보이고, 이 기기에서 손님으로 쌓은 기록은 따로 남습니다."),
       yes: t("@switch:바꾸기"),
-      no: t("그만두기"),
+      no: t("취소"),
     });
     if (!ok) {
       await dropLogin(r);
-      toast(t("로그인 그만둠"), t("이 기기는 손님 그대로입니다."));
+      toast(t("로그인 취소됨"), t("이 기기는 손님 그대로입니다."));
       return false;
     }
   }
   const out = useLogin(r);
-  if (out.linked) toast(t("{p} 로그인 추가됨", { p: providerName(res.provider) }));
+  if (out.linked) toast(t("{p} 연결됨", { p: providerName(res.provider) }));
   else if (out.switched) toast(t("로그인됨"), t("계정의 이름과 기록으로 바꿨습니다."));
   else if (out.fresh) toast(t("로그인됨"), t("이제 다른 기기에서도 이 기록과 이름을 씁니다."));
   else toast(t("로그인됨"));
@@ -209,7 +209,7 @@ export function handleLoginReturn() {
     (res) => {
       if (!res) return;
       if (res.error) {
-        toast(res.link ? t("로그인 방법 추가 실패") : t("로그인 실패"), loginErrorText(res.error), { kind: res.error === "cancel" ? "note" : "drop" });
+        toast(res.link ? t("로그인 연결 실패") : t("로그인 실패"), loginErrorText(res.error), { kind: res.error === "cancel" ? "note" : "drop" });
         return;
       }
       settleLogin(res);
