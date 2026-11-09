@@ -57,21 +57,32 @@ function withLink(text, link) {
 }
 const privacyLink = (text = t("개인정보 처리방침")) => h("a", { href: PRIVACY_URL, target: "_blank", rel: "noopener" }, text);
 
-/** 단추 아래 빨간 한 줄(디자인 ⑧) */
+/** 단추 아래 빨간 한 줄(디자인 ⑧). action {label, run} 을 주면 줄 끝에 작은 단추 */
 function errLine() {
   const el = h("p", { class: "acct-err", role: "alert", hidden: true });
   return {
     el,
-    show(text) {
-      el.textContent = text;
+    show(text, action = null) {
+      el.replaceChildren(text);
+      if (action) {
+        const b = h("button", { type: "button", class: "acct-link acct-err-act" }, action.label);
+        b.addEventListener("click", action.run);
+        el.append(" ", b);
+      }
       el.hidden = false;
     },
     clear() {
       el.hidden = true;
-      el.textContent = "";
+      el.replaceChildren();
     },
   };
 }
+
+/**
+ * 처리방침이 바뀌었으면(old_policy) 화면이 옛 판이다: 새로 고쳐 새 판을 받고 다시 동의한다
+ * (가입 표는 sessionStorage 에 남아 새로 고쳐도 가입 화면으로 온다)
+ */
+const reloadAction = () => ({ label: t("새로고침"), run: () => location.reload() });
 
 /** 이메일 화면에서 쓰는 오류 문장(같은 코드라도 이메일 맥락에 맞게) */
 function emailErrorText(code) {
@@ -471,7 +482,11 @@ function signupView(main) {
       const code = codeOf(e2);
       lockAll(form, false);
       go.disabled = !consent.ok;
-      if (code === "old_policy") consent.uncheckAgree();
+      if (code === "old_policy") {
+        consent.uncheckAgree();
+        err.show(loginErrorText(code), reloadAction());
+        return;
+      }
       if (code === "bad_login") {
         dropSignup();
         err.show(t("가입 시간이 지났습니다. 처음부터 다시 로그인해 주십시오."));
@@ -587,7 +602,11 @@ function emailView(main, { link }) {
         if (!alive) return;
         lockAll(form, false);
         go.textContent = link ? t("더하기") : t("가입");
-        err.show(emailErrorText(codeOf(e2)));
+        const code = codeOf(e2);
+        if (code === "old_policy") {
+          consent?.uncheckAgree();
+          err.show(emailErrorText(code), reloadAction());
+        } else err.show(emailErrorText(code));
       }
     });
     email.focus();

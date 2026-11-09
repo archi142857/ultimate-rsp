@@ -1840,6 +1840,11 @@ button.varrow {
   color: var(--lose);
   font-size: 0.875rem;
 }
+.acct-err-act {
+  min-height: 0;
+  padding: 0;
+  text-decoration: underline;
+}
 /* 가입·이메일 칸 */
 .acct-form {
   display: grid;
