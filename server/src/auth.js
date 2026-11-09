@@ -142,7 +142,7 @@ const GOOGLE = {
 const KAKAO = {
   auth: "https://kauth.kakao.com/oauth/authorize",
   token: "https://kauth.kakao.com/oauth/token",
-  me: "https://kapi.kakao.com/v2/user/me",
+  // 회원번호·앱 ID·남은 시간만 준다. 사용자 정보(/v2/user/me)는 부르지 않아 동의 항목 값은 아예 받지 않는다
   tokenInfo: "https://kapi.kakao.com/v1/user/access_token_info",
 };
 
@@ -166,10 +166,12 @@ function kakaoId(v) {
   throw new Fail("bad_login");
 }
 
-async function kakaoMe(accessToken, f) {
-  const res = await f(KAKAO.me, { headers: { Authorization: `Bearer ${accessToken}` } });
+/** 액세스 토큰 → 회원번호. appId 를 주면 그 앱에서 나온 토큰만 받는다 */
+async function kakaoTokenInfo(accessToken, f, appId = null) {
+  const res = await f(KAKAO.tokenInfo, { headers: { Authorization: `Bearer ${accessToken}` } });
   const body = await readJson(res);
   if (!res.ok || !body) throw new Fail("bad_login");
+  if (appId && String(body.app_id) !== String(appId)) throw new Fail("bad_login");
   return kakaoId(body.id);
 }
 
@@ -246,16 +248,14 @@ export const PROVIDERS = {
       });
       const body = await readJson(res);
       if (!res.ok || !body || typeof body.access_token !== "string") throw new Fail("bad_login");
-      return kakaoMe(body.access_token, f);
+      // 우리 REST 키로 바꾼 토큰이라 우리 앱 것이다(앱 ID 는 안 맞춰 본다)
+      return kakaoTokenInfo(body.access_token, f);
     },
-    // 앱: 카카오 SDK 가 준 액세스 토큰. 우리 앱(KAKAO_APP_ID)에서 나온 토큰인지 먼저 본다
+    // 앱: 카카오 SDK 가 준 액세스 토큰. 우리 앱(KAKAO_APP_ID)에서 나온 토큰인지 본다
     async verify(env, { credential, fetch: f }) {
       if (!env.KAKAO_APP_ID) throw new Fail("no_provider");
       if (typeof credential !== "string" || !credential || credential.length > 1024) throw new Fail("bad_login");
-      const res = await f(KAKAO.tokenInfo, { headers: { Authorization: `Bearer ${credential}` } });
-      const body = await readJson(res);
-      if (!res.ok || !body || String(body.app_id) !== String(env.KAKAO_APP_ID)) throw new Fail("bad_login");
-      return kakaoId(body.id);
+      return kakaoTokenInfo(credential, f, env.KAKAO_APP_ID);
     },
   },
 

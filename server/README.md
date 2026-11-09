@@ -25,8 +25,8 @@
 | `POST /api/auth/<제공자>/start` → `GET …/callback` → `POST /api/auth/redeem` | 웹 로그인: 제공자 로그인 창에 다녀와 한 번 쓰는 코드를 세션 토큰으로 바꾼다 |
 | `POST /api/auth/<제공자>/token` | 앱·스팀 로그인: 그 플랫폼이 준 토큰(구글 ID 토큰, 카카오 액세스 토큰)을 서버가 확인하고 세션 토큰을 준다 |
 | `POST /api/auth/signup` | 처음 보는 로그인은 가입 표를 받는다. 가입 화면(이름·처리방침 동의·만 14세 이상)을 마치면 계정을 만들고 동의한 판·시각을 남긴다 |
-| `POST /api/auth/email/signup·verify·login·reset·reset/confirm` | 이메일·비밀번호: 확인 코드 메일로 가입·비밀번호 찾기. 비밀번호는 화면이 PBKDF2(60만 번)로 바꿔 보낸다 |
-| `POST /api/account[/profile\|/logout\|/unlink\|/delete]` | 세션 토큰으로 계정 보기, 이름·그림, 이 기기 로그아웃, 로그인 방법 떼기, 계정 지우기 |
+| `POST /api/auth/email/signup·verify·login·reset·reset/confirm` | 이메일·비밀번호: 확인 코드 메일로 가입·비밀번호 찾기. 비밀번호는 화면이 PBKDF2(60만 번)로 바꿔 보낸다. **지금은 꺼 둠**(메일 열쇠가 없으면 `no_provider`) |
+| `POST /api/account[/profile\|/logout\|/unlink\|/delete]` | 세션 토큰으로 계정 보기(로그인 방법, 로그인해 있는 기기 수 `devices`), 이름·그림, 이 기기 로그아웃, 로그인 방법 떼기, 계정 지우기 |
 
 랭킹은 랜덤 매칭으로 만난 두 사람이 한 첫 경기만 셉니다(같은 방에서 다시 하기, 봇 대전, 보통 방, 여럿이 랜덤, 같은 곳(IP)에서 온 두 사람은 안 셈. IP 는 날마다 바뀌는 해시로만 대기열에 둡니다). 게임마다 하루(UTC)에 pid 하나는 30경기, 같은 곳 하나는 60경기까지만 셉니다. 점수 계산은 `web/js/core/rating.js`(Elo) 그대로이고, 끝날 때 봇이 잇던 자리는 진 것으로 칩니다.
 
@@ -34,9 +34,9 @@
 
 여럿이 인원은 방과 랜덤 매칭 모두 바탕마다 `web/js/data/online.js` 의 `seatRange`(손 셋 3–8명, 손 많은 바탕 3–20명)를 따릅니다. 손 많은 바탕은 `MANY_HAND_GROUP` 을 켜면 열립니다. 서버는 준비돼 있고, 켜면 `server/tests/room.test.mjs` 의 손 많은 바탕 시험이 같이 돕니다. 방의 구경꾼은 6명까지고, 자리가 있거나 앉을 수 있는 사람은 늘 들어옵니다. 닉네임에 빈칸처럼 보이는 글자(한글 채움 문자, 점자 빈칸, 크메르 안 보이는 모음)와 서식 문자(U+200D 빼고)는 받지 않습니다. 이체 선택자는 그림 글자 뒤 U+FE0E·U+FE0F 와 한자 뒤 U+E0100–U+E01EF 만 받습니다.
 
-이메일·비밀번호 가입은 메일 주소를 HMAC 한 값만, 비밀번호는 화면이 PBKDF2-HMAC-SHA256(60만 번, 소금은 `ursp-email-v1:` + 다듬은 주소)로 만든 열쇠를 다시 HMAC 한 값만 둡니다. 가입된 주소인지 아닌지는 답으로 드러나지 않고(메일만 다름), 확인 코드는 5번, 하루 15번까지 틀릴 수 있고, 메일은 한 주소에 한 시간 5통, 로그인은 15분에 10번 틀리면 잠깁니다. 메일은 Resend 로 보냅니다(`RESEND_API_KEY`·`MAIL_FROM`, 우리 도메인 인증이 필요).
+이메일·비밀번호 가입은 지금 꺼 둡니다(로그인은 구글·카카오만, 사용자 11-09). 코드는 그대로 두었고 메일 열쇠를 넣으면 켜집니다. 켜면 메일 주소를 HMAC 한 값만, 비밀번호는 화면이 PBKDF2-HMAC-SHA256(60만 번, 소금은 `ursp-email-v1:` + 다듬은 주소)로 만든 열쇠를 다시 HMAC 한 값만 둡니다. 가입된 주소인지 아닌지는 답으로 드러나지 않고(메일만 다름), 확인 코드는 5번, 하루 15번까지 틀릴 수 있고, 메일은 한 주소에 한 시간 5통, 로그인은 15분에 10번 틀리면 잠깁니다. 메일은 Resend 로 보냅니다(`RESEND_API_KEY`·`MAIL_FROM`, 우리 도메인 인증이 필요).
 
-계정은 게임 속 나(pid)를 어느 기기에서든 되찾는 열쇠입니다. 게임 주소는 지금처럼 pid 만 보고, 로그인하면 계정의 pid 를 받아 씁니다. 계정 하나에 로그인을 여러 개 붙일 수 있습니다. 서버는 이메일·이름을 받지 않고(구글은 `openid` 범위만, 카카오는 동의 항목 없이), 제공자 회원번호는 서버만 아는 값으로 HMAC 한 값만, 세션 토큰은 SHA-256 만 둡니다. 세션 토큰은 쿠키가 아니라 본문으로 주고받아 웹·앱·스팀이 같은 방식을 씁니다. 웹 로그인은 로그인을 시작한 화면만 아는 nonce 로 끝을 맺어, 남이 만든 로그인 주소로 남의 계정에 들어가게 할 수 없습니다(구글은 PKCE·OIDC nonce 도 씁니다).
+계정은 게임 속 나(pid)를 어느 기기에서든 되찾는 열쇠입니다. 게임 주소는 지금처럼 pid 만 보고, 로그인하면 계정의 pid 를 받아 씁니다. 계정 하나에 로그인을 여러 개 붙일 수 있습니다. 서버는 이메일·이름을 받지 않고(구글은 `openid` 범위만, 카카오는 동의 항목 없이 회원번호만 주는 토큰 정보 `/v1/user/access_token_info` 만 부르고 사용자 정보는 부르지 않음), 제공자 회원번호는 서버만 아는 값으로 HMAC 한 값만, 세션 토큰은 SHA-256 만 둡니다. 세션 토큰은 쿠키가 아니라 본문으로 주고받아 웹·앱·스팀이 같은 방식을 씁니다. 웹 로그인은 로그인을 시작한 화면만 아는 nonce 로 끝을 맺어, 남이 만든 로그인 주소로 남의 계정에 들어가게 할 수 없습니다(구글은 PKCE·OIDC nonce 도 씁니다). 로그인한 채 방법을 더하면 그 기기는 새 토큰을 받고, 옛 토큰은 1분 뒤 끝납니다(그사이 떠 있던 요청이 막히지 않게).
 
 POST 본문은 JSON 이고, CORS 미리 묻기를 줄이려고 `Content-Type: text/plain` 으로 받습니다. WebSocket 은 `ping` 글자를 보내면 서버를 깨우지 않고 `pong` 으로 답합니다.
 
@@ -66,4 +66,4 @@ npx wrangler dev --var AUTH_TEST:1   # 로그인 창 없이 바로 돌아오는 
 
 ## 배포
 
-`main` 에 푸시하면 `.github/workflows/server.yml` 이 시험을 돌리고 `wrangler deploy` 로 올립니다. 레포 Secrets 에 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` 가 있어야 합니다. 로그인을 켜려면 같은 곳에 `GOOGLE_CLIENT_ID`·`GOOGLE_CLIENT_SECRET`, `KAKAO_REST_KEY`(카카오 앱에서 클라이언트 시크릿을 켰으면 `KAKAO_CLIENT_SECRET` 도)를 넣습니다. 배포가 있는 것만 Worker secrets 로 넣고, 열쇠가 없는 제공자는 꺼져 있습니다. 리디렉션 URI 는 `https://ultimate-rsp.youngpyo.workers.dev/api/auth/<google|kakao>/callback` 입니다. 무료 플랜 한도(요청 하루 10만 등)는 한국 시간 오전 9시에 풀립니다.
+`main` 에 푸시하면 `.github/workflows/server.yml` 이 시험을 돌리고 `wrangler deploy` 로 올립니다. 레포 Secrets 에 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` 가 있어야 합니다. 로그인을 켜려면 같은 곳에 `GOOGLE_CLIENT_ID`·`GOOGLE_CLIENT_SECRET`, `KAKAO_REST_KEY`(카카오 앱에서 클라이언트 시크릿을 켰으면 `KAKAO_CLIENT_SECRET` 도)를 넣습니다. 배포가 있는 것만 Worker secrets 로 넣고, 열쇠가 없는 제공자는 꺼져 있습니다. 리디렉션 URI 는 `https://ultimate-rsp.youngpyo.workers.dev/api/auth/<google|kakao>/callback` 입니다. 카카오 앱의 동의항목은 아무것도 켜지 않습니다(처리방침대로 회원번호만 받는다). 이메일 열쇠(`RESEND_API_KEY`·`MAIL_FROM`)는 이메일을 켤 때만 넣습니다. 무료 플랜 한도(요청 하루 10만 등)는 한국 시간 오전 9시에 풀립니다.

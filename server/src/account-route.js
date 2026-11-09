@@ -79,7 +79,7 @@ export async function authCallback(env, p, url) {
   }
   try {
     const r = await call(() =>
-      accounts(env).login({ provider: p, sub, pid: data.pid, link: data.link, name: data.name, face: data.face, nonceHash: data.nonceHash, direct: false }),
+      accounts(env).login({ provider: p, sub, pid: data.pid, link: data.link, linkHash: data.linkHash ?? null, name: data.name, face: data.face, nonceHash: data.nonceHash, direct: false }),
     );
     return redirect(backWith(data.back, "login", r.code));
   } catch (e) {

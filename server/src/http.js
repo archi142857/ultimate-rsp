@@ -1,6 +1,6 @@
 // HTTP 응답, CORS, 오류. 서버는 늘 JSON 으로 답한다.
 
-import { BODY_MAX, ERRORS, NEW_ERRORS, ORIGINS, PROTOCOL } from "./protocol.js";
+import { BODY_MAX, ERRORS, ORIGINS, PROTOCOL } from "./protocol.js";
 
 export { PROTOCOL };
 
@@ -11,7 +11,7 @@ export class Fail extends Error {
   constructor(code, extra = null) {
     super(code);
     this.code = code;
-    this.status = ERRORS[code] || NEW_ERRORS[code] || 400;
+    this.status = ERRORS[code] || 400;
     this.extra = extra;
   }
 }

@@ -4,6 +4,7 @@
 // Cloudflare 없이 돈다(fetch 는 넘겨받는다).
 
 import { Fail } from "./http.js";
+import { EMAIL_CODE_MS } from "./protocol.js";
 
 const RESEND = "https://api.resend.com/emails";
 const LOCAL_HOST = /^(localhost|127\.0\.0\.1)$/;
@@ -23,7 +24,8 @@ export function mailReady(env, url) {
  * 화면 말투(11-09)대로 문장은 하십시오체. 한국어 뒤에 영어
  */
 export function mailText(kind, code) {
-  const min = 30;
+  // 화면의 'n분'도 EMAIL_CODE_MS 에서 나온다(둘이 어긋나지 않게)
+  const min = Math.round(EMAIL_CODE_MS / 60_000);
   const tail = "요청하지 않았다면 이 메일은 무시하셔도 됩니다.\nIf you did not ask for this, you can ignore this email.";
   if (kind === "exists") {
     return {

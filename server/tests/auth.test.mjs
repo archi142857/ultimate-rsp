@@ -7,7 +7,7 @@ import { b64url, unb64url, randomId, sha256Hex, hmacHex, pkceChallenge, verifyJw
 import { planLogin, checkBack, backWith, checkNonce, checkToken, checkHandoff, isState, newPid, checkEmail, checkKey, checkCode, checkConsent, checkTicket, newCode } from "../src/account.js";
 import { mailReady, mailTest, mailText, sendMail } from "../src/mail.js";
 import { Fail } from "../src/http.js";
-import { AUTH_PROVIDERS, EMAIL_KDF, PRIVACY_VERSION } from "../src/protocol.js";
+import { AUTH_PROVIDERS, EMAIL_CODE_MS, EMAIL_KDF, PRIVACY_VERSION } from "../src/protocol.js";
 
 const enc = new TextEncoder();
 const NOW = 1_800_000_000_000;
@@ -178,7 +178,7 @@ test("구글: 로그인 창 주소(PKCE·nonce·openid 만), 코드 바꾸기와
   assert.equal(await failCode(() => g.verify(env, { credential: otherApp, fetch: f, now: NOW })), "bad_login");
 });
 
-test("카카오: 로그인 창 주소, 코드 → 액세스 토큰 → 회원번호, 앱 토큰은 우리 앱 것만", async () => {
+test("카카오: 로그인 창 주소, 코드 → 액세스 토큰 → 회원번호(토큰 정보만, 사용자 정보는 안 부름), 앱 토큰은 우리 앱 것만", async () => {
   const env = { KAKAO_REST_KEY: "rest", KAKAO_CLIENT_SECRET: "ks", KAKAO_APP_ID: "777" };
   const k = PROVIDERS.kakao;
   const u = new URL(k.authorizeUrl(env, { redirectUri: "https://w.test/api/auth/kakao/callback", state: "S" }));
@@ -187,23 +187,31 @@ test("카카오: 로그인 창 주소, 코드 → 액세스 토큰 → 회원번
   assert.equal(u.searchParams.get("state"), "S");
   assert.equal(u.searchParams.get("scope"), null, "동의 항목을 묻지 않는다");
   const calls = [];
+  // 토큰마다 카카오가 알려 주는 것(회원번호·앱 ID)
+  const info = { AT: { id: 4123456789, app_id: 777, expires_in: 21599 }, APPTOKEN: { id: 4123456789, app_id: 777 }, OTHERAPP: { id: 1, app_id: 999 } };
   const f = fakeFetch(
     {
       "https://kauth.kakao.com/oauth/token": { access_token: "AT" },
-      "https://kapi.kakao.com/v2/user/me": (url, init) => (init.headers.Authorization === "Bearer AT" ? { id: 4123456789 } : { status: 401, body: {} }),
-      "https://kapi.kakao.com/v1/user/access_token_info": (url, init) => (init.headers.Authorization === "Bearer APPTOKEN" ? { id: 4123456789, app_id: 777 } : { id: 1, app_id: 999 }),
+      "https://kapi.kakao.com/v1/user/access_token_info": (url, init) => info[init.headers.Authorization.replace(/^Bearer /, "")] ?? { status: 401, body: { code: -401 } },
+      "https://kapi.kakao.com/v2/user/me": { id: 4123456789, properties: { nickname: "받으면 안 됨" } },
     },
     calls,
   );
   assert.equal(await k.exchange(env, { code: "C", redirectUri: "https://w.test/cb", fetch: f }), "4123456789");
   assert.equal(new URLSearchParams(String(calls[0].init.body)).get("client_secret"), "ks");
+  assert.equal(calls[1].init.headers.Authorization, "Bearer AT");
+  assert.equal(await failCode(() => k.exchange(env, { code: "C", redirectUri: "x", fetch: fakeFetch({ "https://kauth.kakao.com/oauth/token": { access_token: "DEAD" }, "https://kapi.kakao.com/v1/user/access_token_info": { status: 401, body: { code: -401 } } }) })), "bad_login", "토큰 정보를 못 받으면");
   assert.equal(await k.verify(env, { credential: "APPTOKEN", fetch: f }), "4123456789");
   assert.equal(await failCode(() => k.verify(env, { credential: "OTHERAPP", fetch: f })), "bad_login", "다른 앱 토큰");
   assert.equal(await failCode(() => k.verify({ KAKAO_REST_KEY: "rest" }, { credential: "APPTOKEN", fetch: f })), "no_provider", "앱 ID 가 없으면 앱 로그인은 꺼짐");
-  const big = fakeFetch({ "https://kauth.kakao.com/oauth/token": { access_token: "AT" }, "https://kapi.kakao.com/v2/user/me": { id: 2 ** 60 } });
+  assert.ok(!calls.some((c) => c.url.startsWith("https://kapi.kakao.com/v2/user/me")), "사용자 정보(동의 항목 값)는 부르지 않는다");
+  const big = fakeFetch({ "https://kauth.kakao.com/oauth/token": { access_token: "AT" }, "https://kapi.kakao.com/v1/user/access_token_info": { id: 2 ** 60, app_id: 777 } });
   assert.equal(await failCode(() => k.exchange(env, { code: "C", redirectUri: "x", fetch: big })), "bad_login", "안전한 정수가 아닌 번호");
   const noSecret = [];
-  await k.exchange({ KAKAO_REST_KEY: "rest" }, { code: "C", redirectUri: "x", fetch: fakeFetch({ "https://kauth.kakao.com/oauth/token": { access_token: "AT" }, "https://kapi.kakao.com/v2/user/me": { id: 5 } }, noSecret) });
+  // 앱 ID(KAKAO_APP_ID)가 없어도, 달라도 웹 로그인은 된다(우리 REST 키로 바꾼 토큰)
+  const web = fakeFetch({ "https://kauth.kakao.com/oauth/token": { access_token: "AT" }, "https://kapi.kakao.com/v1/user/access_token_info": { id: 5, app_id: 1 } }, noSecret);
+  assert.equal(await k.exchange({ KAKAO_REST_KEY: "rest" }, { code: "C", redirectUri: "x", fetch: web }), "5");
+  assert.equal(await k.exchange({ KAKAO_REST_KEY: "rest", KAKAO_APP_ID: "777" }, { code: "C", redirectUri: "x", fetch: web }), "5");
   assert.equal(new URLSearchParams(String(noSecret[0].init.body)).get("client_secret"), null, "시크릿을 안 켰으면 보내지 않는다");
 });
 
@@ -299,6 +307,9 @@ test("메일: 열쇠가 둘 다 있어야 켜지고, 로컬 시험은 보내지 
     assert.match(m.text, /123456/);
     assert.match(m.text, /[가-힣]/);
     assert.match(m.text, /Your .* code is 123456/);
+    // 'n분'은 코드 수명(EMAIL_CODE_MS)과 같다
+    const min = EMAIL_CODE_MS / 60_000;
+    assert.ok(m.text.includes(`${min}분 안에`) && m.text.includes(`within ${min} minutes`), kind);
   }
   assert.doesNotMatch(mailText("exists").text, /[0-9]{6}/);
   const calls = [];

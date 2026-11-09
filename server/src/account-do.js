@@ -3,7 +3,7 @@
 //  - accounts:  계정(id, pid, 이름·그림, 동의한 처리방침 판·시각·만 14세 이상). pid 는 계정마다 하나, 다른 계정과 겹치지 않는다
 //  - logins:    로그인(제공자 + 번호, 이메일은 다듬은 메일 주소)의 열쇠 → 계정. 번호·주소는 그대로 두지 않고 이 DO 만 아는 값(pepper)으로 HMAC 한 값만 둔다
 //  - passwords: 이메일 로그인의 비밀번호. 화면이 PBKDF2 로 만든 열쇠(key)를 다시 HMAC 한 값만 둔다(비밀번호는 서버에 오지 않는다)
-//  - sessions:  세션 토큰의 SHA-256 → 계정. 토큰 자체는 저장하지 않는다
+//  - sessions:  세션 토큰의 SHA-256 → 계정. 토큰 자체는 저장하지 않는다. until 은 새 토큰으로 바뀐 옛 세션이 끝나는 때(아니면 null)
 //  - pending:   잠깐 두는 값: 로그인 창에 다녀오는 동안(state), 돌아온 화면이 한 번 쓰는 코드(handoff), 가입 화면 표(signup), 메일 확인 코드(email). 몇 분 뒤 지운다
 //  - limits:    시도 횟수(메일 보내기·로그인 실패·하루 메일 수)
 //  - meta:      pepper
@@ -36,6 +36,11 @@ const FAIL_WINDOW_MS = 15 * 60_000;
 /** 같은 곳(IP 해시)에서: 한 시간에 메일 보내기 요청, 이메일 로그인 실패 */
 const IP_SEND_PER_HOUR = 20;
 const IP_FAILS_PER_HOUR = 50;
+/**
+ * 로그인한 채 방법을 더하면 그 기기는 새 토큰을 받고, 옛 토큰은 이만큼 뒤 끝난다.
+ * 바로 끝내면 그사이 떠 있던 옛 토큰 요청(돌아온 화면이 계정을 읽는 것 등)이 bad_token 을 받아 화면이 새 토큰까지 지울 수 있다
+ */
+const SWAP_GRACE_MS = 60_000;
 
 export class Accounts extends DurableObject {
   constructor(ctx, env) {
@@ -56,7 +61,12 @@ export class Accounts extends DurableObject {
     this.sql.exec("CREATE TABLE IF NOT EXISTS logins (key TEXT PRIMARY KEY, account TEXT NOT NULL, provider TEXT NOT NULL, made INTEGER NOT NULL) WITHOUT ROWID");
     this.sql.exec("CREATE INDEX IF NOT EXISTS logins_account ON logins (account)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS passwords (account TEXT PRIMARY KEY, login TEXT NOT NULL, hash TEXT NOT NULL, made INTEGER NOT NULL, changed INTEGER NOT NULL) WITHOUT ROWID");
-    this.sql.exec("CREATE TABLE IF NOT EXISTS sessions (hash TEXT PRIMARY KEY, account TEXT NOT NULL, made INTEGER NOT NULL, used INTEGER NOT NULL) WITHOUT ROWID");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS sessions (hash TEXT PRIMARY KEY, account TEXT NOT NULL, made INTEGER NOT NULL, used INTEGER NOT NULL, until INTEGER) WITHOUT ROWID");
+    try {
+      this.sql.exec("ALTER TABLE sessions ADD COLUMN until INTEGER");
+    } catch {
+      // 이미 있다(11-10 앞 판의 표에만 없다)
+    }
     this.sql.exec("CREATE INDEX IF NOT EXISTS sessions_account ON sessions (account, used)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS pending (hash TEXT PRIMARY KEY, kind TEXT NOT NULL, data TEXT NOT NULL, exp INTEGER NOT NULL) WITHOUT ROWID");
     this.sql.exec("CREATE INDEX IF NOT EXISTS pending_exp ON pending (exp)");
@@ -87,7 +97,7 @@ export class Accounts extends DurableObject {
     if (now - this.tidied < TIDY_MS) return;
     this.tidied = now;
     this.sql.exec("DELETE FROM pending WHERE exp < ?", now);
-    this.sql.exec("DELETE FROM sessions WHERE used < ?", now - SESSION_IDLE_MS);
+    this.sql.exec("DELETE FROM sessions WHERE used < ? OR until < ?", now - SESSION_IDLE_MS, now);
     this.sql.exec("DELETE FROM limits WHERE until < ?", now);
   }
 
@@ -116,11 +126,11 @@ export class Accounts extends DurableObject {
     return hmacHex(this.#pepper(), s);
   }
 
-  /** 세션 토큰 → 계정 줄. 없거나 오래 안 썼으면 bad_token */
+  /** 세션 토큰 → 계정 줄. 없거나 오래 안 썼거나 새 토큰으로 바뀐 지 1분이 지났으면 bad_token */
   async #session(token, now) {
     const hash = await sha256Hex(token);
-    const s = this.#one("SELECT account, used FROM sessions WHERE hash = ?", hash);
-    if (!s || s.used < now - SESSION_IDLE_MS) {
+    const s = this.#one("SELECT account, used, until FROM sessions WHERE hash = ?", hash);
+    if (!s || s.used < now - SESSION_IDLE_MS || (s.until !== null && s.until < now)) {
       if (s) this.sql.exec("DELETE FROM sessions WHERE hash = ?", hash);
       throw new Fail("bad_token");
     }
@@ -141,20 +151,26 @@ export class Accounts extends DurableObject {
     return token;
   }
 
-  #view(acc) {
+  /** 화면에 주는 계정. devices: 로그인해 있는 세션(기기) 수(이 기기 포함. 180일 안 쓴 것, 새 토큰으로 바뀐 옛 것은 빼고) */
+  #view(acc, now) {
     const logins = this.sql.exec("SELECT provider, made FROM logins WHERE account = ? ORDER BY made", acc.id).toArray();
+    const devices = this.#one("SELECT COUNT(*) AS n FROM sessions WHERE account = ? AND used >= ? AND until IS NULL", acc.id, now - SESSION_IDLE_MS)?.n ?? 0;
     return {
-      account: { id: acc.id, made: acc.made, logins: logins.map((l) => ({ provider: l.provider, made: l.made })), policy: acc.policy ?? null },
+      account: { id: acc.id, made: acc.made, logins: logins.map((l) => ({ provider: l.provider, made: l.made })), policy: acc.policy ?? null, devices },
       pid: acc.pid,
       profile: acc.name ? { name: acc.name, face: acc.face ?? null } : null,
     };
   }
 
-  /** 로그인 결과(세션을 새로 만든다) */
-  async #result(account, now, { fresh = false, linked = false } = {}) {
+  /**
+   * 로그인 결과(세션을 새로 만든다). replace: 로그인한 채 방법을 더한 기기의 옛 세션 해시.
+   * 그 기기는 새 토큰으로 바꿔 쓰므로 옛 세션은 1분 뒤 끝낸다(남으면 쓰지 않는 토큰이 180일 살고 기기 수도 늘어난다)
+   */
+  async #result(account, now, { fresh = false, linked = false, replace = null } = {}) {
     const token = await this.#newSession(account, now);
+    if (replace) this.sql.exec("UPDATE sessions SET until = ? WHERE hash = ? AND account = ? AND until IS NULL", now + SWAP_GRACE_MS, replace, account);
     const acc = this.#one("SELECT * FROM accounts WHERE id = ?", account);
-    return { token, fresh, linked, ...this.#view(acc) };
+    return { token, fresh, linked, ...this.#view(acc, now) };
   }
 
   /** 새 계정. 화면 pid 가 다른 계정 것이 아니면 그 pid(손님 기록을 이어 간다), 맞으면 새 pid */
@@ -252,8 +268,10 @@ export class Accounts extends DurableObject {
   async #beginAuth(s) {
     const now = Date.now();
     this.#tidy(now);
-    const link = s.token ? (await this.#session(s.token, now)).acc.id : null;
-    const data = { provider: s.provider, pid: s.pid, back: s.back, nonceHash: s.nonceHash, verifier: s.verifier, oidcNonce: s.oidcNonce, name: s.name, face: s.face, link };
+    const linked = s.token ? await this.#session(s.token, now) : null;
+    const link = linked ? linked.acc.id : null;
+    const linkHash = linked ? linked.hash : null;
+    const data = { provider: s.provider, pid: s.pid, back: s.back, nonceHash: s.nonceHash, verifier: s.verifier, oidcNonce: s.oidcNonce, name: s.name, face: s.face, link, linkHash };
     await this.#put("state", s.state, data, now + AUTH_STATE_MS);
     return { ok: true };
   }
@@ -267,13 +285,15 @@ export class Accounts extends DurableObject {
   /**
    * 제공자가 확인해 준 번호로 들어가기. 처음 보는 로그인이면 계정을 바로 만들지 않고 가입 표(signup)를 준다(가입 화면을 거친다).
    * 돌려주는 값: 웹은 한 번 쓰는 코드(code), 앱(direct)은 로그인 결과나 { signup }
-   * r: { provider, sub, pid, link | linkToken, name, face, nonceHash, direct }
+   * r: { provider, sub, pid, link·linkHash | linkToken, name, face, nonceHash, direct }
    */
   async #login(r) {
     const now = Date.now();
     this.#tidy(now);
-    // 이어 붙이기: 웹은 state 에 둔 계정(link), 앱은 함께 보낸 세션 토큰(linkToken)
-    const link = r.linkToken ? (await this.#session(r.linkToken, now)).acc.id : r.link || null;
+    // 이어 붙이기: 웹은 state 에 둔 계정(link)과 그 기기 세션 해시(linkHash), 앱은 함께 보낸 세션 토큰(linkToken)
+    const linked = r.linkToken ? await this.#session(r.linkToken, now) : null;
+    const link = linked ? linked.acc.id : r.link || null;
+    const linkHash = linked ? linked.hash : r.linkHash || null;
     const key = await this.#loginKey(r.provider, r.sub);
     const idAcc = this.#one("SELECT account FROM logins WHERE key = ?", key)?.account ?? null;
     let linkAcc = null;
@@ -291,9 +311,10 @@ export class Accounts extends DurableObject {
       out = { signup: { ticket, provider: r.provider, profile: r.name ? { name: r.name, face: r.face ?? null } : null } };
     } else {
       if (plan.act === "attach") this.sql.exec("INSERT INTO logins (key, account, provider, made) VALUES (?, ?, ?, ?)", key, plan.account, r.provider, now);
-      out = { account: plan.account, linked: plan.act === "attach" };
+      // 그 계정에 로그인해 있던 기기면 옛 세션은 새 세션으로 바뀐다
+      out = { account: plan.account, linked: plan.act === "attach", replace: linkAcc && plan.account === linkAcc ? linkHash : null };
     }
-    if (r.direct) return out.signup ? out : this.#result(out.account, now, { linked: out.linked });
+    if (r.direct) return out.signup ? out : this.#result(out.account, now, { linked: out.linked, replace: out.replace });
     const code = randomId(24);
     await this.#put("handoff", code, { ...out, nonceHash: r.nonceHash }, now + AUTH_HANDOFF_MS);
     return { code };
@@ -306,7 +327,7 @@ export class Accounts extends DurableObject {
     if (!h || h.nonceHash !== nonceHash) throw new Fail("bad_login");
     if (h.signup) return { signup: h.signup };
     if (!this.#one("SELECT id FROM accounts WHERE id = ?", h.account)) throw new Fail("bad_login");
-    return this.#result(h.account, now, { linked: h.linked });
+    return this.#result(h.account, now, { linked: h.linked, replace: h.replace ?? null });
   }
 
   /** 가입 화면을 마침: 표를 한 번 쓰고 계정을 만든다(그사이 같은 로그인으로 계정이 생겼으면 그 계정으로 들어간다) */
@@ -330,7 +351,8 @@ export class Accounts extends DurableObject {
     const now = Date.now();
     this.#tidy(now);
     const ek = await this.#loginKey("email", email);
-    const link = token ? (await this.#session(token, now)).acc.id : null;
+    const linked = token ? await this.#session(token, now) : null;
+    const link = linked ? linked.acc.id : null;
     if (link && this.#one("SELECT account FROM passwords WHERE account = ?", link)) throw new Fail("in_use");
     this.#mailRequest(ek, ip, now);
     this.#spendMail(now);
@@ -339,7 +361,7 @@ export class Accounts extends DurableObject {
     await this.#put(
       "email",
       `es:${ek}`,
-      { ek, pwHash: await this.#mac(`pw:${key}`), pid, name, face, consent, link, codeHash: await this.#mac(`code:${code}`), tries: 0 },
+      { ek, pwHash: await this.#mac(`pw:${key}`), pid, name, face, consent, link, linkHash: linked ? linked.hash : null, codeHash: await this.#mac(`code:${code}`), tries: 0 },
       now + EMAIL_CODE_MS,
     );
     return { mail: { kind: link ? "link" : "signup", code } };
@@ -363,7 +385,7 @@ export class Accounts extends DurableObject {
       fresh = true;
     }
     this.sql.exec("INSERT OR REPLACE INTO passwords (account, login, hash, made, changed) VALUES (?, ?, ?, ?, ?)", account, ek, d.pwHash, now, now);
-    return this.#result(account, now, { fresh, linked: Boolean(d.link) });
+    return this.#result(account, now, { fresh, linked: Boolean(d.link), replace: d.link ? d.linkHash ?? null : null });
   }
 
   /** 이메일 로그인. 없는 주소와 틀린 비밀번호는 같은 오류(bad_login). 메일 하나에 15분 10번, 같은 곳 한 시간 50번 틀리면 too_fast */
@@ -414,8 +436,9 @@ export class Accounts extends DurableObject {
   // ---- 계정 ----
 
   async #me({ token }) {
-    const { acc } = await this.#session(token, Date.now());
-    return this.#view(acc);
+    const now = Date.now();
+    const { acc } = await this.#session(token, now);
+    return this.#view(acc, now);
   }
 
   /** 계정에 이름·그림을 둔다(다른 기기에서 로그인해도 같은 이름) */
@@ -435,14 +458,15 @@ export class Accounts extends DurableObject {
 
   /** 로그인 방법 하나 떼기. 마지막 하나는 못 뗀다(계정에 다시 들어올 길이 없어진다). 이메일을 떼면 비밀번호도 지운다 */
   async #unlink({ token, provider }) {
-    const { acc } = await this.#session(token, Date.now());
+    const now = Date.now();
+    const { acc } = await this.#session(token, now);
     const rows = this.sql.exec("SELECT key, provider FROM logins WHERE account = ?", acc.id).toArray();
     const drop = rows.filter((l) => l.provider === provider);
     if (!drop.length) throw new Fail("not_found");
     if (drop.length === rows.length) throw new Fail("last_login");
     for (const l of drop) this.sql.exec("DELETE FROM logins WHERE key = ?", l.key);
     if (provider === "email") this.sql.exec("DELETE FROM passwords WHERE account = ?", acc.id);
-    return this.#view(acc);
+    return this.#view(acc, now);
   }
 
   /** 계정 지우기: 계정·로그인·비밀번호·세션을 모두 지운다. 게임 기록(pid)은 계정과 떨어져 남는다 */

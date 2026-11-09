@@ -19,9 +19,11 @@ test("서버 코드가 던지는 오류 코드는 모두 규약 목록에 있다
     for (const m of text.matchAll(/new Fail\("([a-z_]+)"/g)) used.add(m[1]);
   }
   assert.ok(used.size >= 5);
-  for (const code of used) assert.ok(code in P.ERRORS || code in P.NEW_ERRORS || P.WS_ERRORS.includes(code), code);
-  for (const code of P.WS_ERRORS) assert.ok(!(code in P.ERRORS) && !(code in P.NEW_ERRORS), code);
-  for (const code of Object.keys(P.NEW_ERRORS)) assert.ok(!(code in P.ERRORS), code);
+  for (const code of used) assert.ok(code in P.ERRORS || P.WS_ERRORS.includes(code), code);
+  for (const code of P.WS_ERRORS) assert.ok(!(code in P.ERRORS), code);
+  // 오류 표는 하나다(가입·이메일 코드도 ERRORS 에 합쳤다). 화면 시험이 ERRORS 만 봐도 다 본다
+  assert.equal(P.NEW_ERRORS, undefined);
+  assert.equal(P.AUTH_ERRORS, undefined);
 });
 
 test("닫는 코드는 4000번대에서 겹치지 않고, 다시 붙지 않는 코드는 그 안에 있다", () => {
