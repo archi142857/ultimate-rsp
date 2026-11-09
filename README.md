@@ -122,7 +122,7 @@ web/                          웹 앱 (GitHub Pages)
                               뿅망치(hammer), 돈파파(donpappa), 릴레이(relay), 황제와 노예(ecard),
                               장기(shogi), 동전 순서(penney), 주사위(dice), 모라(morra), 블로토(blotto),
                               진행자(host), 편 놀이(teams), 누르기 빠르기(reaction)
-  js/sims/                    전략 리그, 격자 생태계, 가위바위보 전쟁
+  js/sims/                    전략 리그, 전략의 진화(세대 계산, 장마다 값·글), 격자 생태계, 가위바위보 전쟁
   js/ui/                      DOM 도구, 색, 고리 그림, 손 그림(art), 저장, 공통 위젯
   js/views/                   화면
   js/online/                  온라인 대전 화면 (도전장, 방, 랜덤 매칭)
