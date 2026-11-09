@@ -65,10 +65,15 @@ test("손 id → 번호, 없는 손은 bad_hand", () => {
   }
 });
 
-test("여럿이 가위바위보 바탕은 손이 셋인 변종", () => {
+test("여럿이 가위바위보 바탕: 손 셋은 보통 규칙, 손 많은 바탕(MANY_HAND_GROUP 을 켜야 열림)은 점수 규칙", async () => {
+  const { MANY_HAND_GROUP, groupRuleOf } = await import("../../web/js/data/online.js");
   const ids = groupBaseIds();
   assert.ok(ids.includes("classic"));
-  for (const id of ids) assert.equal(resolveVariant(id).V.n, 3);
+  for (const id of ids) {
+    const n = resolveVariant(id).V.n;
+    assert.equal(groupRuleOf(id), n === 3 ? "rps" : "score", id);
+    if (!MANY_HAND_GROUP) assert.equal(n, 3, `${id}: 깃발이 꺼져 있으면 손 셋만`);
+  }
 });
 
 test("게임 목록은 공용 목록(web/js/data/online.js)을 따른다", async () => {

@@ -5,13 +5,16 @@ import assert from "node:assert/strict";
 import { groupDue, groupPlan, groupSeatRange, groupSeatsWithBots } from "../src/queue.js";
 import { GROUP_MATCH_WAIT_MS, GROUP_SEATS } from "../src/protocol.js";
 import { normRules } from "../src/games.js";
+import { GROUP_SEATS_MAX } from "../../web/js/data/online.js";
 
 const R = { min: 3, max: 10 };
 const NOW = 1_800_000_000_000;
 
-test("대기열 자리 범위는 게임마다(컨셉 seatRange): 손 셋은 3–8, 바탕이 아니면 GROUP_SEATS", () => {
+test("대기열 자리 범위는 게임마다(컨셉 seatRange): 손 셋은 3–8, 손 많은 바탕은 GROUP_SEATS_MAX, 바탕이 아니면 GROUP_SEATS", () => {
   assert.deepEqual(groupSeatRange("classic"), { min: 3, max: 8 });
+  assert.deepEqual(groupSeatRange("rps101"), { min: 3, max: GROUP_SEATS_MAX });
   assert.deepEqual(groupSeatRange("mukjjippa"), { min: GROUP_SEATS.min, max: GROUP_SEATS.max });
+  assert.deepEqual(groupPlan(GROUP_SEATS_MAX, groupSeatRange("rps101"), null, NOW), { start: GROUP_SEATS_MAX, alarm: null });
 });
 
 test("최대 인원이 차면 바로, 최소 인원이면 알람(이미 걸려 있으면 그대로), 모자라면 알람 없음", () => {

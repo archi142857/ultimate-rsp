@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { Room } from "../src/room.js";
 import { Fail } from "../src/http.js";
 import { GRACE_MS, REVEAL_MS, ROOM_DELETE_MS, MATCH_SHOW_MS, ENDLESS_MAX } from "../src/protocol.js";
+import { MANY_HAND_GROUP, seatRange } from "../../web/js/data/online.js";
 
 const T0 = 1_800_000_000_000;
 const A = "playerA_000000000001";
@@ -291,6 +292,25 @@ test("여럿이 술래 정하기: hist 에 lose(가장 낮은 손)가 실린다"
   thr(room, C, "paper");
   const h = room.view(0).hist[0];
   assert.deepEqual([h.win, h.lose, h.out], ["paper", "rock", [2]]);
+});
+
+test("손 많은 바탕 여럿이: 점수 규칙으로 끝까지, 판마다 lose, 자리는 seatRange 까지", { skip: !MANY_HAND_GROUP && "MANY_HAND_GROUP 을 켜면 돈다" }, () => {
+  const { max } = seatRange("rps101");
+  assert.equal(failCode(() => make({ game: "group", base: "rps101", seats: max + 1 })), "bad_rules");
+  for (const mode of ["survive", "loser"]) {
+    const room = make({ game: "group", base: "rps101", mode, seats: max });
+    room.join(A, "여우", T0);
+    room.handle(A, "", { t: "start" }, T0);
+    const V = room.V;
+    for (let k = 0; k < 200 && room.s.phase === "play"; k++) thr(room, A, V.hands[k % V.n].id);
+    const v = room.view(0);
+    assert.equal(v.phase, "end", mode);
+    assert.equal(v.alive.length, 1, mode);
+    for (const h of v.hist) {
+      assert.equal(h.hands.length, max, mode);
+      assert.ok("lose" in h, mode);
+    }
+  }
 });
 
 test("들어올 때 앉는가(canSit): 제 자리, 대기실 빈자리는 앉고, 꽉 찼거나 경기 중이거나 랜덤 방이면 구경꾼", () => {
