@@ -188,8 +188,8 @@ export const EVO_TEXT = {
       title: "들어가며",
       body: [
         "가위바위보는 운이라고들 합니다. 둘 다 아무렇게나 내면 정말 운입니다.",
-        "그런데 사람은 아무렇게나 내지 못합니다. 360명이 함께 한 실험에서도 이긴 사람은 같은 손을 다시 내는 일이 많았고, 진 사람은 손을 바꾸는 일이 많았습니다.",
-        "버릇은 읽힙니다. 이제 컴퓨터 전략 아홉 가지가 저마다의 버릇으로 겨룹니다. 누가 살아남는지 장을 넘기며 지켜보십시오.",
+        "그런데 사람은 아무렇게나 내지 못합니다. 360명이 참가한 실험에서도 이긴 사람은 같은 손을 다시 내는 일이 많았고, 진 사람은 손을 바꾸는 일이 많았습니다.",
+        "버릇은 읽힙니다. 여기서는 컴퓨터 전략 아홉 가지가 저마다 다른 버릇으로 겨룹니다. 누가 살아남는지 장을 넘기며 지켜보십시오.",
       ],
     },
     one: {
@@ -199,12 +199,12 @@ export const EVO_TEXT = {
     },
     duel: {
       title: "여러 판",
-      body: ["이번에는 한 상대와 10판을 합니다. 상대 다섯이 차례로 나오고, 누구인지는 10판이 끝나야 밝혀집니다.", "몇 판 하다 보면 버릇이 보일 수 있습니다."],
+      body: ["이번에는 상대마다 10판씩 합니다. 상대 다섯이 차례로 나오고, 누구인지는 10판이 끝나야 알 수 있습니다.", "몇 판 하다 보면 버릇이 보일 수 있습니다."],
       foes: {
-        stubborn: "10판 내내 바위만 냈습니다. 보만 냈다면 다 이겼습니다. 한 손만 고집하면 금방 읽힙니다.",
-        cycle: "바위, 가위, 보 차례로 돌았습니다. 돌림이 방금 낸 손을 그대로 내면 다음 판을 이깁니다.",
-        mirror: "방금 낸 손을 그대로 따라 냈습니다. 방금 낸 손을 이기는 손을 내면 이깁니다.",
-        avenger: "방금 낸 손을 이기는 손을 냈습니다. 방금 낸 손에게 지는 손을 내면 이깁니다.",
+        stubborn: "10판 내내 바위만 냈습니다. 보만 냈다면 모두 이길 수 있었습니다. 한 손만 고집하면 금방 읽힙니다.",
+        cycle: "바위, 가위, 보 차례대로 돌아가며 냈습니다. 돌림이 방금 낸 손을 그대로 내면 다음 판을 이깁니다.",
+        mirror: "이쪽이 방금 낸 손을 그대로 따라 냈습니다. 방금 낸 손을 이기는 손을 내면 이깁니다.",
+        avenger: "이쪽이 방금 낸 손을 이기는 손을 냈습니다. 방금 낸 손에 지는 손을 내면 이깁니다.",
         random: "아무렇게나 냈습니다. 버릇이 없어서 읽을 수 없습니다. 오래 하면 이기지도 지지도 않습니다.",
       },
       end: "버릇이 있는 상대는 읽으면 이깁니다. 그럼 컴퓨터끼리 붙이면 누가 이기겠습니까?",
@@ -212,30 +212,30 @@ export const EVO_TEXT = {
     league: {
       title: "리그 한 번",
       body: ["다섯이 서로 한 번씩, 10판짜리 경기를 합니다. 판마다 이기면 +1점, 지면 −1점, 비기면 0점입니다.", "누가 1등을 하겠습니까? 시작하기 전에 한 명에게 거십시오."],
-      end: "따라쟁이가 1등입니다. 돌림을 크게 이기고 앙갚음에게만 졌습니다. 고집은 네 상대 모두에게 졌습니다. 그럼 리그를 거듭하면 어떻게 되겠습니까?",
+      end: "따라쟁이가 1등입니다. 돌림을 크게 이기고 앙갚음에게만 졌습니다. 고집은 네 상대 모두에게 졌습니다. 리그를 여러 번 거듭하면 어떻게 되겠습니까?",
     },
     evolve: {
       title: "리그를 거듭하면",
-      body: ["이번에는 25명입니다. 다섯 전략이 다섯 명씩 있습니다.", "리그가 끝날 때마다 꼴찌 5명은 빠지고, 1등 5명은 하나씩 더 생깁니다. 세대가 지나면 누가 남겠습니까?"],
-      end: "1세대에 고집이 사라지고, 3세대에 돌림과 앙갚음, 7세대에 주사위가 사라집니다. 7세대 만에 25명 모두 따라쟁이입니다.",
+      body: ["이제 사람이 25명입니다. 다섯 전략이 다섯 명씩입니다.", "리그가 끝날 때마다 점수가 낮은 5명이 빠지고, 점수가 높은 5명과 같은 전략이 한 명씩 들어옵니다. 세대가 지나면 누가 남겠습니까?"],
+      end: "1세대에 고집이 사라지고, 3세대에 돌림과 앙갚음, 7세대에 주사위가 사라집니다. 7세대 만에 25명 모두 따라쟁이가 됩니다.",
     },
     readers: {
       title: "읽는 사람이 오면",
       body: ["따라쟁이만 24명인 세상에 한 명을 들여보냅니다. 누구를 넣겠습니까?"],
       choices: {
-        pattern: { label: "수 읽기", result: "수 읽기는 따라쟁이가 내 온 순서를 외웁니다. 하나였던 수 읽기가 8세대 만에 25명이 됩니다." },
+        pattern: { label: "수 읽기", result: "수 읽기는 따라쟁이가 지금까지 낸 순서를 외웁니다. 한 명이던 수 읽기가 8세대 만에 25명이 됩니다." },
         freq: { label: "버릇 읽기", result: "버릇 읽기는 따라쟁이가 자주 내는 손을 노립니다. 수 읽기보다 조금 느리게, 10세대 만에 25명이 됩니다." },
         human: { label: "사람 흉내", result: "사람 흉내는 따라쟁이에게 집니다. 첫 세대에 바로 빠집니다." },
       },
-      end: "따라쟁이처럼 버릇이 뚜렷하면, 읽는 사람이 하나만 와도 세상이 바뀝니다.",
+      end: "따라쟁이처럼 버릇이 뚜렷하면, 읽는 사람이 한 명만 와도 세상이 바뀝니다.",
     },
     rounds: {
       title: "판 수를 바꾸면",
-      body: ["이번에는 여덟 전략이 모두 모였습니다. 25명입니다.", "한 경기가 몇 판인지만 바꿔 보십시오."],
+      body: ["여덟 전략이 다 모였습니다. 모두 25명입니다.", "한 경기가 몇 판인지만 바꿔 보십시오."],
       choices: {
-        3: { label: "3판", result: "3판으로는 읽을 틈이 없습니다. 14세대 만에 모두 따라쟁이입니다." },
-        10: { label: "10판", result: "20세대가 지나도 주사위와 수 읽기가 비슷하게 나눠 가집니다. 읽는 사람이 많으면 읽히지 않는 주사위가 버팁니다." },
-        30: { label: "30판", result: "30판이면 수 읽기가 상대를 충분히 배웁니다. 9세대 만에 모두 수 읽기입니다." },
+        3: { label: "3판", result: "3판으로는 읽을 틈이 없습니다. 14세대 만에 모두 따라쟁이가 됩니다." },
+        10: { label: "10판", result: "20세대가 지나도 승부가 나지 않습니다. 주사위와 수 읽기가 거의 반씩 차지합니다. 읽는 사람이 많으면 읽히지 않는 주사위가 버팁니다." },
+        30: { label: "30판", result: "30판이면 수 읽기가 상대를 충분히 배웁니다. 9세대 만에 모두 수 읽기가 됩니다." },
       },
       end: "짧게 만나면 읽을 틈이 없고, 오래 만나면 읽는 쪽이 이깁니다.",
     },
@@ -243,17 +243,17 @@ export const EVO_TEXT = {
       title: "실수가 섞이면",
       body: ["사람은 실수를 합니다. 이번에는 마음먹은 손 대신 아무 손이나 나가는 일이 섞입니다.", "한 경기는 다시 10판입니다. 실수할 확률을 고르십시오."],
       choices: {
-        0: { label: "실수 없음", result: "실수가 없으면 12세대 만에 모두 수 읽기입니다." },
-        5: { label: "5%", result: "실수가 조금 섞여도 수 읽기가 이깁니다. 11세대 만에 모두 수 읽기입니다." },
+        0: { label: "실수 없음", result: "실수가 없으면 12세대 만에 모두 수 읽기가 됩니다." },
+        5: { label: "5%", result: "실수가 조금 섞여도 수 읽기가 이깁니다. 11세대 만에 모두 수 읽기가 됩니다." },
         20: { label: "20%", result: "실수가 잦으면 읽은 대로 되지 않습니다. 수 읽기는 사라지고, 20세대에 앙갚음 21명과 따라쟁이 4명이 남습니다." },
       },
-      end: "실수가 많을 때는 방금 한 판만 보는 앙갚음과 따라쟁이가 버텼습니다.",
+      end: "실수가 많을 때는 방금 한 판만 보는 앙갚음과 따라쟁이가 버팁니다.",
     },
     draw: {
       title: "비김 점수를 올리면",
       body: ["지금까지는 판마다 이기면 +1점, 비기면 0점, 지면 −1점이었습니다.", "비김 점수만 0.5점으로 올리면 어떻게 되겠습니까? 실수 없이 10판씩입니다."],
       choices: {
-        0: { label: "비김 0점", result: "지금까지와 같습니다. 12세대 만에 모두 수 읽기입니다." },
+        0: { label: "비김 0점", result: "지금까지와 같습니다. 12세대 만에 모두 수 읽기가 됩니다." },
         half: { label: "비김 0.5점", result: "같은 25명인데 이번에는 앙갚음이 20세대 만에 모두를 차지합니다." },
       },
       end: "점수 매기는 법만 바꿔도 이기는 전략이 바뀝니다.",
@@ -261,7 +261,7 @@ export const EVO_TEXT = {
     sandbox: {
       title: "놀이터",
       body: [
-        "이제 마음대로 바꿔 보십시오. 전략마다 사람 수를 정하고, 판 수와 실수와 점수를 바꿀 수 있습니다. 변종도 고를 수 있습니다.",
+        "이제 마음대로 바꿔 보십시오. 전략마다 사람 수를 정하고, 판 수, 실수, 점수를 바꿀 수 있습니다. 변종도 고를 수 있습니다.",
         "씨앗을 바꾸면 같은 조건에서 다른 결과가 나옵니다.",
         "계산기는 최적 비율대로 냅니다. 보통 가위바위보에서는 주사위와 같고, 손이 많거나 비대칭인 변종에서만 다르게 냅니다.",
       ],
@@ -273,7 +273,7 @@ export const EVO_TEXT = {
         "아무렇게나 내는 주사위는 누구에게도 크게 지지 않습니다. 대신 누구도 크게 이기지 못합니다.",
         "사람은 주사위처럼 내기 어렵습니다. 상대의 버릇을 읽고, 자기 버릇은 숨기십시오.",
       ],
-      credit: "이야기의 꼴은 Nicky Case 의 '신뢰의 진화'(The Evolution of Trust, 2017)에서 빌렸습니다.",
+      credit: "이야기 형식은 Nicky Case의 '신뢰의 진화'(The Evolution of Trust, 2017)에서 빌렸습니다.",
     },
   },
   en: {
@@ -283,7 +283,7 @@ export const EVO_TEXT = {
       body: [
         "People say rock paper scissors is luck. If both players throw at random, it really is.",
         "But people can't throw at random. In a study of 360 players, winners often threw the same hand again, and losers often switched.",
-        "Habits can be read. Next, nine computer strategies play each other, each with its own habit. Turn the pages and see who survives.",
+        "Habits can be read. Here, nine computer strategies play each other, each with its own habit. Turn the pages and see who survives.",
       ],
     },
     one: {
@@ -293,9 +293,9 @@ export const EVO_TEXT = {
     },
     duel: {
       title: "Many rounds",
-      body: ["Now you play 10 rounds against each opponent. Five opponents come one by one, and you find out who they are only after the 10 rounds.", "After a few rounds, you might spot a habit."],
+      body: ["Now you play 10 rounds against each opponent. Five opponents take turns, and you only find out who each one is after its 10 rounds.", "After a few rounds, you might spot a habit."],
       foes: {
-        stubborn: "It threw rock all 10 rounds. Paper every time would have won them all. One hand forever is easy to read.",
+        stubborn: "It threw rock all 10 rounds. Paper every time would have won them all. Sticking to one hand is easy to read.",
         cycle: "It went rock, scissors, paper, in order. Throw the hand it just threw, and you beat its next one.",
         mirror: "It copied the hand you just threw. Throw the hand that beats your last one, and you win.",
         avenger: "It threw the hand that beats your last one. Throw the hand your last one beats, and you win.",
@@ -305,8 +305,8 @@ export const EVO_TEXT = {
     },
     league: {
       title: "One league",
-      body: ["The five play each other once, in 10-round matches. Each round, a win is +1, a loss is −1 and a draw is 0.", "Who will come first? Pick one before it starts."],
-      end: "The Copycat comes first. It crushed the Cycler and lost only to the Avenger. The Stubborn one lost to all four opponents. So what happens if the league goes on and on?",
+      body: ["The five play each other once, in 10-round matches. Each round, a win is +1, a loss is −1 and a draw is 0.", "Who will finish first? Pick one before it starts."],
+      end: "The Copycat finishes first. It crushed the Cycler and lost only to the Avenger. The Stubborn one lost to all four opponents. So what happens if the league goes on and on?",
     },
     evolve: {
       title: "League after league",
@@ -328,7 +328,7 @@ export const EVO_TEXT = {
       body: ["Now all eight strategies are here, 25 players in all.", "Change only how many rounds a match lasts."],
       choices: {
         3: { label: "3 rounds", result: "Three rounds leave no time to read. By generation 14, everyone is a Copycat." },
-        10: { label: "10 rounds", result: "Even after 20 generations, the Dice and the Pattern readers split the world almost evenly. When many players are reading, the Dice, who can't be read, hold on." },
+        10: { label: "10 rounds", result: "Even after 20 generations, no one takes over. The Dice and the Pattern readers each have about half. With so many readers around, the Dice, who can't be read, hold on." },
         30: { label: "30 rounds", result: "Thirty rounds give the Pattern reader time to learn everyone. By generation 9, everyone is a Pattern reader." },
       },
       end: "Short meetings leave no time to read. Long ones go to the readers.",
@@ -341,7 +341,7 @@ export const EVO_TEXT = {
         5: { label: "5%", result: "A few mistakes don't stop the Pattern reader. Everyone is a Pattern reader by generation 11." },
         20: { label: "20%", result: "With frequent mistakes, reading stops working. The Pattern readers die out, and after 20 generations 21 Avengers and 4 Copycats are left." },
       },
-      end: "With many mistakes, the Avengers and Copycats, who only look at the last round, held on.",
+      end: "With many mistakes, the Avengers and Copycats, who only look at the last round, hold on.",
     },
     draw: {
       title: "Raise the draw points",
@@ -378,8 +378,8 @@ export const EVO_CATALOG = {
     name: "전략의 진화",
     origin: "컴퓨터끼리",
     about: [
-      "컴퓨터 전략 아홉 가지가 리그를 거듭하며 겨룹니다. 꼴찌는 빠지고 1등은 늘어나서, 세대가 지나면 어떤 전략이 퍼지는지 보입니다.",
-      "경기 길이, 실수, 점수를 바꾸면 살아남는 전략도 바뀝니다. Nicky Case 의 '신뢰의 진화'처럼 장을 넘기며 직접 해 봅니다.",
+      "컴퓨터 전략 아홉 가지가 리그를 거듭하며 겨룹니다. 점수가 낮은 쪽은 빠지고 높은 쪽은 늘어나서, 세대가 지나면 어떤 전략이 퍼지는지 볼 수 있습니다.",
+      "경기 길이, 실수, 점수를 바꾸면 살아남는 전략도 바뀝니다. Nicky Case의 '신뢰의 진화'처럼 장을 넘기며 직접 해 볼 수 있습니다.",
     ],
   },
   en: {
