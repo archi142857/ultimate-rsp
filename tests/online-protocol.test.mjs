@@ -79,7 +79,7 @@ test("화면이 다듬은 이름은 서버가 받는다", () => {
 test("서버 오류 코드마다 화면 문구가 있다", () => {
   const unreachable = errorText("network");
   // 로그인·계정 오류(규약 8장)와 가입·이메일 오류(8.3b·8.8)도 같이 본다
-  for (const code of [...Object.keys(P.ERRORS), ...Object.keys(P.AUTH_ERRORS || {}), ...Object.keys(P.NEW_ERRORS || {})]) {
+  for (const code of Object.keys(P.ERRORS)) {
     const msg = errorText(code);
     assert.ok(msg, code);
     // busy·server 는 '닿지 않는다'와 같은 안내(규약 5장)

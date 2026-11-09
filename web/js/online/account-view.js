@@ -13,7 +13,8 @@ import { signedIn, loginMethods, knownMethods, takeLoginReturn, finishLogin, cha
 export const PRIVACY_URL = "privacy.html";
 
 /** 공식 로고 파일(구글 브랜드 가이드라인 묶음의 G, 카카오 리소스의 말풍선 심볼). web/icons/brand/ 에 넣으면 여기에 적는다 */
-const MARKS = { google: null, kakao: null };
+// 공식 그림(사용자 11-10 받음: 구글 signin-assets 의 G 만 있는 단추, 카카오 리소스의 큰 단추에서 단추 틀·글만 뺐다. 모양·색 그대로, 카카오 심볼은 규정 #000000)
+const MARKS = { google: "icons/brand/google-g.svg", kakao: "icons/brand/kakao-symbol.svg" };
 
 /** 방법 이름 */
 export function providerName(p) {
@@ -85,7 +86,9 @@ export function providerMark(p) {
 export function signInButton(p, onClick) {
   const text = { google: t("Google 계정으로 로그인"), kakao: t("카카오 로그인"), email: t("이메일로 로그인") }[p] ?? t("시험 로그인");
   const src = markSrc(p);
-  const mark = src ? h("img", { class: "sso-mark", src, alt: "", width: p === "email" ? 22 : 20, height: p === "email" ? 22 : 20 }) : null;
+  // 구글 G 20(구글 단추 규정), 카카오 심볼 13(높이 46 공식 단추와 같게), 봉투 22
+  const size = { google: 20, kakao: 13, email: 22 }[p] ?? 20;
+  const mark = src ? h("img", { class: "sso-mark", src, alt: "", width: size, height: size }) : null;
   const b = h("button", { type: "button", class: `sso sso-${p}` }, mark, h("span", { class: "sso-text" }, text));
   b.addEventListener("click", () => onClick(p, b));
   return b;

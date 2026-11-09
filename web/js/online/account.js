@@ -317,8 +317,8 @@ async function call(path, extra = {}) {
   try {
     return await api(`/api/account${path}`, { body: { v: PROTOCOL, token, ...extra } });
   } catch (e) {
-    // 틀리거나 끝난 토큰: 지우고 로그아웃된 것으로
-    if (e instanceof OnlineError && e.code === "bad_token") forget();
+    // 틀리거나 끝난 토큰: 지우고 로그아웃된 것으로. 다만 그사이 새 토큰으로 바뀌었으면(더하기 뒤 옛 토큰은 1분 뒤 끝, 규약 8.5) 그대로 둔다
+    if (e instanceof OnlineError && e.code === "bad_token" && myToken() === token) forget();
     throw e;
   }
 }
