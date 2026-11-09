@@ -170,7 +170,7 @@ export function diceView(main, entry) {
     rec.textContent = recordLine(addRecord(key(), tie ? 0 : won ? 1 : -1));
     score.set(wins[0], wins[1], t("이긴 경기"));
     steps.set(2);
-    clear(doneBar).append(h("strong", {}, tie ? t("비겼다") : won ? t("이겼다!") : t("졌다")), h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")));
+    clear(doneBar).append(h("strong", {}, tie ? t("무승부") : won ? t("승리!") : t("패배")), h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")));
     doneBar.hidden = false;
     busy = false;
   }

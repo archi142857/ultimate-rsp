@@ -248,13 +248,13 @@ export function fastToggle() {
 
 export const RESULT_WORD = {
   get 1() {
-    return t("이겼다!");
+    return t("승리!");
   },
   get 0() {
-    return t("비겼다");
+    return t("무승부");
   },
   get "-1"() {
-    return t("졌다");
+    return t("패배");
   },
 };
 
@@ -311,10 +311,10 @@ export function paragraphs(list) {
 
 export function recordLine(r) {
   const total = r.w + r.d + r.l;
-  if (!total) return t("아직 기록이 없다.");
+  if (!total) return t("아직 기록 없음");
   const tally = t("지금까지 {w}승 {d}무 {l}패", r);
   if (!(r.w + r.l)) return `${tally}.`;
-  return tally + t(", 비긴 판을 빼면 {p}% 이겼다.", { p: Math.round((100 * r.w) / (r.w + r.l)) });
+  return tally + t(", 비긴 판을 빼면 승률 {p}%", { p: Math.round((100 * r.w) / (r.w + r.l)) });
 }
 
 export function emptyNode(el) {

@@ -198,10 +198,10 @@ export function nodeTitle(V, i) {
   const w = V.beats(i);
   const l = V.beatenBy(i);
   const vars = { name: h.name, w: names(w), l: names(l) };
-  if (w.length && l.length) return t("{name}: {w:을를} 이기고 {l}에 진다", vars);
-  if (w.length) return t("{name}: {w:을를} 이긴다", vars);
-  if (l.length) return t("{name}: {l}에 진다", vars);
-  return t("{name}: 모두와 비긴다", vars);
+  if (w.length && l.length) return t("{name}: {w:을를} 이기고 {l}에 짐", vars);
+  if (w.length) return t("{name}: {w:을를} 이김", vars);
+  if (l.length) return t("{name}: {l}에 짐", vars);
+  return t("{name}: 모두와 비김", vars);
 }
 
 function ringLabel(V) {

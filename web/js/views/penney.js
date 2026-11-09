@@ -125,7 +125,7 @@ export function penneyView(main, entry) {
     rec.textContent = recordLine(addRecord("penney", won ? 1 : -1));
     score.set(wins[0], wins[1], t("이긴 판"));
     steps.set(2);
-    clear(doneBar).append(h("strong", {}, won ? t("이겼다!") : t("졌다")), h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")));
+    clear(doneBar).append(h("strong", {}, won ? t("승리!") : t("패배")), h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")));
     doneBar.hidden = false;
     busy = false;
   }

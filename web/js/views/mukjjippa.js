@@ -104,14 +104,14 @@ export function mukjjippaView(main, entry) {
     st.op.set(V, j, phase === "attack" && attacker === 1 ? `${CALL[V.hands[j].id]}!` : "");
     let line;
     if (r.note === "again") {
-      st.say(t("비겼다"));
+      st.say(t("무승부"));
       line = t("가위바위보: 둘 다 {h}. 다시.", { h: lower(V.hands[i].name) });
     } else if (r.note === "start") {
       st.say(game.attacker === 0 ? t("내가 공격") : t("컴퓨터 공격"), game.attacker === 0 ? "win" : "lose");
       line = game.attacker === 0 ? t("가위바위보: {s}. 내가 공격.", { s: V.sentence(i, j) }) : t("가위바위보: {s}. 컴퓨터가 공격.", { s: V.sentence(i, j) });
     } else if (r.note === "hit") {
       const meWon = game.winner === 0;
-      st.say(meWon ? t("이겼다!") : t("졌다"), meWon ? "win" : "lose");
+      st.say(meWon ? t("승리!") : t("패배"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
       line = meWon ? t("둘 다 {h}! 공격하던 내가 이겼다.", { h: lower(V.hands[i].name) }) : t("둘 다 {h}! 공격하던 컴퓨터가 이겼다.", { h: lower(V.hands[i].name) });

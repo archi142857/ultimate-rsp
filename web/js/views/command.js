@@ -35,7 +35,7 @@ export function commandView(main, entry) {
   grid.lock(true);
 
   function bestText() {
-    return best ? t("가장 많이 맞힌 기록은 {n}개.", { n: best }) : t("아직 기록이 없다.");
+    return best ? t("가장 많이 맞힌 기록은 {n}개.", { n: best }) : t("아직 기록 없음");
   }
 
   function orderText(id, name) {

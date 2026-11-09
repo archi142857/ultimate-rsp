@@ -111,7 +111,7 @@ export function ecardView(main, entry) {
     if (g.done) {
       const won = g.winner === 0;
       const tie = g.winner === -1;
-      st.say(tie ? t("비겼다") : won ? t("이겼다!") : t("졌다"), tie ? "" : won ? "win" : "lose");
+      st.say(tie ? t("무승부") : won ? t("승리!") : t("패배"), tie ? "" : won ? "win" : "lose");
       rec.textContent = recordLine(addRecord("ecard", tie ? 0 : won ? 1 : -1));
       clear(doneBar).append(
         h("strong", {}, t("{a} 대 {b}", { a: g.score[0], b: g.score[1] })),

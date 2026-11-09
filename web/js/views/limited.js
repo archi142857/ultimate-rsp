@@ -106,7 +106,7 @@ export function limitedView(main, entry) {
     st.me.set(V, i);
     st.op.set(V, j);
     if (r.cmp === 0) {
-      st.say(t("비겼다"));
+      st.say(t("무승부"));
       st.sub(t("별은 그대로, 카드만 한 장씩 줄었다."));
       log.add(t("둘 다 {h}. 별 그대로.", { h: lower(V.hands[i].name) }));
     } else {
@@ -123,7 +123,7 @@ export function limitedView(main, entry) {
       else wins[w] += 1;
       rec.textContent = recordLine(addRecord("limited", w === 0 ? 1 : w === 1 ? -1 : 0));
       clear(doneBar).append(
-        h("strong", {}, w === 0 ? t("살아남았다") : w === 1 ? t("졌다") : t("별이 같다, 비김")),
+        h("strong", {}, w === 0 ? t("살아남았다") : w === 1 ? t("패배") : t("별이 같다, 비김")),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;

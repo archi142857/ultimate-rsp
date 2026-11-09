@@ -99,7 +99,7 @@ export function dynamiteWbView(main, entry) {
     const r = match.play(i, j);
     st.me.set(V, i);
     st.op.set(V, j);
-    st.say(r.cmp === 0 ? t("비겼다") : r.cmp > 0 ? t("+{n}점", { n: r.gain }) : t("−{n}점", { n: r.gain }), r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
+    st.say(r.cmp === 0 ? t("무승부") : r.cmp > 0 ? t("+{n}점", { n: r.gain }) : t("−{n}점", { n: r.gain }), r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
     st.sub(r.cmp === 0 && carry ? t("{s}. 점수가 다음 판으로 넘어간다.", { s: r.sentence }) : `${r.sentence}.`);
     st.me.mark(r.cmp > 0 ? "won" : r.cmp < 0 ? "lost" : null);
     st.op.mark(r.cmp < 0 ? "won" : r.cmp > 0 ? "lost" : null);

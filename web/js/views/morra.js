@@ -148,7 +148,7 @@ export function morraView(main, entry) {
     steps.set(game.done ? 2 : 1);
     if (game.done) {
       const won = game.winner === 0;
-      st.say(won ? t("이겼다!") : t("졌다"), won ? "win" : "lose");
+      st.say(won ? t("승리!") : t("패배"), won ? "win" : "lose");
       rec.textContent = recordLine(addRecord(key(), won ? 1 : -1));
       clear(doneBar).append(
         h("strong", {}, won ? t("내가 먼저 {n}점을 냈다", { n: TARGET }) : t("컴퓨터가 먼저 {n}점을 냈다", { n: TARGET })),

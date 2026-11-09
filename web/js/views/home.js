@@ -90,7 +90,7 @@ export function homeView(main, { focus } = {}) {
   const history = [];
 
   // 바로 한 판
-  const out = h("p", { class: "quick-out", "aria-live": "polite" }, t("손을 고르면 컴퓨터도 같이 낸다."));
+  const out = h("p", { class: "quick-out", "aria-live": "polite" }, t("손을 고르면 컴퓨터도 같이 냅니다."));
   const grid = handGrid(classic, {
     compact: true,
     label: t("가위바위보 한 판"),
@@ -120,7 +120,7 @@ export function homeView(main, { focus } = {}) {
       h(
         "p",
         { class: "hero-lead" },
-        t("가위바위보 {n}가지를 모았다. 누가 누구를 이기는지 고리 그림으로 보고, 컴퓨터나 친구와 바로 겨룬다.", { n: CATALOG.length }),
+        t("가위바위보 {n}가지를 모았습니다. 누가 누구를 이기는지 고리 그림으로 보고, 컴퓨터나 친구와 바로 겨룹니다.", { n: CATALOG.length }),
       ),
       h(
         "div",
@@ -170,7 +170,7 @@ function heroRing() {
     current = id;
     const k = (V.n - 1) / 2;
     clear(cap).append(
-      t("{name}. 손 {n}개가 저마다 {k}개를 이기고 {k}개에 진다. 손을 누르면 누구를 이기는지 보인다. ", { name: V.name, n: V.n, k }),
+      t("{name}. 손 {n}개가 저마다 {k}개를 이기고 {k}개에 집니다. 손을 누르면 누구를 이기는지 보입니다. ", { name: V.name, n: V.n, k }),
       h("a", { href: `#/v/${id}` }, t("이걸로 하기")),
     );
   }

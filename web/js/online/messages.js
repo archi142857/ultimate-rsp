@@ -14,36 +14,36 @@ export function resetTime(now = new Date()) {
 export function errorText(code) {
   switch (code) {
     case "offline":
-      return t("인터넷에 연결되어 있지 않다. 연결을 확인하자.");
+      return t("인터넷에 연결되어 있지 않습니다. 연결을 확인해 주십시오.");
     case "timeout":
-      return t("서버가 응답하지 않는다. 잠시 뒤 다시 해 보자.");
+      return t("서버가 응답하지 않습니다. 잠시 뒤 다시 해 주십시오.");
     case "version":
-      return t("화면과 서버 버전이 다르다. 새로고침하면 된다.");
+      return t("화면과 서버 버전이 다릅니다. 새로고침해 주십시오.");
     case "bad_reply":
     case "bad_request":
     case "bad_pid":
-      return t("서버와 데이터를 주고받다가 오류가 났다. 새로고침하면 된다.");
+      return t("서버와 데이터를 주고받다가 오류가 났습니다. 새로고침해 주십시오.");
     case "origin":
-      return t("이 주소에서는 온라인 대전을 할 수 없다.");
+      return t("이 주소에서는 온라인 대전을 할 수 없습니다.");
     case "bad_name":
-      return t("이 이름은 쓸 수 없다. 온라인 첫 화면에서 이름을 바꾸면 된다.");
+      return t("이 이름은 쓸 수 없습니다. 온라인 첫 화면에서 이름을 바꿔 주십시오.");
     case "not_found":
-      return t("도전장을 찾지 못했다. 링크가 틀렸거나 기한이 지나 지워졌다.");
+      return t("도전장을 찾지 못했습니다. 링크가 틀렸거나 기한이 지나 지워졌습니다.");
     case "closed":
-      return t("이미 끝난 도전장이다.");
+      return t("이미 끝난 도전장입니다.");
     case "own":
-      return t("내가 만든 도전장에는 답할 수 없다.");
+      return t("직접 만든 도전장에는 답할 수 없습니다.");
     case "bad_game":
-      return t("이 게임은 아직 온라인에서 할 수 없다.");
+      return t("이 게임은 아직 온라인에서 할 수 없습니다.");
     case "bad_rules":
-      return t("그 규칙은 쓸 수 없다.");
+      return t("그 규칙은 쓸 수 없습니다.");
     case "bad_hand":
-      return t("그 손은 이 게임에 없다.");
+      return t("그 손은 이 게임에 없습니다.");
     case "too_fast":
-      return t("너무 자주 보냈다. 잠시 뒤 다시 해 보자.");
+      return t("너무 자주 보냈습니다. 잠시 뒤 다시 해 주십시오.");
     default:
       // network·busy·server·http_5xx: 서버가 꺼졌거나 하루 한도에 닿았다(규약 5장: 모두 busy 처럼 안내)
-      return t("서버에 연결할 수 없다. 잠시 뒤 다시 해 보자. 하루 무료 한도를 넘었다면 {time}에 풀린다.", { time: resetTime() });
+      return t("서버에 연결할 수 없습니다. 잠시 뒤 다시 해 주십시오. 하루 무료 한도를 넘었다면 {time}에 풀립니다.", { time: resetTime() });
   }
 }
 
@@ -54,9 +54,9 @@ export function errorText(code) {
 export function noticeFor(code) {
   switch (code) {
     case "offline":
-      return { kind: "drop", title: t("인터넷에 연결되어 있지 않다"), text: t("연결을 확인하자.") };
+      return { kind: "drop", title: t("인터넷 연결 없음"), text: t("연결을 확인해 주십시오.") };
     case "version":
-      return { kind: "update", title: t("새 버전이 나왔다"), text: t("새로고침하면 바뀐다.") };
+      return { kind: "update", title: t("새 버전 있음"), text: t("새로고침하면 바뀝니다.") };
     case "timeout":
     case "network":
     case "busy":
@@ -69,23 +69,23 @@ export function noticeFor(code) {
 
 const limitNotice = () => ({
   kind: "limit",
-  title: t("지금은 서버에 연결할 수 없다"),
-  text: t("오늘 무료 한도가 찼거나 서버가 잠시 멈췄다. 한도는 {time}에 풀린다. 혼자 하기는 그대로 된다.", { time: resetTime() }),
+  title: t("지금은 서버 연결 안 됨"),
+  text: t("오늘 무료 한도가 찼거나 서버가 잠시 멈췄습니다. 한도는 {time}에 풀립니다. 혼자 하기는 그대로 됩니다.", { time: resetTime() }),
 });
 
 /** 방 WebSocket 의 {t:"error"} (연결은 그대로) */
 export function wsErrorText(code) {
   switch (code) {
     case "not_host":
-      return t("방장만 할 수 있다.");
+      return t("방장만 할 수 있습니다.");
     case "phase":
-      return t("지금은 할 수 없다.");
+      return t("지금은 할 수 없습니다.");
     case "stale":
-      return t("지난 판이라 받지 않았다.");
+      return t("지난 판이라 받지 않았습니다.");
     case "already":
-      return t("이번 판에는 이미 냈다.");
+      return t("이번 판에는 이미 냈습니다.");
     case "full":
-      return t("앉을 자리가 없다.");
+      return t("앉을 자리가 없습니다.");
     default:
       return errorText(code);
   }
@@ -95,20 +95,20 @@ export function wsErrorText(code) {
 export function closeText(code) {
   switch (code) {
     case CLOSE.not_found:
-      return t("방을 찾지 못했다. 코드가 틀렸거나 방이 지워졌다.");
+      return t("방을 찾지 못했습니다. 코드가 틀렸거나 방이 지워졌습니다.");
     case CLOSE.replaced:
-      return t("다른 창에서 이 방에 들어가서 이 창은 연결을 끊었다.");
+      return t("다른 창에서 이 방에 들어가서 이 창은 연결을 끊었습니다.");
     case CLOSE.deleted:
-      return t("방이 지워졌다.");
+      return t("방이 지워졌습니다.");
     case CLOSE.full:
       // 자리 임자는 늘 들어오고, 구경꾼은 6명까지다(서버 2a825ec)
-      return t("구경꾼 자리가 다 찼다. 잠시 뒤 다시 해 보자.");
+      return t("구경꾼 자리가 다 찼습니다. 잠시 뒤 다시 해 주십시오.");
     case CLOSE.version:
       return errorText("version");
     case CLOSE.origin:
       return errorText("origin");
     case CLOSE.bad_request:
-      return t("이름이나 주소가 잘못돼 들어가지 못했다. 온라인 첫 화면에서 이름을 확인하자.");
+      return t("이름이나 주소가 잘못돼 들어가지 못했습니다. 온라인 첫 화면에서 이름을 확인해 주십시오.");
     default:
       return errorText("network");
   }

@@ -172,13 +172,13 @@ export function minusOneView(main, entry) {
     st.me.set(V, r.a);
     st.op.set(V, r.b);
     if (r.cmp === 0) {
-      st.say(t("비겼다"));
+      st.say(t("무승부"));
       st.sub(t("처음부터 다시 두 손을 낸다."));
       log.add(t("나 {a}, 컴퓨터 {b}. 비겨서 다시.", { a: lower(V.hands[r.a].name), b: lower(V.hands[r.b].name) }));
       resetPicks();
     } else {
       const meWon = r.cmp > 0;
-      st.say(meWon ? t("이겼다!") : t("졌다"), meWon ? "win" : "lose");
+      st.say(meWon ? t("승리!") : t("패배"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
       st.sub(`${r.sentence}.`);

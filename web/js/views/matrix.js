@@ -91,7 +91,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(fmt.target === Infinity ? t("끝없이 겨룬다. 몇 판이든 해 보자.") : t("먼저 {n}번 이기면 끝난다. 비긴 판은 세지 않는다.", { n: fmt.target }));
+    st.sub(fmt.target === Infinity ? t("끝없이 겨룹니다. 원하는 만큼 하면 됩니다.") : t("먼저 {n}번 이기면 끝납니다. 비긴 판은 세지 않습니다.", { n: fmt.target }));
     ring.clear();
     updateScore();
   }
@@ -115,7 +115,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     st.me.set(V, i);
     st.op.set(V, j);
     st.say(RESULT_WORD[r.cmp], r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
-    st.sub(r.cmp === 0 ? `${V.sentence(i, j)}. ${t("다시 낸다.")}` : `${r.sentence}.`);
+    st.sub(r.cmp === 0 ? `${V.sentence(i, j)}. ${t("다시 내기")}` : `${r.sentence}.`);
     st.me.mark(r.cmp > 0 ? "won" : r.cmp < 0 ? "lost" : null);
     st.op.mark(r.cmp < 0 ? "won" : r.cmp > 0 ? "lost" : null);
     ring.bout(i, j);
@@ -140,7 +140,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
   const facts = [
     [t("손"), t("{n}개", { n: V.n })],
     [t("아무렇게나 낼 때 비길 확률"), frac(drawChance(V))],
-    [t("@fact:균형"), V.balanced ? t("고르다(손마다 {k}개를 이긴다)", { k }) : t("고르지 않다")],
+    [t("@fact:균형"), V.balanced ? t("고름(손마다 {k}개를 이김)", { k }) : t("고르지 않음")],
   ];
 
   const playPanel = h(
@@ -160,7 +160,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     "div",
     { class: "ring-panel" },
     h("div", { class: "ring-box" }, ring.el),
-    h("p", { class: "ring-note" }, t("화살표는 이기는 손에서 지는 손으로 간다. 손을 누르면 그 손이 이기는 상대는 같은 색으로, 지는 상대는 진하게 보인다.") + (hasDraws(V) ? t(" 선이 없는 두 손은 비긴다.") : "")),
+    h("p", { class: "ring-note" }, t("화살표는 이기는 손에서 지는 손으로 갑니다. 손을 누르면 그 손이 이기는 상대는 같은 색으로, 지는 상대는 진하게 보입니다.") + (hasDraws(V) ? t(" 선이 없는 두 손은 비깁니다.") : "")),
   );
 
   append(main, [
@@ -189,7 +189,7 @@ function relationsBlock(V) {
   if (V.n > 25 && V.cycle) {
     return block(
       t("누가 누구를 이기나"),
-      h("p", {}, t("손을 아래 차례대로 고리에 놓는다. 손마다 바로 뒤의 {k}개를 이기고, 끝에서는 처음으로 돌아가 센다. 고리 그림에서 손을 누르면 누구를 이기는지 보인다.", { k: V.cycle })),
+      h("p", {}, t("손을 아래 차례대로 고리에 놓습니다. 손마다 바로 뒤의 {k}개를 이기고, 끝에서는 처음으로 돌아가 셉니다. 고리 그림에서 손을 누르면 누구를 이기는지 보입니다.", { k: V.cycle })),
       h("ol", { class: "ringlist" }, V.order.map((i) => h("li", {}, handArt(V.hands[i]), ` ${V.hands[i].name}`))),
     );
   }
@@ -206,8 +206,8 @@ function relationsBlock(V) {
         {},
         h("b", {}, hd.name),
         " ",
-        w.length ? t("{w:을를} 이긴다. ", { w: names(w) }) : "",
-        l.length ? t("{l}에 진다.", { l: names(l) }) : "",
+        w.length ? t("{w:을를} 이김. ", { w: names(w) }) : "",
+        l.length ? t("{l}에 짐", { l: names(l) }) : "",
       ),
     );
   });
@@ -261,22 +261,22 @@ function strategyBlock(V) {
   const eq = V.equilibrium;
   if (eq.uniform) {
     return block(
-      t("어떻게 내야 할까"),
+      t("내는 방법"),
       h(
         "p",
         {},
-        t("모든 손을 똑같이 {p}씩 섞어 내면 된다. 그러면 상대가 무엇을 내든 길게 보면 이기는 판과 지는 판이 같아진다. ", { p: frac(1 / V.n) }) +
-          t("대신 상대에게 버릇이 있으면 그걸 노려야 이긴다. '컴퓨터 전략'에서 고집이나 돌림처럼 버릇 있는 상대를 골라 보자."),
+        t("모든 손을 똑같이 {p}씩 섞어 내면 됩니다. 그러면 상대가 무엇을 내든 길게 보면 이기는 판과 지는 판이 같아집니다. ", { p: frac(1 / V.n) }) +
+          t("대신 상대에게 버릇이 있으면 그 버릇을 노려야 이깁니다. '컴퓨터 전략'에서 고집이나 돌림처럼 버릇 있는 상대를 골라 보십시오."),
       ),
     );
   }
   const zero = V.hands.filter((hd) => eq.mix[hd.i] < 1e-9).map((hd) => lower(hd.name, hd.proper));
   return block(
-    t("어떻게 내야 할까"),
-    h("p", {}, t("이 변종은 고르지 않아서 손마다 낼 비율이 다르다. 선형 계획법으로 구한 최적 비율은 이렇다.")),
+    t("내는 방법"),
+    h("p", {}, t("이 변종은 고르지 않아서 손마다 낼 비율이 다릅니다. 선형 계획법으로 구한 최적 비율은 이렇습니다.")),
     mixBar(V, eq.mix),
     zero.length
-      ? h("p", { class: "note" }, h("b", {}, t("{z:은는} 내지 않는다.", { z: listWords(zero) })), t(" 어떤 손을 만나도 다른 손보다 낫지 않기 때문이다."))
+      ? h("p", { class: "note" }, h("b", {}, t("{z:은는} 내지 않습니다.", { z: listWords(zero) })), t(" 어떤 손을 만나도 다른 손보다 낫지 않기 때문입니다."))
       : null,
   );
 }

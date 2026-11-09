@@ -79,7 +79,7 @@ export function acchimuiteView(main, entry) {
     st.me.set(V, i);
     st.op.set(V, j);
     if (r.cmp === 0) {
-      st.say(t("비겼다"));
+      st.say(t("무승부"));
       st.sub(t("다시 가위바위보."));
       log.add(t("가위바위보: 둘 다 {h}.", { h: lower(V.hands[i].name) }));
     } else {
@@ -106,7 +106,7 @@ export function acchimuiteView(main, entry) {
     st.op.text(opD.arrow, opD.name);
     if (r.hit) {
       const meWon = game.winner === 0;
-      st.say(meWon ? t("이겼다!") : t("졌다"), meWon ? "win" : "lose");
+      st.say(meWon ? t("승리!") : t("패배"), meWon ? "win" : "lose");
       st.sub(pointer === 0 ? t("{d:을를} 가리켰는데 컴퓨터가 그쪽을 봤다.", { d: lower(meD.name) }) : t("컴퓨터가 {d:을를} 가리켰고 나도 그쪽을 봤다.", { d: lower(opD.name) }));
       log.add(meWon ? t("호이! 둘 다 {d}. 내가 이겼다.", { d: lower(meD.name) }) : t("호이! 둘 다 {d}. 컴퓨터가 이겼다.", { d: lower(meD.name) }), meWon ? "w" : "l");
       wins[game.winner] += 1;

@@ -128,8 +128,8 @@ test("프로필 그림: 게임 그림 이름만 받고, 고른 때만 서버에 
 });
 
 test("연결 실패 문구와 한도가 풀리는 시각", () => {
-  assert.match(errorText("network"), /풀린다/);
-  assert.match(errorText("anything_else"), /서버에 연결할 수 없다/);
+  assert.match(errorText("network"), /풀립니다/);
+  assert.match(errorText("anything_else"), /서버에 연결할 수 없습니다/);
   setLang("en", { persist: false });
   try {
     assert.match(resetTime(new Date("2026-11-07T05:00:00Z")), /^\d{1,2}:00\s?(AM|PM)$/);

@@ -814,8 +814,8 @@ export function roomView(main, code) {
       }
       const { me, op } = sidesOf(you);
       const fin = finalFor(room, me);
-      if (you === null) return fin === 0 ? [t("비겼다"), ""] : [t("{who} 우승!", { who: seatName(room.seats[fin > 0 ? me : op]) }), ""];
-      return fin > 0 ? [t("경기에서 이겼다!"), "win"] : fin < 0 ? [t("경기에서 졌다"), "lose"] : [t("비겼다"), ""];
+      if (you === null) return fin === 0 ? [t("무승부"), ""] : [t("{who} 우승!", { who: seatName(room.seats[fin > 0 ? me : op]) }), ""];
+      return fin > 0 ? [t("경기에서 이겼다!"), "win"] : fin < 0 ? [t("경기에서 졌다"), "lose"] : [t("무승부"), ""];
     }
     if (intro) runIntro();
     return {

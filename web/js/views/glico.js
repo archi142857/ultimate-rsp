@@ -153,7 +153,7 @@ export function glicoView(main, entry) {
     st.me.set(V, i);
     st.op.set(V, j);
     if (r.cmp === 0) {
-      st.say(t("비겼다"));
+      st.say(t("무승부"));
       st.sub(t("아무도 오르지 않는다."));
       clear(kana);
       log.add(t("둘 다 {h}. 그대로.", { h: lower(V.hands[i].name) }));
@@ -171,7 +171,7 @@ export function glicoView(main, entry) {
     if (game.done) {
       const meWon = game.winner === 0;
       wins[game.winner] += 1;
-      st.say(meWon ? t("꼭대기!") : t("졌다"), meWon ? "win" : "lose");
+      st.say(meWon ? t("꼭대기!") : t("패배"), meWon ? "win" : "lose");
       rec.textContent = recordLine(addRecord("glico", meWon ? 1 : -1));
       clear(doneBar).append(
         h("strong", {}, meWon ? t("먼저 올랐다") : t("컴퓨터가 먼저 올랐다")),
