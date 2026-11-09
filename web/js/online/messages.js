@@ -101,7 +101,8 @@ export function closeText(code) {
     case CLOSE.deleted:
       return t("방이 지워졌다.");
     case CLOSE.full:
-      return t("방에 사람이 너무 많다. 잠시 뒤 다시 해 보자.");
+      // 자리 임자는 늘 들어오고, 구경꾼은 6명까지다(서버 2a825ec)
+      return t("구경꾼 자리가 다 찼다. 잠시 뒤 다시 해 보자.");
     case CLOSE.version:
       return errorText("version");
     case CLOSE.origin:

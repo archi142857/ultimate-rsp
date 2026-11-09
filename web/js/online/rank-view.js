@@ -60,6 +60,9 @@ export function rankView(main, gameId = null) {
       "p",
       { class: "o-p o-wide-only" },
       t("랜덤 매칭에서 사람끼리 끝난 경기만 센다. {n}경기부터 오르고, 점수는 {start}에서 시작한다(Elo).", { n: BOARD_MIN_GAMES, start: RATING_START }),
+      " ",
+      // 같은 곳(서버 2a825ec)·처음 온 사람(컨셉 50d48eb NEWCOMER_WEIGHT)
+      t("같은 곳에서 온 사람끼리 한 경기는 세지 않고, 처음 온 사람과 한 경기는 점수가 반만 움직인다."),
     ),
   );
 

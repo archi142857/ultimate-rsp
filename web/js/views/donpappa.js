@@ -1,7 +1,7 @@
 // 돈파파 화면. 가위바위보로 공격을 정한 뒤, 공격이 '지금 손, 지금 손, 다음 손'을 외치고 둘이 셋째 손을 같이 낸다.
 // 셋째 손이 같으면 '돈!'을 먼저 누른 쪽이 이긴다. 다르면 공수가 바뀐다.
 
-import { h, clear } from "../ui/dom.js";
+import { h, clear, sleep } from "../ui/dom.js";
 import { t } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
 import { createBot } from "../core/bots.js";
@@ -12,7 +12,7 @@ import { reactionMs } from "../games/reaction.js";
 import { handGrid, stage, chant, fastToggle, block, segmented, recordLine, rpsChant } from "../ui/widgets.js";
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList, pressPad } from "./flow.js";
-import { speedSeg, secs } from "./hammer.js";
+import { speedSeg, secs, HOLD_MS, padResult, clearPad } from "./hammer.js";
 import { addRecord, record } from "../ui/store.js";
 
 /** 셋째 손이 다를 때(간사이 규칙) '돈!'을 잘못 누를 수 있게 단추를 켜 두는 시간 */
@@ -66,6 +66,7 @@ export function donpappaView(main, entry) {
 
   function newGame() {
     pad.cancel();
+    clearPad(pad);
     game = createDonpappa(V, { falseStart, limit: DON_MS });
     busy = false;
     doneBar.hidden = true;
@@ -130,9 +131,11 @@ export function donpappaView(main, entry) {
     const same = i === j;
     let mine = Infinity;
     let comp = Infinity;
-    if (same || g.falseStart) {
+    const pressed = same || g.falseStart;
+    if (pressed) {
       // 같으면 '돈!' 겨루기. 간사이 규칙이면 다를 때도 단추를 잠깐 켜 둔다(누르면 진다)
       grid.el.hidden = true;
+      clearPad(pad);
       pad.el.hidden = false;
       st.say(same ? t("같다!") : t("다르다"), same ? "win" : "");
       st.sub(same ? t("먼저 누르자.") : t("누르면 진다."));
@@ -149,27 +152,30 @@ export function donpappaView(main, entry) {
       });
       clearTimeout(cue);
       if (game !== g) return;
-      pad.el.hidden = true;
-      grid.el.hidden = false;
     }
     const r = g.call(i, j, mine, comp);
+    // 누르기 판이었으면 결과를 단추 자리에도 크게 보이고 잠깐 둔다(11-09 사용자: 결과가 바로 사라졌다)
+    const say = (text, tone = "") => {
+      st.say(text, tone);
+      if (pressed) padResult(pad, text, tone);
+    };
     const shown = (ms) => (Number.isFinite(ms) ? t("{s}초", { s: secs(ms) }) : t("안 눌렀다"));
     let line;
     if (r.result === "don") {
       const meWon = g.winner === 0;
-      st.say(meWon ? t("돈! 내가 이겼다") : t("돈! 컴퓨터가 이겼다"), meWon ? "win" : "lose");
+      say(meWon ? t("돈! 내가 이겼다") : t("돈! 컴퓨터가 이겼다"), meWon ? "win" : "lose");
       st.sub(t("나 {a}, 컴퓨터 {b}", { a: shown(mine), b: shown(comp) }));
       const said = { c: callOf(i), a: shown(mine), b: shown(comp) };
       line = meWon ? t("둘 다 {c}. 내가 먼저 '돈!' (나 {a}, 컴퓨터 {b})", said) : t("둘 다 {c}. 컴퓨터가 먼저 '돈!' (나 {a}, 컴퓨터 {b})", said);
     } else if (r.result === "missed") {
-      st.say(t("아무도 안 외쳤다"));
+      say(t("아무도 안 외쳤다"));
       line = t("둘 다 {c}. 아무도 '돈!'을 외치지 않아 다시 한다.", { c: callOf(i) });
     } else if (r.result === "false") {
-      st.say(t("손이 다른데 외쳐서 졌다"), "lose");
+      say(t("손이 다른데 외쳐서 졌다"), "lose");
       st.sub(t("나 {a}", { a: shown(mine) }));
       line = t("{a} 대 {b}. 손이 다른데 '돈!'을 외쳐서 졌다.", { a: callOf(i), b: callOf(j) });
     } else {
-      st.say(g.attacker === 0 ? t("이제 내가 공격이다") : t("공격이 넘어갔다"), g.attacker === 0 ? "win" : "lose");
+      say(g.attacker === 0 ? t("이제 내가 공격이다") : t("공격이 넘어갔다"), g.attacker === 0 ? "win" : "lose");
       line = t("{a} 대 {b}. 공격과 수비가 바뀐다.", { a: callOf(i), b: callOf(j) });
     }
     log.add(line, g.done ? (g.winner === 0 ? "w" : "l") : "");
@@ -182,8 +188,15 @@ export function donpappaView(main, entry) {
       clear(doneBar).append(h("strong", {}, won ? t("돈파파 승리") : t("돈파파 패배")), h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")));
       doneBar.hidden = false;
       grid.el.hidden = true;
+      pad.el.hidden = true;
       steps.set(2);
     } else {
+      if (pressed) {
+        await sleep(HOLD_MS);
+        if (game !== g) return;
+        pad.el.hidden = true;
+        grid.el.hidden = false;
+      }
       if (r.result !== "don") st.sub(prompt());
       grid.lock(false);
     }

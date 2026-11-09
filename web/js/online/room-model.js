@@ -52,8 +52,17 @@ export function duelRound(V, entry, me) {
 /** 여럿이 hist: { r, hands: [..., null], win, out } → 이긴 손 번호와 빠진 자리 */
 export function groupRound(V, entry) {
   const hands = entry.hands.map((id) => (id === null ? null : V.index[id] ?? null));
-  const win = entry.win === null || entry.win === undefined ? null : V.index[entry.win] ?? null;
-  return { r: entry.r, hands, win, out: Array.isArray(entry.out) ? entry.out : [] };
+  const at = (id) => (id === null || id === undefined ? null : V.index[id] ?? null);
+  // lose: 술래 정하기에서 진 손(손 많은 바탕의 점수 규칙은 이긴 손이 없어도 진 손으로 갈린다, 서버 2a825ec)
+  return { r: entry.r, hands, win: at(entry.win), lose: at(entry.lose), out: Array.isArray(entry.out) ? entry.out : [] };
+}
+
+/** 여럿이 한 판의 결과 머리글: '바위 승' · '보 짐'(이긴 손이 없고 진 손으로 갈렸을 때) · null(다시). 갈렸는지는 out 으로 본다 */
+export function groupHead(V, g) {
+  if (!g.out.length) return null;
+  if (g.win !== null) return { kind: "win", hand: g.win, name: V.hands[g.win].name };
+  if (g.lose !== null) return { kind: "lose", hand: g.lose, name: V.hands[g.lose].name };
+  return { kind: "out", hand: null, name: "" };
 }
 
 /** 사람 수 세기 */

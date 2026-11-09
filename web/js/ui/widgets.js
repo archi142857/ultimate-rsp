@@ -160,6 +160,13 @@ export function stage({ meLabel = t("나"), opLabel = t("컴퓨터") } = {}) {
         face.textContent = emoji;
         name.textContent = label;
       },
+      /** 변종 손이 아닌 소품 그림(황제·시민·노예 같은 것). hand 는 { id 나 art, emoji } */
+      art(hand, label) {
+        box.classList.remove("empty");
+        box.removeAttribute("style");
+        setArt(face, hand);
+        name.textContent = label;
+      },
       tag(t) {
         tag.textContent = t || "";
       },

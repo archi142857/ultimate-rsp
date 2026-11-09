@@ -31,16 +31,21 @@ export function playerId() {
   return (pidMemo = id);
 }
 
-// 줄바꿈·제어 글자, 보이지 않는 빈칸, 글 방향을 뒤집는 글자(이름 바꿔치기에 쓰인다).
+// 줄바꿈·제어 글자, 빈칸처럼 보이는 글자(한글 채움 U+3164·U+FFA0·U+115F·U+1160, 점자 빈칸 U+2800, U+034F,
+// 크메르 안 보이는 모음 U+17B4·U+17B5, 몽골 선택자 U+180B–U+180F), 서식 글자(\p{Cf}: 보이지 않는 빈칸·글 방향 뒤집기·소프트 하이픈 등),
+// 짝이 아닌 이체 선택자(U+FE0E·U+FE0F 는 그림 글자·키캡 바탕 뒤에서만, U+E0100–U+E01EF 는 한자 뒤에서만, U+FE00–U+FE0D 는 늘 뺀다).
+// 서버 check.js 의 BAD_NAME 과 같은 모음(검수 11-08·11-09, 서버 2a825ec·f3ebcdc).
 // 이모지를 잇는 글자(U+200D)는 남긴다(👨\u200D👩\u200D👧 같은 이모지가 깨지지 않게)
-const HIDDEN = /[\p{Cc}\u2028\u2029\u200B\u2060\uFEFF\u202A-\u202E\u2066-\u2069]/gu;
+const HIDDEN =
+  /[\p{Cc}\u2028\u2029\u034F\u115F\u1160\u17B4\u17B5\u180B-\u180F\u2800\u3164\uFFA0\uFE00-\uFE0D]|(?!\u200D)\p{Cf}|(?<![\p{Extended_Pictographic}0-9#*])[\uFE0E\uFE0F]|(?<!\p{Ideographic})[\u{E0100}-\u{E01EF}]/gu;
 
 // 글자·숫자·기호·문장 부호가 하나는 있어야 한다(서버 checkName 과 같다)
 const VISIBLE = /[\p{L}\p{N}\p{S}\p{P}]/u;
 
 /** 이름 다듬기: 보이지 않는 글자·줄바꿈을 빼고, 빈칸을 하나로, 20글자까지. 보이는 글자가 없으면 빈 이름 */
 export function cleanName(s) {
-  const flat = String(s || "")
+  // 저장값이 글이 아니면(예: {"a":1}) 빈 이름으로 본다('[object Object]' 가 서버로 가지 않게, 검수 11-08)
+  const flat = (typeof s === "string" ? s : typeof s === "number" ? String(s) : "")
     .normalize("NFC")
     .replace(HIDDEN, " ")
     .replace(/\s+/g, " ")

@@ -15,7 +15,7 @@ import { topBar, bigTitle, variantRow } from "./common.js";
 import { noticeSlot } from "./notice.js";
 import { peopleRing, timerDial } from "./people-ring.js";
 import { randomGames, randomGame } from "./games.js";
-import { groupBases, gameName, modeName } from "./rules.js";
+import { groupBases, gameName, modeName, seatsOf } from "./rules.js";
 import { myName, playerId, meFields, meWho } from "./identity.js";
 import { openSocket } from "./socket.js";
 import { PROTOCOL } from "./config.js";
@@ -67,16 +67,26 @@ export function matchView(main, params = {}) {
       }
       return rows;
     };
-    const seats = group ? t("{a}–{b}명", { a: GROUP_SEATS.min, b: GROUP_SEATS.max }) : t("@seats:{n}명", { n: 2 });
+    // 여럿이 인원은 바탕마다 다르다(컨셉 seatRange: 손 셋 3–8명)
+    const seatsText = (id) => {
+      const r = seatsOf(id);
+      return t("{a}–{b}명", { a: r.min, b: r.max });
+    };
     const rows = (group ? groupBases() : randomGames()).map((e) => {
-      const row = variantRow(variant(e), { tag: "button", on: e.id === (group ? base : game), sub: seats });
+      const row = variantRow(variant(e), { tag: "button", on: e.id === (group ? base : game), sub: group ? seatsText(e.id) : t("@seats:{n}명", { n: 2 }) });
       row.dataset.id = e.id;
       return row;
     });
+    const groupNote = () => {
+      const r = seatsOf(base);
+      return t("{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이 하는 경기는 순위에 들지 않는다.", { a: r.min, b: r.max, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) });
+    };
+    const note = group ? h("p", { class: "o-p o-small" }, groupNote()) : null;
     choose(rows, (id) => {
       if (group) {
         base = id;
         setSetting("online.matchBase", id);
+        note.textContent = groupNote();
       } else {
         game = id;
         setSetting("online.matchGame", id);
@@ -123,7 +133,7 @@ export function matchView(main, params = {}) {
       topBar({ href: "#/play", label: t("랜덤 매칭") }).el,
       bigTitle(t("무엇으로 붙을까?")),
       h("div", { class: "o-card o-kv-card" }, kindSeg.el, second.el),
-      group ? h("p", { class: "o-p o-small" }, t("{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이 하는 경기는 순위에 들지 않는다.", { a: GROUP_SEATS.min, b: GROUP_SEATS.max, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) })) : null,
+      note,
       list,
       h("div", { class: "o-actions o-sticky" }, find),
       h("p", { class: "o-p o-small o-center" }, t("내 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play?name=1" }, t("이름 바꾸기"))),
@@ -165,8 +175,8 @@ export function matchView(main, params = {}) {
         return;
       }
       const n = queue ? queue.n : 1;
-      const min = queue ? queue.min : GROUP_SEATS.min;
-      const max = queue ? queue.max : GROUP_SEATS.max;
+      const min = queue ? queue.min : seatsOf(base).min;
+      const max = queue ? queue.max : seatsOf(base).max;
       const people = [me];
       for (let k = 1; k < n; k++) people.push({ key: `p${k}`, who: { art: "human" }, label: "" });
       const empty = n < min ? min - n : n < max ? 1 : 0;
@@ -233,6 +243,8 @@ export function matchView(main, params = {}) {
   }
 
   function search() {
+    // 빨리 두 번 누르면 연결이 둘 생긴다(검수 11-08)
+    if (sock) return;
     since = 0;
     offered = false;
     queue = null;
@@ -250,7 +262,7 @@ export function matchView(main, params = {}) {
         queue = {
           n: m.n,
           min: Number.isInteger(m.min) ? m.min : GROUP_SEATS.min,
-          max: Number.isInteger(m.max) ? m.max : GROUP_SEATS.max,
+          max: Number.isInteger(m.max) ? m.max : seatsOf(base).max,
           startIn: Number.isFinite(m.start) && Number.isFinite(m.now) ? m.start - m.now : null,
           at: Date.now(),
         };

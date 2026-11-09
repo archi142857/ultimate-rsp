@@ -11,8 +11,11 @@ import { handGrid, stage, chant, fastMode, fastToggle, block, segmented, recordL
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { handArt } from "../ui/art.js";
+import { PROPS } from "../data/props.js";
 
-const RUNNER = "🏃";
+// 주자 그림(컨셉 0e3a2df: Fluent Person running, 왼쪽을 본다. 우리 편은 CSS 로 뒤집는다)
+const RUNNER = PROPS.runner;
 const STEP_MS = 230;
 
 export function relayView(main, entry) {
@@ -71,7 +74,7 @@ export function relayView(main, entry) {
         return h(
           "div",
           { class: "spot" + (home ? " home" : "") + (i === 0 ? " home-me" : i === g.cells + 1 ? " home-op" : "") },
-          here.map((p) => h("span", { class: "runner" + (p === 0 ? " me" : " op"), "aria-hidden": "true" }, h("span", { class: "glyph" }, RUNNER), h("small", {}, String(g.runner[p])))),
+          here.map((p) => h("span", { class: "runner" + (p === 0 ? " me" : " op"), "aria-hidden": "true" }, h("span", { class: "glyph" }, handArt(RUNNER)), h("small", {}, String(g.runner[p])))),
         );
       }),
     );

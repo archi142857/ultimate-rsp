@@ -8,7 +8,7 @@ import { BOTS, botInfo } from "../core/bots.js";
 import { formatById } from "../games/match.js";
 import { findEntry } from "../data/catalog.js";
 import { variantOf, roomGameIds } from "./games.js";
-import { groupBases as groupBaseIds, isOnlineGame } from "../data/online.js";
+import { groupBases as groupBaseIds, isOnlineGame, seatRange } from "../data/online.js";
 import { FORMATS, TIMERS, GROUP_SEATS, GROUP_MODES, ROOM_DEFAULTS } from "./protocol.js";
 
 /** 여럿이 가위바위보의 바탕이 될 수 있는 도감 변종(data/online.js 의 groupBases, 맨 앞 classic) */
@@ -18,6 +18,16 @@ export function groupBases() {
 
 export const isGroup = (rules) => !!rules && rules.game === "group";
 
+/** 여럿이 바탕 id 의 인원 범위(컨셉 seatRange: 손 셋 3–8명, 손 많음 3–20명). 모르는 id 면 보통 범위 */
+export function seatsOf(base) {
+  return seatRange(base) || { min: GROUP_SEATS.min, max: GROUP_SEATS.max };
+}
+
+/** 고를 수 있는 여럿이 인원의 천장(바탕 가운데 가장 많은 것) */
+export function maxGroupSeats() {
+  return Math.max(GROUP_SEATS.min, ...groupBases().map((e) => seatsOf(e.id).max));
+}
+
 /** 보낼 규칙 꼴로 다듬기(서버 normRules 와 같은 기본값). 둘이서면 seats 2, 여럿이면 format 을 빼고 base·mode 를 넣는다 */
 export function cleanRules(r = {}) {
   const bot = BOTS.some((b) => b.id === r.bot) ? r.bot : ROOM_DEFAULTS.bot;
@@ -25,7 +35,9 @@ export function cleanRules(r = {}) {
   if (r.game === "group") {
     const base = groupBases().some((e) => e.id === r.base) ? r.base : "classic";
     const mode = GROUP_MODES.includes(r.mode) ? r.mode : GROUP_MODES[0];
-    const seats = Number.isInteger(r.seats) && r.seats >= GROUP_SEATS.min && r.seats <= GROUP_SEATS.max ? r.seats : GROUP_SEATS.default;
+    // 인원은 바탕마다 다르다(손 셋은 8명까지). 범위 밖이면 기본값을 그 범위 안으로
+    const range = seatsOf(base);
+    const seats = Number.isInteger(r.seats) && r.seats >= range.min && r.seats <= range.max ? r.seats : Math.min(GROUP_SEATS.default, range.max);
     return { game: "group", base, mode, seats, bot, timer };
   }
   const custom = r.game === "custom" && r.custom ? { n: r.custom.n, k: r.custom.k, seed: r.custom.seed } : null;
@@ -112,6 +124,10 @@ export function rulesEditor(initial, { onChange }) {
     options: groupBases().map((e) => ({ id: e.id, name: e.name })),
     onChange: (id) => emit({ base: id }),
   });
+  /** 지금 인원을 받는 바탕만 고를 수 있게 */
+  const fitBases = () => {
+    for (const o of baseSel.sel.options) o.disabled = isGroup(rules) && seatsOf(o.value).max < rules.seats;
+  };
   const botSel = selectBox({
     label: t("컴퓨터"),
     value: rules.bot,
@@ -132,17 +148,23 @@ export function rulesEditor(initial, { onChange }) {
     onChange: (id) => emit({ mode: id }),
     small: true,
   });
-  const seatsSeg = segmented({
-    label: t("인원"),
-    value: String(rules.seats),
-    options: [2, ...Array.from({ length: GROUP_SEATS.max - GROUP_SEATS.min + 1 }, (_, k) => GROUP_SEATS.min + k)].map((n) => ({ id: String(n), name: String(n) })),
-    onChange: (id) => {
-      const n = Number(id);
-      if (n === 2) emit({ ...memo.duo, seats: 2 });
-      else emit({ game: "group", custom: null, base: memo.many.base, mode: memo.many.mode, seats: n });
-    },
-    small: true,
-  });
+  // 인원: 2명 + 여럿이 3명부터 바탕 가운데 가장 많은 수까지. 많으면(손 많은 바탕을 열면 20명) 고르기 상자로
+  const top = maxGroupSeats();
+  const seatOptions = [2, ...Array.from({ length: top - GROUP_SEATS.min + 1 }, (_, k) => GROUP_SEATS.min + k)].map((n) => ({ id: String(n), name: String(n) }));
+  const onSeats = (id) => {
+    const n = Number(id);
+    if (n === 2) return emit({ ...memo.duo, seats: 2 });
+    // 고른 인원을 받는 바탕으로(기억한 바탕이 못 받으면 받는 첫 바탕)
+    const base = seatsOf(memo.many.base).max >= n ? memo.many.base : (groupBases().find((e) => seatsOf(e.id).max >= n) || { id: "classic" }).id;
+    emit({ game: "group", custom: null, base, mode: memo.many.mode, seats: n });
+  };
+  const seatsSeg =
+    seatOptions.length <= 10
+      ? segmented({ label: t("인원"), value: String(rules.seats), options: seatOptions, onChange: onSeats, small: true })
+      : (() => {
+          const box = selectBox({ label: t("인원"), value: String(rules.seats), options: seatOptions.map((o) => ({ ...o, name: t("@seats:{n}명", { n: Number(o.id) }) })), onChange: onSeats });
+          return { el: box.el, set: (v) => (box.sel.value = v) };
+        })();
   const timerSeg = segmented({
     label: t("시간"),
     value: String(rules.timer),
@@ -163,6 +185,7 @@ export function rulesEditor(initial, { onChange }) {
     if (rules.game !== "custom") gameSel.sel.value = rules.game;
     if (rules.format) formatSeg.set(rules.format);
     if (rules.base) baseSel.sel.value = rules.base;
+    fitBases();
     if (rules.mode) modeSeg.set(rules.mode);
     seatsSeg.set(String(rules.seats));
     botSel.sel.value = rules.bot;
@@ -170,6 +193,7 @@ export function rulesEditor(initial, { onChange }) {
     if (wasGroup !== isGroup(rules)) layout();
   }
   layout();
+  fitBases();
   return {
     el,
     set,

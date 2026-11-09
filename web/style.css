@@ -1580,6 +1580,21 @@ table.grid td.s {
   background: var(--lose);
   color: #fff;
 }
+/* 누르기 판 결과를 단추 자리에 잠깐 둔다(11-09 사용자: 결과가 바로 사라졌다) */
+.press.shown {
+  border-style: solid;
+  border-color: var(--line-2);
+  background: var(--sunk);
+  color: var(--ink);
+}
+.press.shown.res-win {
+  border-color: var(--win);
+  color: var(--win);
+}
+.press.shown.res-lose {
+  border-color: var(--lose);
+  color: var(--lose);
+}
 @keyframes press-pulse {
   to {
     transform: scale(1.015);

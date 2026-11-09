@@ -1,6 +1,6 @@
 // 뿅망치 가위바위보 화면. 가위바위보에 이기면 '치기', 지면 '막기'를 컴퓨터보다 먼저 누른다.
 
-import { h, clear } from "../ui/dom.js";
+import { h, clear, sleep } from "../ui/dom.js";
 import { t } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
@@ -11,10 +11,27 @@ import { handGrid, stage, chant, fastToggle, block, segmented, recordLine, rpsCh
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList, pressPad } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { PROPS } from "../data/props.js";
 
 const TARGET = 3;
-const HAMMER = "🔨";
-const HELMET = "⛑️";
+// 결과를 읽을 틈. 바로 손 단추가 나오면 누르던 손가락이 다음 판을 시작해 결과가 사라졌다(11-09 사용자).
+// 그동안 누르기 단추는 꺼진 채 그 자리에 결과를 크게 보인다
+export const HOLD_MS = 1300;
+
+/** 누르기 단추 자리에 결과를 보인다(tone: win·lose·""). 다음 판이 시작되면 clearPad 로 지운다 */
+export function padResult(pad, text, tone = "") {
+  pad.set(text);
+  pad.el.classList.remove("hot");
+  pad.el.classList.add("shown");
+  pad.el.classList.toggle("res-win", tone === "win");
+  pad.el.classList.toggle("res-lose", tone === "lose");
+}
+export function clearPad(pad) {
+  pad.el.classList.remove("shown", "res-win", "res-lose");
+}
+// 소품 그림(컨셉 0e3a2df: Fluent 원본). 그림이 없으면 이모지
+const HAMMER = PROPS.hammer;
+const HELMET = PROPS.helmet;
 
 /** 초 단위로(소수 둘째 자리) */
 export const secs = (ms) => (ms / 1000).toFixed(2);
@@ -54,6 +71,7 @@ export function hammerView(main, entry) {
 
   function newGame() {
     pad.cancel();
+    clearPad(pad);
     game = createHammer(V, { target: TARGET });
     busy = false;
     doneBar.hidden = true;
@@ -97,22 +115,23 @@ export function hammerView(main, entry) {
   async function strike(g, iHit) {
     steps.set(1);
     grid.el.hidden = true;
+    clearPad(pad);
     pad.set(iHit ? t("치기") : t("막기"));
     pad.el.classList.toggle("hot", iHit);
     pad.el.hidden = false;
     st.say(iHit ? t("쳐라!") : t("막아라!"), iHit ? "win" : "lose");
     st.sub(iHit ? t("컴퓨터가 헬멧을 쓰기 전에") : t("뿅망치가 닿기 전에"));
-    st.me.text(iHit ? HAMMER : HELMET, iHit ? t("치기") : t("막기"));
-    st.op.text(iHit ? HELMET : HAMMER, iHit ? t("막기") : t("치기"));
+    st.me.art(iHit ? HAMMER : HELMET, iHit ? t("치기") : t("막기"));
+    st.op.art(iHit ? HELMET : HAMMER, iHit ? t("막기") : t("치기"));
     const comp = reactionMs(rng, level);
     let cue = 0;
     const mine = await pad.wait(STRIKE_MS, {
       onStart() {
         // 컴퓨터가 누르는 순간을 보여 준다. 컴퓨터가 치면 그 뒤에 막아도 늦어서 바로 끝낸다
         cue = setTimeout(() => {
-          if (iHit) st.op.text(HELMET, t("헬멧!"));
+          if (iHit) st.op.art(HELMET, t("헬멧!"));
           else {
-            st.op.text(HAMMER, t("쾅!"));
+            st.op.art(HAMMER, t("쾅!"));
             pad.cancel();
           }
         }, comp);
@@ -120,7 +139,6 @@ export function hammerView(main, entry) {
     });
     clearTimeout(cue);
     if (game !== g) return;
-    pad.el.hidden = true;
     const r = iHit ? g.strike(mine, comp) : g.strike(comp, mine);
     const shown = (ms) => (Number.isFinite(ms) && ms <= STRIKE_MS ? t("{s}초", { s: secs(ms) }) : t("안 눌렀다"));
     st.sub(t("나 {a}, 컴퓨터 {b}", { a: shown(mine), b: shown(comp) }));
@@ -135,6 +153,7 @@ export function hammerView(main, entry) {
       tone = iHit ? "" : "win";
     } else say = iHit ? t("헛쳤다") : t("컴퓨터가 헛쳤다");
     st.say(say, tone);
+    padResult(pad, say, tone);
     const said = { res: say, a: shown(mine), b: shown(comp) };
     log.add(iHit ? t("내가 쳤다: {res} (나 {a}, 컴퓨터 {b})", said) : t("컴퓨터가 쳤다: {res} (나 {a}, 컴퓨터 {b})", said), r.result === "hit" ? (iHit ? "w" : "l") : "");
     score.set(g.score[0], g.score[1], t("먼저 {n}점", { n: TARGET }));
@@ -150,6 +169,9 @@ export function hammerView(main, entry) {
       steps.set(2);
     } else {
       steps.set(0);
+      await sleep(HOLD_MS);
+      if (game !== g) return;
+      pad.el.hidden = true;
       grid.el.hidden = false;
       grid.lock(false);
     }

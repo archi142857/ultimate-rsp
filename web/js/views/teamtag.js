@@ -1,7 +1,7 @@
 // 편 가위바위보 술래잡기 화면. 우리 편 손은 내가 정하고, 상대 편은 컴퓨터가 정한다.
 // 이기면 우리 편이 쫓고(진 편은 저마다 반반 확률로 잡힌다), 지면 '달아나기'를 술래보다 먼저 눌러야 산다.
 
-import { h, clear } from "../ui/dom.js";
+import { h, clear, sleep } from "../ui/dom.js";
 import { t, lower, listWords } from "../i18n.js";
 import { compileVariant } from "../core/engine.js";
 import { makeRng } from "../core/rng.js";
@@ -12,6 +12,7 @@ import { handGrid, chant, fastToggle, block, segmented, recordLine, stage, rpsCh
 import { entryHead, entryBody } from "./common.js";
 import { flowLayout, stepList, logList, pressPad } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { HOLD_MS, padResult, clearPad } from "./hammer.js";
 
 const ESCAPE_MS = 1200;
 
@@ -85,6 +86,7 @@ export function teamTagView(main, entry) {
 
   function newGame() {
     run.cancel();
+    clearPad(run);
     game = createTeamTag(V, { size });
     moved = new Set();
     busy = false;
@@ -118,37 +120,46 @@ export function teamTagView(main, entry) {
     const c = V.cmp(i, j);
     const [a, b] = mine === 0 ? [i, j] : [j, i];
     let escaped = null;
-    if (c < 0) {
+    const ran = c < 0;
+    if (ran) {
       // 우리 편이 졌다: 술래보다 먼저 눌러야 달아난다
       steps.set(1);
       st.say(t("달아나!"), "lose");
       st.sub(t("술래보다 먼저 누르자."));
+      clearPad(run);
+      run.el.classList.add("hot");
+      run.set(t("달아나기"));
       run.el.hidden = false;
       grid.el.hidden = true;
       const myMs = await run.wait(ESCAPE_MS);
       if (game !== g) return;
       const chaserMs = reactionMs(rng, level);
       escaped = firstPress(myMs, chaserMs, { limit: ESCAPE_MS, tie: 1 }) === 0;
-      run.el.hidden = true;
       st.sub(Number.isFinite(myMs) ? t("나 {a}초, 술래 {b}초", { a: (myMs / 1000).toFixed(2), b: (chaserMs / 1000).toFixed(2) }) : t("못 눌렀다. 술래 {b}초", { b: (chaserMs / 1000).toFixed(2) }));
     }
     const r = g.play(a, b, rng, { escaped });
+    // 달아나기 판이었으면 결과를 단추 자리에도 크게 보이고 잠깐 둔다(11-09 사용자: 결과가 바로 사라졌다)
+    let outcome = null;
+    const say = (text, tone = "") => {
+      st.say(text, tone);
+      outcome = [text, tone];
+    };
     moved = new Set(r.caught);
     const ours = c > 0;
     if (c === 0) {
-      st.say(t("비겼다. 다시"));
+      say(t("비겼다. 다시"));
       st.sub(t("둘 다 {h}", { h: lower(V.hands[i].name) }));
       log.add(t("{r}판: 둘 다 {h}. 다시.", { r: r.round, h: lower(V.hands[i].name) }));
     } else {
       const names = r.caught.map(name);
       const caughtMe = r.caught.includes(0);
       if (ours) {
-        st.say(t("우리 편이 쫓는다"), "win");
+        say(t("우리 편이 쫓는다"), "win");
         st.sub(names.length ? t("{names} 잡음.", { names: listWords(names) }) : t("아무도 못 잡았다."));
       } else if (caughtMe) {
-        st.say(t("잡혔다. 이제 상대 편이다"), "lose");
+        say(t("잡혔다. 이제 상대 편이다"), "lose");
       } else {
-        st.say(t("달아났다"), "win");
+        say(t("달아났다"), "win");
       }
       const said = { r: r.round, s: V.sentence(i, j), names: listWords(names) };
       log.add(
@@ -163,6 +174,14 @@ export function teamTagView(main, entry) {
       );
     }
     steps.set(game.done ? 2 : 0);
+    if (ran && outcome) {
+      draw();
+      grid.el.hidden = true;
+      padResult(run, ...outcome);
+      await sleep(HOLD_MS);
+      if (game !== g) return;
+      run.el.hidden = true;
+    }
     if (g.done) finish();
     else grid.lock(false);
     draw();

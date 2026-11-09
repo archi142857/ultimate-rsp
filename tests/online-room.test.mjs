@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { sidesOf, cmpFor, seatName, seatBot, secondsLeft, canSit, finalFor, duelRound, groupRound, headcount } from "../web/js/online/room-model.js";
+import { groupHead, sidesOf, cmpFor, seatName, seatBot, secondsLeft, canSit, finalFor, duelRound, groupRound, headcount } from "../web/js/online/room-model.js";
 import { cleanRules, rulesLine, gameName, groupBases } from "../web/js/online/rules.js";
 import { retryDelay, isFinalClose } from "../web/js/online/socket.js";
 import { emoteIds, emoteEmoji, emoteLabel } from "../web/js/online/emotes.js";
@@ -50,8 +50,14 @@ test("판: 둘이서는 내 쪽에서, 여럿이는 이긴 손과 빠진 자리"
   assert.deepEqual(d, { r: 2, mi: V.index.scissors, oi: V.index.rock, cmp: -1 });
   assert.equal(duelRound(V, { r: 1, hands: ["rock", "laser"], cmp: 1 }, 0), null, "모르는 손");
   const g = groupRound(V, { r: 3, hands: ["rock", null, "paper"], win: "paper", out: [0] });
-  assert.deepEqual(g, { r: 3, hands: [V.index.rock, null, V.index.paper], win: V.index.paper, out: [0] });
+  assert.deepEqual(g, { r: 3, hands: [V.index.rock, null, V.index.paper], win: V.index.paper, lose: null, out: [0] });
   assert.equal(groupRound(V, { r: 4, hands: ["rock", "paper", "scissors"], win: null, out: [] }).win, null);
+  // 갈렸는지는 out 으로 본다. 점수 규칙의 술래 정하기는 이긴 손 없이 진 손(lose)으로 갈린다(서버 2a825ec)
+  assert.equal(groupHead(V, groupRound(V, { r: 4, hands: ["rock", "paper", "scissors"], win: null, out: [] })), null);
+  assert.deepEqual(groupHead(V, g), { kind: "win", hand: V.index.paper, name: V.hands[V.index.paper].name });
+  const lost = groupRound(V, { r: 5, hands: ["rock", "rock", "scissors"], win: null, lose: "scissors", out: [0, 1] });
+  assert.equal(groupHead(V, lost).kind, "lose");
+  assert.equal(groupHead(V, lost).hand, V.index.scissors);
   assert.equal(finalFor({ winner: 1 }, 1), 1);
   assert.equal(finalFor({ winner: 1 }, 0), -1);
   assert.equal(finalFor({ winner: null }, 0), 0);
@@ -60,7 +66,8 @@ test("판: 둘이서는 내 쪽에서, 여럿이는 이긴 손과 빠진 자리"
 test("규칙: 기본값과 한 줄", () => {
   assert.deepEqual(cleanRules({}), { ...ROOM_DEFAULTS, seats: 2 });
   assert.deepEqual(cleanRules({ game: "group" }), { game: "group", base: "classic", mode: "survive", seats: 5, bot: "human", timer: 20 });
-  assert.deepEqual(cleanRules({ game: "group", seats: 99, mode: "?", base: "rpsls" }), { game: "group", base: "classic", mode: "survive", seats: 5, bot: "human", timer: 20 });
+  // 바탕이 될 수 없는 id(이어 하는 놀이). 손 많은 변종(rpsls 등)은 MANY_HAND_GROUP 을 켜면 바탕이 된다(컨셉 11-08)
+  assert.deepEqual(cleanRules({ game: "group", seats: 99, mode: "?", base: "mukjjippa" }), { game: "group", base: "classic", mode: "survive", seats: 5, bot: "human", timer: 20 });
   assert.deepEqual(cleanRules({ game: "nope", format: "bo9", timer: 7, bot: "?" }), { ...ROOM_DEFAULTS, seats: 2 });
   assert.equal(cleanRules({ game: "custom", custom: { n: 5, k: 2, seed: 7 } }).custom.n, 5);
   assert.equal(rulesLine(cleanRules({})), "가위바위보 · 삼세판 · 20초");

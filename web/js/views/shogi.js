@@ -12,7 +12,8 @@ import { entryHead, entryBody } from "./common.js";
 import { flowLayout, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
 
-const KING = { id: "king", art: "king", emoji: "🤴", name: "" };
+// 왕 그림은 왕자(🤴 prince). 황제와 노예의 황제가 왕관(king)이라 겹치지 않게(컨셉 11-08)
+const KING = { id: "king", art: "prince", emoji: "🤴", name: "" };
 
 export function shogiView(main, entry) {
   const V = compileVariant(findEntry("classic"));

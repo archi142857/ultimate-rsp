@@ -5,14 +5,16 @@
 //  - 끝난 것: 내가 낸 쪽이면 큰 글씨(이겼다·졌다·비겼다)와 동사 문장, 손 고리에 두 손과 화살표.
 //             남이 겨룬 것이면 두 사람과 화살표(이미 끝난 도전장)
 // 승패는 서버가 답할 때 적어 둔 값(cmp·winner)을 쓴다. 지금은 한 판짜리만 연다(여러 판짜리는 '아직 못 연다').
-// 여럿이 도전장(max ≥ 2, 규약 2.1–2.4): 보기 꼴에는 답한 사람 이름·결과만 있고, 손은 pid 로 묻는 내 꼴(/me)에만 있다.
-//  - 만든 사람: 링크 + 답한 사람 줄(그 사람 손과 내 쪽에서 본 결과)
-//  - 답한 사람: 내 결과(큰 글씨·두 손) + 다른 사람 줄(이름과 그 사람이 이겼는지)
-//  - 아직 답하지 않았고 자리가 남았으면 봉인을 뜯고 손 고르기, 다 찼으면 답한 사람 줄
+// 여럿이 도전장(max ≥ 2, 규약 2.1–2.4): 보기 꼴에는 답한 사람 이름(열렸으면 결과)만 있고, 손은 pid 로 묻는 내 꼴(/me)에만 있다.
+// 결과는 마감(다 참·만든 사람이 닫음) 때 모두에게 열린다(reveal "end", 서버 2a825ec: 버리는 pid 로 손을 엿보지 못하게).
+//  - 만든 사람: 링크 + 답한 사람 줄(그 사람 손과 내 쪽에서 본 결과) + 마감하기
+//  - 답한 사람: 마감 전이면 '냈다'와 내 손, 마감 뒤면 내 결과(큰 글씨·두 손) + 다른 사람 줄
+//  - 아직 답하지 않았고 받는 중이면 봉인을 뜯고 손 고르기, 마감됐으면 모든 손과 결과 줄
 
 import { h, clear, append, setTitle } from "../ui/dom.js";
 import { t } from "../i18n.js";
 import { handGrid, chant, RESULT_WORD } from "../ui/widgets.js";
+import { handArt } from "../ui/art.js";
 import { chantWords } from "../views/matrix.js";
 import { topBar, bigTitle, card, variantRow, handRing, linkBox, daysLeft } from "./common.js";
 import { noticeSlot } from "./notice.js";
@@ -22,13 +24,20 @@ import { emoteIcon, emoteLabel, isEmote } from "./emotes.js";
 import { scroll } from "./parchment.js";
 import { variantOf } from "./games.js";
 import { myName, playerId, meFields, meWho } from "./identity.js";
-import { fetchChallenge, fetchMyChallenge, answerChallenge } from "./api.js";
-import { myChallenge, rememberChallenge, noteChallenge, isFresh } from "./mine.js";
+import { fetchChallenge, fetchMyChallenge, answerChallenge, closeChallenge } from "./api.js";
+import { myChallenge, rememberChallenge, noteChallenge, isFresh, takeFresh } from "./mine.js";
 import { errorText, noticeFor } from "./messages.js";
 import { shareLink } from "./config.js";
 
 // 만든 사람이 다른 앱에서 링크를 보내고 돌아오면 결과를 한 번 본다. 너무 자주 묻지 않게 간격을 둔다(폴링은 하지 않는다)
 const RECHECK_MS = 15000;
+
+/** 남은 시간을 '5시간 20분'·'12분'으로 */
+function leftHM(ms) {
+  const m = Math.max(1, Math.ceil(ms / 60000));
+  if (m < 60) return t("{m}분", { m });
+  return m % 60 ? t("{h}시간 {m}분", { h: Math.floor(m / 60), m: m % 60 }) : t("{h}시간", { h: m / 60 });
+}
 
 export function challengeView(main, code) {
   setTitle(t("도전장"));
@@ -135,7 +144,7 @@ export function challengeView(main, code) {
         if (ctl.signal.aborted) return;
         notices.clear("wait");
         // 그사이 다른 사람이 먼저 답했으면(여럿이면 자리가 다 찼으면) 그 결과를 보여 준다
-        const why = c.max > 1 ? t("그사이 자리가 다 찼다.") : t("다른 사람이 먼저 답했다.");
+        const why = c.max > 1 ? t("그사이 마감됐다.") : t("다른 사람이 먼저 답했다.");
         if (e.code === "closed") return e.result ? show(e.result, { note: why }) : load(why);
         // 내가 만든 도전장인데 이 브라우저에 기록이 없었다(저장이 막혔거나 다른 창) → 만든 사람 화면으로
         if (e.code === "own") {
@@ -155,7 +164,15 @@ export function challengeView(main, code) {
       { class: "online-body", hidden: true },
       variantRow(V, { right: rulesLink(c) }),
       h("p", { class: "o-p" }, t("손을 골라 누른다. 상대 손은 내가 낸 다음에 보인다.")),
-      c.max > 1 ? h("p", { class: "o-p o-small" }, t("여럿이 받는 도전장이다({n}/{max}명 답함). 답하면 내 이름과 결과가 이 링크를 가진 사람 모두에게 보인다.", { n: c.count, max: c.max })) : null,
+      c.max > 1
+        ? h(
+            "p",
+            { class: "o-p o-small" },
+            c.reveal === "end"
+              ? t("여럿이 받는 도전장이다({n}/{max}명 답함). 답하면 내 이름이 이 링크를 가진 사람 모두에게 보이고, 결과는 마감되면 열린다.", { n: c.count, max: c.max })
+              : t("여럿이 받는 도전장이다({n}/{max}명 답함). 답하면 내 이름과 결과가 이 링크를 가진 사람 모두에게 보인다.", { n: c.count, max: c.max }),
+          )
+        : null,
       grid ? grid.el : null,
       h("div", { class: "o-actions o-bottom" }, go),
       h("p", { class: "o-p o-small o-center" }, t("내 이름: {name}", { name: myName() }), " · ", h("a", { href: "#/play?name=1" }, t("이름 바꾸기"))),
@@ -338,7 +355,10 @@ export function challengeView(main, code) {
     if (me.you === "from") return manyOwner(me, V, mine);
     if (Number.isInteger(me.you)) {
       if (!mine) rememberChallenge({ id: me.code, role: "taker", game: me.game, hand: me.hands.to[0], at: Date.now(), label: labelOf(me, V), vs: me.from });
-      return result(me, V, { role: "taker" }, { ...opts, extra: answersCard(me, V, { skip: me.you, title: t("다른 사람"), empty: t("아직 다른 사람은 답하지 않았다.") }) });
+      if (me.pending) return manyPending(me, V, opts);
+      // 마감 뒤 처음 열면(이 브라우저가 아직 결과를 모르면) 결과 연출을 한다(컨셉 11-09)
+      const first = !mine || ![1, 0, -1].includes(mine.result);
+      return result(me, V, { role: "taker" }, { ...opts, reveal: opts.reveal || first, extra: answersCard(me, V, { skip: me.you, title: t("다른 사람"), empty: t("아직 다른 사람은 답하지 않았다.") }) });
     }
     if (me.open) return answerView(me, V);
     return manyFull(me, V, opts);
@@ -351,19 +371,24 @@ export function challengeView(main, code) {
       .filter(({ k }) => k !== skip)
       .map(({ a }) => {
         const hi = a.hands ? V.index[a.hands[0]] : undefined;
-        // winner: 0 만든 사람, 1 답한 사람, −1 비김
-        const res = owner ? (a.winner === 0 ? 1 : a.winner === 1 ? -1 : 0) : a.winner === 1 ? 1 : a.winner === 0 ? -1 : 0;
+        // winner: 0 만든 사람, 1 답한 사람, −1 비김, null 아직 안 열림(마감 전)
+        const res = a.winner === null ? null : owner ? (a.winner === 0 ? 1 : a.winner === 1 ? -1 : 0) : a.winner === 1 ? 1 : a.winner === 0 ? -1 : 0;
+        const chip =
+          res === null
+            ? h("span", { class: "chip" }, t("@chip:냈다"))
+            : h("span", { class: "chip" + (res > 0 ? " ok" : res < 0 ? " no" : "") }, res > 0 ? t("@chip:이겼다") : res < 0 ? t("@chip:졌다") : t("@chip:비겼다"));
         return h(
           "li",
           { class: "ans-row" },
           avatar({ kind: "human", name: a.name, face: a.face }, { size: 30 }),
           h("span", { class: "ans-name" }, a.name),
           hi !== undefined ? h("span", { class: "ans-hand" }, V.hands[hi].name) : null,
-          h("span", { class: "chip" + (res > 0 ? " ok" : res < 0 ? " no" : "") }, res > 0 ? t("@chip:이겼다") : res < 0 ? t("@chip:졌다") : t("@chip:비겼다")),
+          chip,
         );
       });
     const head = h("div", { class: "rkbox-head" }, h("h3", { class: "rkbox-title" }, title), h("span", { class: "o-p o-small" }, t("{n}/{max}명", { n: c.count, max: c.max })));
-    return card(head, rows.length ? h("ul", { class: "ans-list" }, rows) : h("p", { class: "o-p o-small" }, empty), owner || !rows.length ? null : h("p", { class: "o-p o-small" }, t("결과는 답한 사람 쪽에서 본 것이다.")));
+    const shown = c.answers.some((a, k) => k !== skip && a.winner !== null);
+    return card(head, rows.length ? h("ul", { class: "ans-list" }, rows) : h("p", { class: "o-p o-small" }, empty), owner || !shown ? null : h("p", { class: "o-p o-small" }, t("결과는 답한 사람 쪽에서 본 것이다.")));
   }
 
   /** 만든 사람: 링크와 답한 사람 줄. 막 만들었으면 '도전장이 준비됐다'(3/3) */
@@ -398,6 +423,35 @@ export function challengeView(main, code) {
     }
     check.addEventListener("click", () => refresh(true));
     waiting = c.open ? { refresh } : null;
+    // 마감하기: 더 받지 않고 결과를 모두에게 연다(되돌릴 수 없어 한 번 더 묻는다)
+    const closeBox = h("div", { class: "o-close" });
+    const askClose = () => {
+      const yes = h("button", { type: "button", class: "btn btn-sm btn-ink" }, t("마감하고 공개"));
+      const no = h("button", { type: "button", class: "btn btn-sm" }, t("취소"));
+      yes.addEventListener("click", async () => {
+        yes.disabled = no.disabled = true;
+        try {
+          const now = await closeChallenge(code, { pid: playerId() }, { signal: ctl.signal });
+          show(now);
+        } catch (e) {
+          if (ctl.signal.aborted) return;
+          const n = noticeFor(e.code);
+          notices.set(n.kind, n);
+          yes.disabled = no.disabled = false;
+        }
+      });
+      no.addEventListener("click", idleClose);
+      closeBox.classList.add("asking");
+      closeBox.replaceChildren(h("p", { class: "o-p o-small" }, t("더 받지 않고 지금까지의 결과를 모두에게 연다. 마감할까?")), h("div", { class: "o-row" }, yes, no));
+      yes.focus();
+    };
+    function idleClose() {
+      const btn = h("button", { type: "button", class: "btn btn-sm" }, t("마감하고 공개"));
+      btn.addEventListener("click", askClose);
+      closeBox.classList.remove("asking");
+      closeBox.replaceChildren(btn);
+    }
+    if (c.open) idleClose();
     const p = putPaper(
       scroll({
         mode: "send",
@@ -410,8 +464,9 @@ export function challengeView(main, code) {
         ],
       }),
     );
-    const meta = [handName ? t("내 손: {name}", { name: handName }) : null, c.open ? leftText(c) : t("자리가 다 찼다")].filter(Boolean).join(" · ");
-    const fresh = isFresh(c.code);
+    const openMeta = c.closesIn !== null ? t("{t} 뒤 저절로 마감", { t: leftHM(c.closesIn) }) : leftText(c);
+    const meta = [handName ? t("내 손: {name}", { name: handName }) : null, c.open ? openMeta : c.closed ? t("마감했다") : c.count >= c.max ? t("자리가 다 찼다") : t("하루가 지나 마감됐다")].filter(Boolean).join(" · ");
+    const fresh = takeFresh(c.code);
     fill(
       fresh
         ? topBar({ href: "#/c/new", label: t("도전장 만들기") }, h("span", {}, h("b", {}, "3"), "/3")).el
@@ -422,23 +477,65 @@ export function challengeView(main, code) {
       c.open ? card(h("p", { class: "o-label" }, t("링크")), linkBox(url, share)) : null,
       fresh ? h("p", { class: "o-p" }, t("{n}명까지 답하고, 답마다 따로 겨룬다.", { n: c.max }), " ", t("결과는 이 링크와 온라인 첫 화면 '내 도전장'에서 본다.")) : null,
       answersCard(c, V, { owner: true }),
-      c.open ? h("div", { class: "o-actions" }, check) : null,
+      c.open && c.reveal === "end" ? h("p", { class: "o-p o-small" }, t("답한 사람은 마감할 때까지 결과를 모른다. {n}명이 다 답하거나 내가 마감하거나 하루가 지나면 모두에게 열린다.", { n: c.max })) : null,
+      c.open ? h("div", { class: "o-actions o-row-wrap" }, check, closeBox) : null,
     );
     if (fresh) p.start({ play: true });
   }
 
-  /** 자리가 다 찬 여럿이 도전장(내가 답하지 않은 것) */
+  /** 답했지만 마감 전(reveal "end"): 내 손과 '냈다', 누가 답했는지만 */
+  function manyPending(c, V, { note }) {
+    setTitle(t("{name}의 도전장", { name: c.from }));
+    const hi = c.hands && c.hands.to ? V.index[c.hands.to[0]] : undefined;
+    const again = c.game === "custom" ? "#/c/new" : `#/c/new?v=${encodeURIComponent(c.game)}`;
+    const check = h("button", { type: "button", class: "btn" }, t("결과 확인"));
+    async function refresh(byHand) {
+      lastFetch = Date.now();
+      if (byHand) notices.set("wait", { title: t("결과를 확인하는 중…"), spin: true });
+      try {
+        const now = await fetchMyChallenge(code, { pid: playerId() }, { signal: ctl.signal });
+        notices.clear("wait");
+        if (!now.pending) return show(now, { reveal: true });
+        if (now.count !== c.count) return show(now);
+        if (byHand) notices.set("note", { title: t("아직 마감하지 않았다.") });
+      } catch (e) {
+        notices.clear("wait");
+        if (!ctl.signal.aborted && byHand) {
+          const n = noticeFor(e.code);
+          notices.set(n.kind, n);
+        }
+      }
+    }
+    check.addEventListener("click", () => refresh(true));
+    waiting = { refresh };
+    fill(
+      topBar({ label: t("도전장") }, c.open && c.closesIn !== null ? t("{t} 뒤 저절로 마감", { t: leftHM(c.closesIn) }) : leftText(c)).el,
+      note ? h("p", { class: "o-note" }, note) : null,
+      bigTitle(t("냈다")),
+      h(
+        "p",
+        { class: "o-p" },
+        t("결과는 {name}의 도전장이 마감되면 보인다. {n}명이 다 답하거나 {name:이가} 마감하거나 하루가 지나면 열린다.", { name: c.from, n: c.max }),
+      ),
+      hi !== undefined ? card(h("div", { class: "o-row" }, h("span", { class: "ans-art", "aria-hidden": "true" }, handArt(V.hands[hi])), h("p", { class: "o-p o-grow" }, t("내 손: {name}", { name: V.hands[hi].name })))) : null,
+      answersCard(c, V, { title: t("답한 사람") }),
+      h("div", { class: "o-actions o-bottom two" }, h("a", { class: "btn btn-ink", href: again }, t("나도 도전장 보내기")), check),
+    );
+  }
+
+  /** 마감된 여럿이 도전장(내가 답하지 않은 것): 만든 사람 손과 모든 답 */
   function manyFull(c, V, { note }) {
     setTitle(t("도전장"));
     const again = c.game === "custom" ? "#/c/new" : `#/c/new?v=${encodeURIComponent(c.game)}`;
+    const fi = c.hands && c.hands.from ? V.index[c.hands.from[0]] : undefined;
     fill(
       topBar({ href: "#/play", label: t("온라인") }).el,
       note ? h("p", { class: "o-note" }, note) : null,
       h(
         "section",
         { class: "o-card o-card-center" },
-        h("p", { class: "o-strong" }, t("자리가 다 찬 도전장이다")),
-        h("p", { class: "o-p" }, t("{name}의 도전장에 {n}명이 답했다.", { name: c.from, n: c.count })),
+        h("p", { class: "o-strong" }, c.closed || c.count < c.max ? t("마감된 도전장이다") : t("자리가 다 찬 도전장이다")),
+        h("p", { class: "o-p" }, t("{name}의 도전장에 {n}명이 답했다.", { name: c.from, n: c.count }), fi !== undefined ? " " + t("{name}의 손: {hand}", { name: c.from, hand: V.hands[fi].name }) : ""),
         h("a", { class: "btn btn-ink btn-big", href: again }, t("나도 도전장 만들기")),
       ),
       answersCard(c, V),

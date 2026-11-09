@@ -1191,6 +1191,9 @@ button.varrow {
   line-height: 1.15;
   text-align: center;
   padding: 0 4px;
+  /* 낱말 가운데서 끊지 않는다(빈자/리, Emp/ty) */
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 .pring-node.dim .pring-av,
 .pring-node.dim .pring-hand {
@@ -2393,4 +2396,34 @@ button.varrow {
 }
 .ans-row .chip {
   flex: none;
+}
+/* 여럿이 도전장: 내 손 그림(마감 전), 마감하기 */
+.ans-art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+.ans-art .art-svg,
+.ans-art.art-svg {
+  width: 40px;
+  height: 40px;
+}
+.ans-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.o-close {
+  display: grid;
+  gap: 6px;
+}
+.o-close.asking {
+  flex: 1 1 100%;
+}
+.o-close .o-row {
+  gap: 8px;
 }

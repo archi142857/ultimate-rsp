@@ -8,6 +8,7 @@ import { checkName, normCode, makeCode } from "../server/src/check.js";
 import { matrixIds, groupBaseIds, normRules } from "../server/src/games.js";
 import * as C from "../web/js/online/protocol.js";
 import { cleanRules, groupBases } from "../web/js/online/rules.js";
+import { seatRange } from "../web/js/data/online.js";
 import { wsErrorText } from "../web/js/online/messages.js";
 import { BOTS } from "../web/js/core/bots.js";
 import { readFileSync, existsSync } from "node:fs";
@@ -44,14 +45,15 @@ test("화면이 다듬은 이름은 서버가 받는다", () => {
       const n = randomName(l);
       assert.equal(checkName(n), n);
     }
-  const nasty = ["a\u202Eb", "줄\n바꿈", "  띄어   쓰기  ", "x\u200By", "e\u0301", "\u{1F468}\u200D\u{1F469}\u200D\u{1F467} 가족", "가".repeat(30), "\u3000전각\u3000빈칸\u3000"];
+  // 검수 11-08: 한글 채움·점자 빈칸·서식 글자(\p{Cf})가 든 이름도 화면이 다듬으면 서버가 받는다
+  const nasty = ["a\u202Eb", "줄\n바꿈", "  띄어   쓰기  ", "x\u200By", "e\u0301", "\u{1F468}\u200D\u{1F469}\u200D\u{1F467} 가족", "가".repeat(30), "\u3000전각\u3000빈칸\u3000", "\u3164곰", "a\u200Eb\u200Fc", "소프트\u00AD하이픈", "점자\u2800빈칸", "\uFFA0반각\u115F\u1160", "x\u034Fy", "a\u17B4b", "몽골\u180B선택", "x\uFE00y", "글\uFE0F자", "\u2764\uFE0F 하트", "1\uFE0F\u20E3 키캡", "葛\u{E0100} 한자", "a\u{E0100}b"];
   for (const raw of nasty) {
     const c = cleanName(raw);
     assert.ok(c, JSON.stringify(raw));
     assert.equal(checkName(c), c, `서버가 받아야 한다: ${JSON.stringify(c)}`);
   }
   // 보이는 글자가 없으면 화면은 빈 이름으로 보고(바꾸지 않는다), 서버도 안 받는다
-  for (const raw of ["\u0301", "   ", "\u200B"]) {
+  for (const raw of ["\u0301", "   ", "\u200B", "\u3164", "\u2800\u2800", "\uFFA0", "\u00AD"]) {
     assert.equal(cleanName(raw), "");
     assert.throws(() => checkName(raw));
   }
@@ -97,7 +99,8 @@ test("화면이 보내는 방 규칙을 서버가 그대로 받는다", () => {
     for (const format of P.FORMATS)
       for (const timer of P.TIMERS) tries.push({ game, format, timer, bot: BOTS[(timer / 10) % BOTS.length].id, mode: timer ? "loser" : "survive", seats: 3 + (timer % 8) });
   tries.push({ game: "custom", custom: { n: 9, k: 4, seed: 123 } });
-  for (const base of groupBaseIds()) tries.push({ game: "group", base, seats: 10 });
+  // 바탕마다 앉을 수 있는 가장 많은 인원(컨셉 seatRange: 손 셋 8명)
+  for (const base of groupBaseIds()) tries.push({ game: "group", base, seats: seatRange(base).max });
   for (const r of tries) {
     const mine = cleanRules(r);
     const server = normRules(mine);

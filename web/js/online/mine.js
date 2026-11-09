@@ -79,3 +79,5 @@ export function noteChallenge(id, patch) {
 const fresh = new Set();
 export const markFresh = (id) => fresh.add(id);
 export const isFresh = (id) => fresh.has(id);
+/** 한 번만 '막 만든' 화면으로 보이게 꺼낸다(여럿이 도전장은 다시 그릴 일이 많아 펼치기가 되풀이되지 않게) */
+export const takeFresh = (id) => fresh.delete(id);

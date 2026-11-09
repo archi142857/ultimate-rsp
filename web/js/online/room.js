@@ -16,7 +16,7 @@ import { topBar, bigTitle, copyText } from "./common.js";
 import { forgetRank } from "./rank.js";
 import { noticeSlot } from "./notice.js";
 import { avatar } from "./avatar.js";
-import { peopleRing, timerDial, midText } from "./people-ring.js";
+import { peopleRing, timerDial, midText, nodeSize } from "./people-ring.js";
 import { emoteRow, emoteLabel, isEmote } from "./emotes.js";
 import { variantOf } from "./games.js";
 import { playerId, meFields, myFace } from "./identity.js";
@@ -25,7 +25,7 @@ import { PROTOCOL, shareLink } from "./config.js";
 import { CLOSE, EMOTE_GAP_MS, REVEAL_MS } from "./protocol.js";
 import { serverNow } from "./net.js";
 import { rulesEditor, rulesRows, gameName, isGroup } from "./rules.js";
-import { sidesOf, seatName, seatBot, secondsLeft, canSit, finalFor, duelRound, groupRound, headcount, ringOrder, readyInfo, mmss, ranking } from "./room-model.js";
+import { sidesOf, seatName, seatBot, secondsLeft, canSit, finalFor, duelRound, groupRound, groupHead, headcount, ringOrder, readyInfo, mmss, ranking } from "./room-model.js";
 import { closeText, wsErrorText, noticeFor } from "./messages.js";
 
 // 공개 연출: 한 마디 세는 시간, 결과를 적어도 보여 주는 시간. 셋을 세고(≈1.1초) 결과를 보여도 REVEAL_MS(2.5초) 안에 끝난다
@@ -228,7 +228,8 @@ export function roomView(main, code) {
     const r = room.round;
     const people = order.map((i) => {
       const seat = room.seats[i];
-      if (seat.kind === "empty") return { key: i, empty: true, emptyText: t("빈자리"), label: "", title: t("빈자리. 시작하면 컴퓨터가 앉는다.") };
+      // 자리가 많아 동그라미가 작으면 '빈자리' 글이 낱말 가운데서 끊긴다(검수 11-08). 그때는 점선 동그라미만 둔다
+      if (seat.kind === "empty") return { key: i, empty: true, emptyText: nodeSize(n) < 44 ? "" : t("빈자리"), label: "", title: t("빈자리. 시작하면 컴퓨터가 앉는다.") };
       const me = i === you;
       const p = { key: i, who: whoOf(i), me, label: me ? t("나") : nameOf(i) };
       const subs = [];
@@ -296,7 +297,7 @@ export function roomView(main, code) {
     if (!entry) return null;
     if (isGroup(room.rules)) {
       const g = groupRound(V, entry);
-      return { r: g.r, hands: g.hands, win: g.win, out: g.out };
+      return { r: g.r, hands: g.hands, win: g.win, lose: g.lose, out: g.out };
     }
     const hands = entry.hands.map((id) => (V.index[id] === undefined ? null : V.index[id]));
     if (hands.some((x) => x === null)) return null;
@@ -306,9 +307,12 @@ export function roomView(main, code) {
   /** 공개한 판의 가운데 글 */
   function shownText(shown) {
     if (isGroup(room.rules)) {
-      if (shown.win === null || shown.win === undefined) return midText(t("다시!"), t("아무도 빠지지 않는다"));
+      // 갈렸는지는 out 으로 본다(점수 규칙의 술래 정하기는 이긴 손 없이 진 손으로 갈린다)
+      const head = groupHead(V, shown);
+      if (!head) return midText(t("다시!"), t("아무도 빠지지 않는다"));
       const n = shown.out.length;
-      return midText(t("{h} 승", { h: V.hands[shown.win].name }), room.rules.mode === "loser" ? t("{n}명 빠져나감", { n }) : t("{n}명 빠짐", { n }));
+      const sub = room.rules.mode === "loser" ? t("{n}명 빠져나감", { n }) : t("{n}명 빠짐", { n });
+      return midText(head.kind === "win" ? t("{h} 승", { h: head.name }) : head.kind === "lose" ? t("{h} 짐", { h: head.name }) : t("갈렸다"), sub);
     }
     const { me, op } = sidesOf(you);
     const cmp = me === 0 ? shown.cmp : -shown.cmp;
@@ -837,10 +841,15 @@ export function roomView(main, code) {
             .map((e) => {
               if (group) {
                 const g = groupRound(V, e);
-                const text =
-                  g.win === null
-                    ? t("다시")
-                    : t("{h} 승 · {names}", { h: V.hands[g.win].name, names: g.out.map((s) => (s === you ? t("나") : nameOf(s))).join(", ") || "—" });
+                const head = groupHead(V, g);
+                const names = g.out.map((s) => (s === you ? t("나") : nameOf(s))).join(", ") || "—";
+                const text = !head
+                  ? t("다시")
+                  : head.kind === "win"
+                    ? t("{h} 승 · {names}", { h: head.name, names })
+                    : head.kind === "lose"
+                      ? t("{h} 짐 · {names}", { h: head.name, names })
+                      : t("갈렸다 · {names}", { names });
                 return h("li", { value: e.r }, text);
               }
               const d = duelRound(V, e, me);

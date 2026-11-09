@@ -2,6 +2,7 @@
 // 12판, 3판마다 쪽을 바꾼다. 노예 쪽으로 이기면 4점, 황제 쪽으로 이기면 1점.
 
 import { h, clear } from "../ui/dom.js";
+import { handArt } from "../ui/art.js";
 import { t } from "../i18n.js";
 import { makeRng } from "../core/rng.js";
 import { createEcard, ecardPick, ecardNames, ECARD_EMOJI, ECARDS } from "../games/ecard.js";
@@ -9,6 +10,13 @@ import { stage, chant, fastToggle, block, recordLine, countChant } from "../ui/w
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+
+// 카드 그림(사용자 11-06: 보이는 이모지는 Fluent 그림으로). 그림이 없으면 이모지로 돌아간다
+const CARD_ART = {
+  emperor: { id: "king", emoji: ECARD_EMOJI.emperor },
+  citizen: { id: "human", emoji: ECARD_EMOJI.citizen },
+  slave: { id: "chain", emoji: ECARD_EMOJI.slave },
+};
 
 export function ecardView(main, entry) {
   const rng = makeRng();
@@ -26,7 +34,7 @@ export function ecardView(main, entry) {
   const doneBar = h("div", { class: "done-bar", hidden: true });
 
   const N = () => ecardNames();
-  const cardEl = (c, cls = "") => h("span", { class: `ecard ecard-${c}${cls ? ` ${cls}` : ""}`, "aria-hidden": "true" }, h("span", { class: "ecard-face" }, ECARD_EMOJI[c]), h("span", { class: "ecard-name" }, N()[c]));
+  const cardEl = (c, cls = "") => h("span", { class: `ecard ecard-${c}${cls ? ` ${cls}` : ""}`, "aria-hidden": "true" }, h("span", { class: "ecard-face" }, handArt(CARD_ART[c])), h("span", { class: "ecard-name" }, N()[c]));
 
   function draw() {
     const g = game;
@@ -84,8 +92,8 @@ export function ecardView(main, entry) {
     const oc = ecardPick(g, 1, rng);
     const sides = g.sides.slice();
     const r = g.play(c, oc);
-    st.me.text(ECARD_EMOJI[c], N()[c]);
-    st.op.text(ECARD_EMOJI[oc], N()[oc]);
+    st.me.art(CARD_ART[c], N()[c]);
+    st.op.art(CARD_ART[oc], N()[oc]);
     if (r.cmp === 0) {
       st.say(t("시민끼리 비겼다. 계속"));
       st.sub(t("남은 카드로 다시 낸다."));

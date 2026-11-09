@@ -41,8 +41,14 @@ function route() {
       nav = "about";
       current = aboutView(main);
     } else if (path.startsWith("/v/")) {
-      const id = decodeURIComponent(path.slice(3));
-      const entry = findEntry(id);
+      // 깨진 주소(%E0%A4%A 같은)는 '찾을 수 없다'로(검수 11-08)
+      let id = null;
+      try {
+        id = decodeURIComponent(path.slice(3));
+      } catch {
+        /* 아래에서 notFound */
+      }
+      const entry = id === null ? null : findEntry(id);
       if (!entry) notFound();
       else {
         nav = entry.cat === "sim" ? "sims" : "home";
@@ -109,8 +115,14 @@ const ICONS = {
 };
 const media = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
 
-export function applyScheme() {
+/** 저장된 밝기. 모르는 값(예: "auto")이면 기기 설정으로 본다(검수 11-08: 빈 화면이 됐다) */
+function schemeSetting() {
   const s = setting("scheme", "system");
+  return SCHEMES.includes(s) ? s : "system";
+}
+
+export function applyScheme() {
+  const s = schemeSetting();
   const dark = s === "dark" || (s !== "light" && media && media.matches);
   const before = document.documentElement.dataset.scheme;
   document.documentElement.dataset.scheme = dark ? "dark" : "light";
@@ -126,7 +138,7 @@ export function applyScheme() {
 }
 
 document.getElementById("theme-btn").addEventListener("click", () => {
-  const s = setting("scheme", "system");
+  const s = schemeSetting();
   setSetting("scheme", SCHEMES[(SCHEMES.indexOf(s) + 1) % SCHEMES.length]);
   applyScheme();
 });
