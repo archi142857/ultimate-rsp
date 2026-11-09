@@ -1,5 +1,6 @@
 # 온라인 대전 서버(server/)를 Cloudflare Workers 로 올린다.
 # 필요한 것(한 번만): 레포 Settings → Secrets and variables → Actions 에 CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
+# 로그인을 켜려면 같은 곳에 GOOGLE_CLIENT_ID·GOOGLE_CLIENT_SECRET, KAKAO_REST_KEY(·KAKAO_CLIENT_SECRET)를 더한다(규약 5장).
 # main 에 푸시할 때 서버나 서버가 import 하는 판정 코드(web/js/core·data·games, i18n)가 바뀌면 테스트를 돌리고 배포한다.
 
 name: server
@@ -47,6 +48,29 @@ jobs:
           workingDirectory: server
           wranglerVersion: "4.158.0"
           command: deploy
+      - name: Login keys
+        # 로그인 열쇠(구글·카카오, 나중에 애플·스팀)는 GitHub Secrets 에 있는 것만 Worker secrets 로 넣는다. 값은 로그에 나오지 않는다.
+        # 없는 제공자는 꺼져 있다(GET /api/auth 에 안 나온다). 끄려면 Cloudflare 에서 그 secret 을 지운다
+        working-directory: server
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_APP_CLIENT_IDS: ${{ secrets.GOOGLE_APP_CLIENT_IDS }}
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_APP_ID: ${{ secrets.KAKAO_APP_ID }}
+        run: |
+          node -e '
+            const names = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_APP_CLIENT_IDS", "KAKAO_REST_KEY", "KAKAO_CLIENT_SECRET", "KAKAO_APP_ID"];
+            const out = {};
+            for (const n of names) if (process.env[n]) out[n] = process.env[n];
+            require("fs").writeFileSync(process.env.RUNNER_TEMP + "/login-keys.json", JSON.stringify(out), { mode: 0o600 });
+            console.log("login keys:", Object.keys(out).join(", ") || "(none)");
+          '
+          if [ "$(cat "$RUNNER_TEMP/login-keys.json")" != "{}" ]; then npx wrangler secret bulk "$RUNNER_TEMP/login-keys.json"; fi
+          rm -f "$RUNNER_TEMP/login-keys.json"
       - name: Check
         # 새 워커 주소는 DNS 에 뜨기까지 잠깐 걸린다. 너무 일찍 물으면 러너의 DNS 가 '없음'을 한동안 기억하므로
         # 조금 기다렸다가 Cloudflare DNS(DoH)로 직접 물어 본다

@@ -10,6 +10,9 @@ export const QUEUE_HINT = "apac-ne";
 /** 순위표(랭킹 DO) 자리: 대기열과 같은 곳. 누가 처음 부르든(입구·방) 여기에 생긴다 */
 export const RANK_HINT = QUEUE_HINT;
 
+/** 계정 DO(하나) 자리: 같은 곳 */
+export const ACCOUNT_HINT = QUEUE_HINT;
+
 const NE = new Set(["KR", "JP", "TW", "HK", "MO", "CN", "MN"]);
 const SE = new Set(["SG", "MY", "ID", "TH", "VN", "PH", "KH", "LA", "MM", "BN"]);
 const ME = new Set(["AE", "SA", "QA", "KW", "BH", "OM", "IL", "JO", "LB", "IQ", "IR", "YE", "SY", "PS"]);

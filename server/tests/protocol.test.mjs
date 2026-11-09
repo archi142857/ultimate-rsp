@@ -19,8 +19,9 @@ test("서버 코드가 던지는 오류 코드는 모두 규약 목록에 있다
     for (const m of text.matchAll(/new Fail\("([a-z_]+)"/g)) used.add(m[1]);
   }
   assert.ok(used.size >= 5);
-  for (const code of used) assert.ok(code in P.ERRORS || P.WS_ERRORS.includes(code), code);
-  for (const code of P.WS_ERRORS) assert.ok(!(code in P.ERRORS), code);
+  for (const code of used) assert.ok(code in P.ERRORS || code in P.AUTH_ERRORS || P.WS_ERRORS.includes(code), code);
+  for (const code of P.WS_ERRORS) assert.ok(!(code in P.ERRORS) && !(code in P.AUTH_ERRORS), code);
+  for (const code of Object.keys(P.AUTH_ERRORS)) assert.ok(!(code in P.ERRORS), code);
 });
 
 test("닫는 코드는 4000번대에서 겹치지 않고, 다시 붙지 않는 코드는 그 안에 있다", () => {

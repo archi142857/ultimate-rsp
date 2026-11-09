@@ -5,6 +5,8 @@ import { Challenge } from "./challenge-do.js";
 import { RoomHost, refuse } from "./room-do.js";
 import { MatchQueue } from "./match-do.js";
 import { Ranking } from "./rank-do.js";
+import { Accounts } from "./account-do.js";
+import { accountRoute, authCallback, authRoute } from "./account-route.js";
 import { QUEUE_HINT, RANK_HINT, placeOf } from "./where.js";
 import { ipTag } from "./rank.js";
 import { makeChallenge } from "./challenge.js";
@@ -14,7 +16,7 @@ import { isOnlineGame } from "../../web/js/data/online.js";
 import { Fail, allowedOrigin, checkVersion, json, originList, preflight, readBody } from "./http.js";
 import { CLOSE, CODE_LEN, GROUP_MODES, MATCH_FORMATS, PROTOCOL } from "./protocol.js";
 
-export { Challenge, RoomHost, MatchQueue, Ranking };
+export { Challenge, RoomHost, MatchQueue, Ranking, Accounts };
 
 // 시작할 때(전역) 도감 변종을 컴파일해 둔다. 요청 안에서는 꺼내 쓰기만 한다(무료 플랜 CPU 10ms)
 warmUp();
@@ -49,12 +51,18 @@ export default {
         if (v !== null) checkVersion(v);
         return json({ ok: true, v: PROTOCOL, now }, 200, okOrigin);
       }
+      // 로그인 제공자가 돌려보내는 곳: 브라우저 이동이라 Origin 머리가 없다(state 로 확인한다)
+      if (parts[0] === "api" && parts[1] === "auth" && parts.length === 4 && parts[3] === "callback" && request.method === "GET") {
+        return await authCallback(env, parts[2], url);
+      }
       if (!okOrigin) throw new Fail("origin");
       if (parts[0] === "api" && parts[1] === "c") return await challengeRoute(request, env, parts.slice(2), url, now, okOrigin);
       if (parts[0] === "api" && parts[1] === "rooms" && parts.length === 2 && request.method === "POST") {
         return await createRoom(request, env, now, okOrigin);
       }
       if (parts[0] === "api" && parts[1] === "rank") return await rankRoute(request, env, parts.slice(2), url, now, okOrigin);
+      if (parts[0] === "api" && parts[1] === "auth") return await authRoute(request, env, parts.slice(2), url, now, okOrigin);
+      if (parts[0] === "api" && parts[1] === "account") return await accountRoute(request, env, parts.slice(2), now, okOrigin);
       throw new Fail("not_found");
     } catch (e) {
       if (e instanceof Fail) return json({ error: e.code, ...(e.extra || {}), now }, e.status, okOrigin);

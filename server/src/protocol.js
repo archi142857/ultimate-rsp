@@ -69,6 +69,19 @@ export const RANK_TOP = 50;
 /** 게임마다 하루(UTC 날짜, 한국 오전 9시에 바뀜)에 세는 순위 경기 수: pid 하나 30, 같은 곳(IP 꼬리표) 하나 60. 넘으면 그 경기는 안 센다(컨셉 11-09 기본안) */
 export const RANK_DAILY = { pid: 30, home: 60 };
 
+// 로그인(계정, 11-09 사용자 '나중에 앱·스팀에도 낼 수 있게 범용성 있게'). 로그인은 고를 수 있고, 안 해도 지금처럼 논다.
+// 계정 하나에 로그인 여러 개. 게임은 지금처럼 pid 만 본다(계정은 pid 를 어느 기기에서든 되찾는 열쇠)
+/** 로그인 제공자 id. 서버에 열쇠가 있는 것만 켜진다(GET /api/auth). 나중에 apple(iOS 앱), steam(스팀) */
+export const AUTH_PROVIDERS = ["google", "kakao"];
+/** 제공자 로그인 창에 다녀오는 시간 */
+export const AUTH_STATE_MS = 10 * 60_000;
+/** 돌아온 화면이 한 번 쓰는 코드(login=)를 세션 토큰으로 바꾸는 시간 */
+export const AUTH_HANDOFF_MS = 2 * 60_000;
+/** 세션 토큰을 이만큼 안 쓰면 로그아웃 */
+export const SESSION_IDLE_MS = 180 * 24 * 3600_000;
+/** 계정 하나에 남겨 두는 세션(기기) 수. 넘으면 오래 안 쓴 것부터 지운다 */
+export const SESSION_MAX = 20;
+
 // 연결 유지: 화면이 PING 글자를 보내면 서버가 PONG 으로 바로 답한다(서버를 깨우지 않는다)
 export const PING = "ping";
 export const PONG = "pong";
@@ -92,6 +105,18 @@ export const ERRORS = {
   too_fast: 429,
   busy: 503,
   server: 500,
+};
+/**
+ * 로그인·계정 주소(/api/auth, /api/account)에서만 나는 오류(규약 5장). 화면이 로그인을 붙일 때 문구를 더하고
+ * tests/online-protocol.test.mjs 가 이것도 보게 되면 ERRORS 로 합친다
+ */
+export const AUTH_ERRORS = {
+  bad_token: 401,
+  bad_login: 401,
+  bad_back: 400,
+  no_provider: 404,
+  in_use: 409,
+  last_login: 409,
 };
 /** WebSocket 에서만 쓰는 오류 코드({"t":"error","code"}, 연결은 그대로) */
 export const WS_ERRORS = ["not_host", "phase", "stale", "already", "full"];
