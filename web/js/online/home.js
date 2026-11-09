@@ -118,7 +118,7 @@ export function onlineHomeView(main, params = {}) {
       // 길이는 맞는데 안 쓰는 글자(0·1·I·L·O)가 있으면 그것부터 알려 준다(검수 11-09)
       notices.set("note", {
         title: hasBadCodeChar(codeInput.value)
-          ? t("방 코드에는 0·1·I·L·O 가 없다. 받은 코드를 다시 확인하자.")
+          ? t("방 코드에는 0·1·I·L·O가 없다. 받은 코드를 다시 확인하자.")
           : t("방 코드는 {n}글자다. 받은 코드를 다시 확인하자.", { n: CODE_LEN.room }),
       });
       return;
