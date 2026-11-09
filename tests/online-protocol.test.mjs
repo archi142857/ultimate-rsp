@@ -35,6 +35,23 @@ test("서버가 만든 코드를 화면 주소가 받는다(방 코드는 소문
   }
 });
 
+test("처리방침 판·이메일 열쇠 값이 서버와 같고, 처리방침 쪽도 같은 판이다", async () => {
+  assert.equal(C.PRIVACY_VERSION, P.PRIVACY_VERSION);
+  assert.deepEqual(C.EMAIL_KDF, P.EMAIL_KDF);
+  assert.equal(C.AUTH_SIGNUP_MS, P.AUTH_SIGNUP_MS);
+  assert.equal(C.EMAIL_CODE_MS, P.EMAIL_CODE_MS);
+  const html = readFileSync(new URL("../web/privacy.html", import.meta.url), "utf8");
+  assert.match(html, new RegExp(`<meta name="policy-version" content="${C.PRIVACY_VERSION}">`));
+  // 화면의 열쇠(WebCrypto)가 같은 값의 PBKDF2 와 같다
+  const { emailKey, normEmail } = await import("../web/js/online/account.js");
+  const { pbkdf2Sync } = await import("node:crypto");
+  const email = "  Sanger@Example.COM ";
+  const want = pbkdf2Sync("비밀번호 8자 이상", P.EMAIL_KDF.salt + normEmail(email), P.EMAIL_KDF.iterations, P.EMAIL_KDF.bytes, "sha256").toString("base64url");
+  const got = await emailKey(email, "비밀번호 8자 이상");
+  assert.equal(got, want);
+  assert.match(got, /^[A-Za-z0-9_-]{43}$/);
+});
+
 test("pid 꼴이 서버와 맞는다", () => {
   for (let i = 0; i < 50; i++) assert.match(newId(), /^[A-Za-z0-9_-]{16,64}$/);
 });
@@ -61,8 +78,8 @@ test("화면이 다듬은 이름은 서버가 받는다", () => {
 
 test("서버 오류 코드마다 화면 문구가 있다", () => {
   const unreachable = errorText("network");
-  // 로그인·계정 오류(규약 8장)도 같이 본다
-  for (const code of [...Object.keys(P.ERRORS), ...Object.keys(P.AUTH_ERRORS || {})]) {
+  // 로그인·계정 오류(규약 8장)와 가입·이메일 오류(8.3b·8.8)도 같이 본다
+  for (const code of [...Object.keys(P.ERRORS), ...Object.keys(P.AUTH_ERRORS || {}), ...Object.keys(P.NEW_ERRORS || {})]) {
     const msg = errorText(code);
     assert.ok(msg, code);
     // busy·server 는 '닿지 않는다'와 같은 안내(규약 5장)

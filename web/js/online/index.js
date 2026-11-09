@@ -10,6 +10,7 @@ import { matchView } from "./match.js";
 import { roomView } from "./room.js";
 import { rankView } from "./rank-view.js";
 import { myChallengesView } from "./mine-view.js";
+import { accountView } from "./account-page.js";
 
 export { parseOnline } from "./ids.js";
 
@@ -21,6 +22,7 @@ export function onlineView(main, route, params) {
   if (route.kind === "match") return matchView(main, params);
   if (route.kind === "rank") return rankView(main, route.game);
   if (route.kind === "my-challenges") return myChallengesView(main);
+  if (route.kind === "account" || route.kind === "account-signup" || route.kind === "account-email") return accountView(main, route);
   return badLinkView(main, route.what);
 }
 

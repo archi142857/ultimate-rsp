@@ -42,3 +42,12 @@ export const CLOSE = {
 };
 /** 이 코드로 닫히면 다시 붙지 않는다 */
 export const NO_RETRY = [4000, 4001, 4003, 4004, 4008, 4009, 4010, 4029];
+
+/** 이 화면이 보여 주는 개인정보 처리방침 판(web/privacy.html 의 시행일·meta policy-version). 가입할 때 보낸다(규약 8.3b) */
+export const PRIVACY_VERSION = "2026-11-09";
+
+/** 이메일 비밀번호를 열쇠로 바꾸는 값(규약 8.8): base64url(PBKDF2-HMAC-SHA256(비밀번호, salt + 다듬은 메일, iterations, bytes)) */
+export const EMAIL_KDF = { hash: "SHA-256", iterations: 600_000, salt: "ursp-email-v1:", bytes: 32 };
+/** 가입표(signup ticket)를 쓸 수 있는 시간, 확인 코드를 쓸 수 있는 시간(서버 protocol.js 사본, 시험이 맞춘다) */
+export const AUTH_SIGNUP_MS = 15 * 60_000;
+export const EMAIL_CODE_MS = 30 * 60_000;

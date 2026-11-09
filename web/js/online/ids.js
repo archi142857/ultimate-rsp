@@ -117,6 +117,11 @@ export function parseOnline(path) {
   if (path === "/c/new" || path === "/c/new/") return { kind: "new-challenge" };
   if (path === "/c/mine" || path === "/c/mine/") return { kind: "my-challenges" };
   if (path === "/match" || path === "/match/") return { kind: "match" };
+  // 계정(규약 8장, 디자인 '로그인 칸 ③ 따로 화면')
+  if (path === "/account" || path === "/account/") return { kind: "account" };
+  if (path === "/account/signup") return { kind: "account-signup" };
+  if (path === "/account/email") return { kind: "account-email" };
+  if (path === "/account/email/link") return { kind: "account-email", link: true };
   let m = /^\/rank(?:\/([^/]*))?\/?$/.exec(path);
   if (m) return { kind: "rank", game: (m[1] && decode(m[1])) || null };
   m = /^\/c\/([^/]*)\/?$/.exec(path);

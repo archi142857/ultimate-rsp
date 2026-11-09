@@ -54,6 +54,15 @@ export function errorText(code) {
       return t("이 로그인은 이미 다른 계정에 붙어 있습니다.");
     case "last_login":
       return t("마지막 로그인 방법은 뗄 수 없습니다. 모두 지우려면 계정 지우기를 눌러 주십시오.");
+    // 가입·이메일(규약 8.3b·8.8, NEW_ERRORS)
+    case "need_agree":
+      return t("처리방침 동의와 만 14세 이상 확인이 모두 필요합니다.");
+    case "old_policy":
+      return t("개인정보 처리방침이 바뀌었습니다. 다시 읽고 동의해 주십시오.");
+    case "bad_email":
+      return t("이메일 주소를 다시 확인해 주십시오.");
+    case "bad_code":
+      return t("코드가 맞지 않습니다.");
     default:
       // network·busy·server·http_5xx: 서버가 꺼졌거나 하루 한도에 닿았다(규약 5장: 모두 busy 처럼 안내)
       return t("서버에 연결할 수 없습니다. 잠시 뒤 다시 해 주십시오. 하루 무료 한도를 넘었다면 {time}에 풀립니다.", { time: resetTime() });

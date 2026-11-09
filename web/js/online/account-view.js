@@ -1,37 +1,48 @@
-// 로그인 화면(규약 8장): 프로필 칸 안의 로그인 칸, 계정 시트, 로그인에서 돌아왔을 때의 알림.
-// 생김새는 디자인 시안이 정해지면 입힌다(백엔드 11-09 쪽지 9번). 지금은 다른 시트와 같은 꼴.
+// 로그인 화면의 공용 조각(디자인 '로그인 칸 ③ 따로 화면', 사용자 11-09):
+// 프로필 칸 머리의 알약('계정 · 로그인 ›' / '✓ 계정 ›'), 로그인 단추(구글 → 카카오 → 이메일), 묻기 창,
+// 로그인 결과 마무리(다른 기기의 계정이면 바꾸기 전에 묻는다), 로그인에서 돌아왔을 때의 알림.
+// 계정 화면·가입 화면·이메일 화면은 account-page.js.
 
 import { h } from "../ui/dom.js";
 import { t } from "../i18n.js";
 import { toast } from "../ui/toast.js";
 import { OnlineError } from "./net.js";
 import { errorText } from "./messages.js";
-import { dateText } from "./common.js";
-import {
-  signedIn,
-  lastAccount,
-  loginMethods,
-  startLogin,
-  takeLoginReturn,
-  finishLogin,
-  accountInfo,
-  unlinkLogin,
-  signOut,
-  deleteAccount,
-  becomeGuest,
-  onAccount,
-} from "./account.js";
+import { signedIn, loginMethods, knownMethods, takeLoginReturn, finishLogin, changesPid, useLogin, dropLogin, onAccount } from "./account.js";
 
 export const PRIVACY_URL = "privacy.html";
 
-/** 제공자 이름 */
+/** 공식 로고 파일(구글 브랜드 가이드라인 묶음의 G, 카카오 리소스의 말풍선 심볼). web/icons/brand/ 에 넣으면 여기에 적는다 */
+const MARKS = { google: null, kakao: null };
+
+/** 방법 이름 */
 export function providerName(p) {
-  return p === "google" ? "Google" : p === "kakao" ? t("카카오") : p === "test" ? t("시험") : p;
+  switch (p) {
+    case "google":
+      return t("구글");
+    case "kakao":
+      return t("카카오");
+    case "email":
+      return t("이메일");
+    case "test":
+      return t("시험");
+    default:
+      return p;
+  }
 }
 
-/** 로그인 단추 글 */
-function signInText(p) {
-  return p === "google" ? t("Google로 로그인") : p === "kakao" ? t("카카오로 로그인") : t("시험 로그인");
+/** '구글로 로그인함' 같은 작은 알약 글(가입 화면) */
+export function signedWithText(p) {
+  switch (p) {
+    case "google":
+      return t("구글로 로그인함");
+    case "kakao":
+      return t("카카오로 로그인함");
+    case "email":
+      return t("이메일로 가입함");
+    default:
+      return t("시험 로그인함");
+  }
 }
 
 /** 로그인에서 돌아온 오류(?login_error=)와 로그인·계정 오류 코드의 문장 */
@@ -51,254 +62,158 @@ export function loginErrorText(code) {
   }
 }
 
-const isAuthCode = (e) => e instanceof OnlineError && Boolean(e.code);
+export const codeOf = (e) => (e instanceof OnlineError && e.code ? e.code : "server");
 
-// ── 돌아왔을 때 ─────────────────
+/** 방법 그림 파일(봉투, 구글 G, 카카오 말풍선). 공식 그림을 아직 받지 못했으면 null */
+export function markSrc(p) {
+  return p === "email" ? "icons/envelope.svg" : (MARKS[p] ?? null);
+}
+
+/**
+ * 줄 머리 방법 그림(계정 화면 줄 22, 가입 화면 알약 18). 그림이 없으면 빈 칸(줄 글자는 그대로 맞춘다).
+ * 카카오는 노란 바탕에 말풍선(카카오 규정)
+ */
+export function providerMark(p) {
+  const src = markSrc(p);
+  return h("span", { class: `acct-row-mark mark-${p}`, "aria-hidden": "true" }, src ? h("img", { src, alt: "" }) : null);
+}
+
+/**
+ * 로그인 단추(디자인 ②: 셋 다 높이 46). 구글·카카오는 각 회사 규정 색과 글('Google 계정으로 로그인', '카카오 로그인'),
+ * 이메일은 우리 단추에 봉투. 시험(로컬)은 우리 단추
+ */
+export function signInButton(p, onClick) {
+  const text = { google: t("Google 계정으로 로그인"), kakao: t("카카오 로그인"), email: t("이메일로 로그인") }[p] ?? t("시험 로그인");
+  const src = markSrc(p);
+  const mark = src ? h("img", { class: "sso-mark", src, alt: "", width: p === "email" ? 22 : 20, height: p === "email" ? 22 : 20 }) : null;
+  const b = h("button", { type: "button", class: `sso sso-${p}` }, mark, h("span", { class: "sso-text" }, text));
+  b.addEventListener("click", () => onClick(p, b));
+  return b;
+}
+
+/**
+ * 프로필 칸 머리 오른쪽 알약(디자인 ①⑨): 손님이면 '계정 · 로그인 ›', 로그인했으면 '✓ 계정 ›'. 누르면 #/account.
+ * 손님인데 켜진 방법이 없으면(라이브 지금) 숨긴다. onGo(): 누를 때(프로필 칸을 닫는다)
+ */
+export function accountPill({ onGo = null } = {}) {
+  const a = h("a", { class: "acct-pill", href: "#/account", hidden: true });
+  function draw() {
+    if (signedIn()) {
+      a.className = "acct-pill on";
+      a.replaceChildren(h("span", { class: "acct-pill-check", "aria-hidden": "true" }, "✓"), h("span", {}, t("계정")), h("span", { class: "acct-pill-go", "aria-hidden": "true" }, "›"));
+      a.hidden = false;
+      return;
+    }
+    const list = knownMethods();
+    if (list === null) loginMethods().then(draw, () => {});
+    a.className = "acct-pill";
+    a.replaceChildren(h("img", { class: "acct-pill-cloud", src: "art/cloud.svg", alt: "" }), h("span", {}, t("계정 · 로그인")), h("span", { class: "acct-pill-go", "aria-hidden": "true" }, "›"));
+    a.hidden = !(list && list.length);
+  }
+  a.addEventListener("click", () => {
+    if (onGo) onGo();
+  });
+  const off = onAccount(draw);
+  draw();
+  return { el: a, draw, destroy: off };
+}
+
+let askSeq = 0;
+/**
+ * 묻기 창(디자인 ⑪: 가운데 대화 상자, 뒤는 scrim). check: { label, note, on } 이면 확인 칸 하나.
+ * 답: { ok, checked }. Esc·바깥·취소는 ok:false
+ */
+export function askDialog({ title, text, check = null, yes, no = t("취소"), danger = false }) {
+  return new Promise((resolve) => {
+    const id = `ask-${++askSeq}`;
+    const box = check ? h("input", { type: "checkbox", class: "ask-box", id: `${id}-check` }) : null;
+    if (box) box.checked = Boolean(check.on);
+    const noBtn = h("button", { type: "button", class: "btn btn-big" }, no);
+    const yesBtn = h("button", { type: "button", class: "btn btn-big " + (danger ? "btn-danger" : "btn-ink") }, yes);
+    const d = h(
+      "dialog",
+      { class: "ask", "aria-labelledby": `${id}-title`, "aria-describedby": `${id}-text` },
+      h("h2", { class: "ask-title", id: `${id}-title` }, title),
+      h("p", { class: "o-p ask-text", id: `${id}-text` }, text),
+      check
+        ? h("label", { class: "ask-check", for: `${id}-check` }, box, h("span", { class: "ask-check-text" }, h("span", {}, check.label), check.note ? h("small", {}, check.note) : null))
+        : null,
+      h("div", { class: "ask-act" }, noBtn, yesBtn),
+    );
+    let done = false;
+    const finish = (ok) => {
+      if (done) return;
+      done = true;
+      try {
+        d.close();
+      } catch {
+        /* 이미 닫힘 */
+      }
+      d.remove();
+      resolve({ ok, checked: box ? box.checked : false });
+    };
+    noBtn.addEventListener("click", () => finish(false));
+    yesBtn.addEventListener("click", () => finish(true));
+    d.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      finish(false);
+    });
+    // 바깥(뒤판)을 누르면 취소
+    d.addEventListener("click", (e) => {
+      if (e.target === d) finish(false);
+    });
+    document.body.append(d);
+    d.showModal();
+    (danger ? noBtn : yesBtn).focus();
+  });
+}
+
+/**
+ * 로그인 결과({ result } · { signup })를 마무리한다. 가입 표면 가입 화면으로.
+ * 다른 기기에서 만든 계정이면(pid 가 바뀐다) 바꾸기 전에 묻고(디자인 ④), 그만두면 받은 토큰을 끝낸다.
+ * 썼으면 true
+ */
+export async function settleLogin(res) {
+  if (!res) return false;
+  if (res.signup) {
+    location.hash = "#/account/signup";
+    return false;
+  }
+  const r = res.result;
+  if (!res.link && changesPid(r)) {
+    const { ok } = await askDialog({
+      title: t("이 계정으로 바꾸시겠습니까?"),
+      text: t("다른 기기에서 만든 계정입니다. 바꾸면 그 계정의 이름과 기록이 보이고, 이 기기에서 손님으로 쌓은 기록은 따로 남습니다."),
+      yes: t("@switch:바꾸기"),
+      no: t("그만두기"),
+    });
+    if (!ok) {
+      await dropLogin(r);
+      toast(t("로그인 그만둠"), t("이 기기는 손님 그대로입니다."));
+      return false;
+    }
+  }
+  const out = useLogin(r);
+  if (out.linked) toast(t("{p} 로그인 추가됨", { p: providerName(res.provider) }));
+  else if (out.switched) toast(t("로그인됨"), t("계정의 이름과 기록으로 바꿨습니다."));
+  else if (out.fresh) toast(t("로그인됨"), t("이제 다른 기기에서도 이 기록과 이름을 씁니다."));
+  else toast(t("로그인됨"));
+  return true;
+}
+
 /** 라우터가 그리기 전에 부른다: 주소에서 login·login_error 를 지우고, 로그인을 마치고, 결과를 알린다 */
 export function handleLoginReturn() {
   const ret = takeLoginReturn();
   if (!ret) return;
   finishLogin(ret).then(
-    (r) => {
-      if (!r) return;
-      if (r.error) {
-        toast(r.link ? t("로그인 방법 더하기 실패") : t("로그인 실패"), loginErrorText(r.error), { kind: r.error === "cancel" ? "note" : "drop" });
+    (res) => {
+      if (!res) return;
+      if (res.error) {
+        toast(res.link ? t("로그인 방법 추가 실패") : t("로그인 실패"), loginErrorText(res.error), { kind: res.error === "cancel" ? "note" : "drop" });
         return;
       }
-      if (r.linked) toast(t("{p} 로그인 더함", { p: providerName(r.provider) }), t("이제 이 방법으로도 같은 계정에 로그인할 수 있습니다."));
-      else if (r.switched) toast(t("로그인함"), t("계정의 기록과 이름으로 바꿨습니다. 이 기기에서 손님으로 쌓은 기록은 따로 남습니다."));
-      else if (r.fresh) toast(t("로그인함"), t("이제 다른 기기에서도 이 기록과 이름을 씁니다."));
-      else toast(t("로그인함"));
+      settleLogin(res);
     },
-    (e) => toast(t("로그인 실패"), loginErrorText(isAuthCode(e) ? e.code : "server"), { kind: "drop" }),
+    (e) => toast(t("로그인 실패"), loginErrorText(codeOf(e)), { kind: "drop" }),
   );
-}
-
-// ── 프로필 칸 안의 로그인 칸 ─────────────────
-/**
- * 로그인하지 않았으면 켜진 방법의 로그인 단추(켜진 방법이 없으면 아무것도 없다), 로그인했으면 '계정' 단추.
- * beforeSheet(): 계정 시트를 열기 전에 부른다(프로필 칸을 닫는다). 시트를 닫은 뒤 초점을 줄 곳을 돌려준다
- */
-export function loginBlock({ beforeSheet = null } = {}) {
-  const el = h("div", { class: "plogin", hidden: true });
-  let seq = 0;
-
-  async function draw() {
-    const my = ++seq;
-    if (signedIn()) {
-      const acc = lastAccount();
-      const names = acc && Array.isArray(acc.logins) ? [...new Set(acc.logins.map((l) => providerName(l.provider)))].join(" · ") : "";
-      const open = h("button", { type: "button", class: "btn" }, t("계정"));
-      open.addEventListener("click", () => {
-        const back = beforeSheet ? beforeSheet() : null;
-        openAccountSheet({ returnTo: back });
-      });
-      el.replaceChildren(h("div", { class: "plogin-row" }, h("span", { class: "o-p o-small plogin-who" }, names ? t("로그인함 · {m}", { m: names }) : t("로그인함")), open));
-      el.hidden = false;
-      return;
-    }
-    let list = [];
-    try {
-      list = await loginMethods();
-    } catch {
-      list = [];
-    }
-    if (my !== seq) return;
-    if (!list.length) {
-      el.replaceChildren();
-      el.hidden = true;
-      return;
-    }
-    const msg = h("p", { class: "o-p o-small plogin-msg", role: "alert", hidden: true });
-    const btns = list.map((p) => {
-      const b = h("button", { type: "button", class: `btn plogin-btn plogin-${p}` }, signInText(p));
-      b.addEventListener("click", async () => {
-        for (const x of btns) x.disabled = true;
-        msg.hidden = true;
-        try {
-          await startLogin(p);
-        } catch (e) {
-          msg.textContent = loginErrorText(isAuthCode(e) ? e.code : "server");
-          msg.hidden = false;
-          for (const x of btns) x.disabled = false;
-        }
-      });
-      return b;
-    });
-    el.replaceChildren(
-      h("div", { class: "pname-head" }, h("span", { class: "pname-label" }, t("로그인"))),
-      h("p", { class: "o-p o-small" }, t("로그인하면 다른 기기에서도 같은 기록과 이름을 씁니다. 하지 않아도 됩니다.")),
-      h("div", { class: "plogin-btns" }, ...btns),
-      msg,
-      h("a", { class: "o-link o-small", href: PRIVACY_URL }, t("개인정보 처리방침")),
-    );
-    el.hidden = false;
-  }
-
-  const off = onAccount(() => draw());
-  return { el, draw, destroy: off };
-}
-
-// ── 계정 시트 ─────────────────
-let sheetOpen = null;
-
-/** 계정 시트(규약 8.5): 붙은 로그인 방법·떼기, 방법 더하기, 로그아웃, 계정 지우기. returnTo: 닫은 뒤 초점 */
-export function openAccountSheet({ returnTo = null } = {}) {
-  if (sheetOpen) return;
-  const wrap = h("div", { class: "o-sheet-wrap account-wrap" });
-  const body = h("div", { class: "o-sheet account-sheet", role: "dialog", "aria-modal": "true", "aria-labelledby": "account-title" });
-  const keys = new AbortController();
-  const back = returnTo || document.activeElement;
-  const close = () => {
-    keys.abort();
-    wrap.remove();
-    sheetOpen = null;
-    if (back && back.isConnected && typeof back.focus === "function") back.focus({ preventScroll: true });
-  };
-  sheetOpen = { close };
-  wrap.append(h("div", { class: "o-scrim", onclick: close }), body);
-  document.body.append(wrap);
-  // Esc 는 닫기, Tab 은 시트 안에서만 돈다
-  document.addEventListener(
-    "keydown",
-    (e) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        close();
-      } else if (e.key === "Tab") {
-        const all = [...body.querySelectorAll("button:not([disabled]), a[href]")].filter((x) => x.offsetParent !== null);
-        if (!all.length) return;
-        const i = all.indexOf(document.activeElement);
-        const next = e.shiftKey ? (i <= 0 ? all.length - 1 : i - 1) : i === -1 || i === all.length - 1 ? 0 : i + 1;
-        e.preventDefault();
-        all[next].focus();
-      }
-    },
-    { signal: keys.signal },
-  );
-  const title = (text) => h("h2", { class: "o-h2", id: "account-title" }, text);
-  const say = h("p", { class: "o-p o-small account-msg", role: "alert", hidden: true });
-  const fail = (e) => {
-    say.textContent = loginErrorText(isAuthCode(e) ? e.code : "server");
-    say.hidden = false;
-  };
-
-  // 로그아웃·지우기 뒤: 새 손님으로 바꿀지 묻는다(함께 쓰는 기기에 계정 pid 가 남지 않게)
-  function guestStep(done) {
-    const fresh = h("button", { type: "button", class: "btn btn-ink btn-big" }, t("새 손님으로 바꾸기"));
-    const keep = h("button", { type: "button", class: "btn btn-big" }, t("그대로 두기"));
-    fresh.addEventListener("click", () => {
-      becomeGuest();
-      close();
-      toast(done, t("새 손님으로 바꿨습니다. 이름과 기록을 새로 시작합니다."));
-    });
-    keep.addEventListener("click", () => {
-      close();
-      toast(done);
-    });
-    body.replaceChildren(title(t("새 손님으로 바꾸시겠습니까?")), h("p", { class: "o-p" }, t("이 기기를 다른 사람과 같이 쓴다면 바꾸면 됩니다. 이름과 기록을 새로 시작합니다.")), fresh, keep);
-    fresh.focus();
-  }
-
-  function confirmDelete() {
-    const yes = h("button", { type: "button", class: "btn btn-danger btn-big" }, t("계정 지우기"));
-    const no = h("button", { type: "button", class: "btn btn-big" }, t("취소"));
-    yes.addEventListener("click", async () => {
-      yes.disabled = no.disabled = true;
-      say.hidden = true;
-      try {
-        await deleteAccount();
-        guestStep(t("계정 지움"));
-      } catch (e) {
-        fail(e);
-        yes.disabled = no.disabled = false;
-        if (!signedIn()) close();
-      }
-    });
-    no.addEventListener("click", () => draw());
-    body.replaceChildren(title(t("계정을 지우시겠습니까?")), h("p", { class: "o-p" }, t("로그인 방법과 모든 기기의 로그인이 사라집니다. 게임 기록과 순위는 남습니다.")), say, yes, no);
-    no.focus();
-  }
-
-  async function draw() {
-    say.hidden = true;
-    body.replaceChildren(title(t("계정")), h("p", { class: "o-p o-small" }, t("계정 불러오는 중…")));
-    let acc = lastAccount();
-    let list = [];
-    try {
-      const [r, l] = await Promise.all([accountInfo(), loginMethods().catch(() => [])]);
-      acc = r.account;
-      list = l;
-    } catch (e) {
-      if (!signedIn()) {
-        close();
-        toast(t("로그인 끝남"), loginErrorText("bad_token"));
-        return;
-      }
-      fail(e);
-    }
-    if (!sheetOpen) return;
-    const logins = acc && Array.isArray(acc.logins) ? acc.logins : [];
-    const rows = logins.map((l) => {
-      const off = h("button", { type: "button", class: "btn btn-sm" }, t("떼기"));
-      off.addEventListener("click", async () => {
-        off.disabled = true;
-        say.hidden = true;
-        try {
-          await unlinkLogin(l.provider);
-          draw();
-        } catch (e) {
-          fail(e);
-          off.disabled = false;
-        }
-      });
-      return h(
-        "li",
-        { class: "account-login" },
-        h("span", { class: "account-login-name" }, providerName(l.provider)),
-        h("span", { class: "o-p o-small account-login-when" }, t("{date}에 붙임", { date: dateText(l.made) })),
-        off,
-      );
-    });
-    const have = new Set(logins.map((l) => l.provider));
-    // 시험 제공자는 같은 방법으로 여러 사람을 붙여 볼 수 있게 늘 보인다
-    const more = list.filter((p) => !have.has(p) || p === "test");
-    const addBtns = more.map((p) => {
-      const b = h("button", { type: "button", class: `btn plogin-btn plogin-${p}` }, signInText(p));
-      b.addEventListener("click", async () => {
-        b.disabled = true;
-        say.hidden = true;
-        try {
-          await startLogin(p, { link: true });
-        } catch (e) {
-          fail(e);
-          b.disabled = false;
-        }
-      });
-      return b;
-    });
-    const out = h("button", { type: "button", class: "btn btn-big" }, t("로그아웃"));
-    out.addEventListener("click", async () => {
-      out.disabled = true;
-      await signOut();
-      guestStep(t("로그아웃함"));
-    });
-    const del = h("button", { type: "button", class: "btn btn-danger-ghost btn-big" }, t("계정 지우기"));
-    del.addEventListener("click", confirmDelete);
-    body.replaceChildren(
-      title(t("계정")),
-      h("p", { class: "o-p o-small" }, t("어느 기기에서든 로그인하면 이 계정의 기록과 이름을 씁니다.")),
-      h("h3", { class: "pname-label" }, t("로그인 방법")),
-      h("ul", { class: "account-logins" }, ...rows),
-      addBtns.length ? h("h3", { class: "pname-label" }, t("로그인 방법 더하기")) : null,
-      addBtns.length ? h("div", { class: "plogin-btns" }, ...addBtns) : null,
-      say,
-      out,
-      del,
-      h("a", { class: "o-link o-small account-privacy", href: PRIVACY_URL }, t("개인정보 처리방침")),
-    );
-    out.focus();
-  }
-
-  draw();
 }

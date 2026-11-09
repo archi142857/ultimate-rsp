@@ -1693,70 +1693,486 @@ button.varrow {
 .o-sheet-wrap[hidden] {
   display: none;
 }
-/* ── 로그인(규약 8장). 생김새는 디자인 시안이 정해지면 입힌다 ── */
-.plogin {
-  display: grid;
-  gap: 8px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-}
-.plogin-row {
+/* ── 로그인·계정(규약 8장, 디자인 '로그인 칸 ③ 따로 화면' 11-09) ── */
+.pname-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
 }
-.plogin-who {
+.pname-top .pname-title {
+  margin: 0;
+}
+/* 프로필 칸 머리의 계정 알약: 손님 '계정 · 로그인 ›', 로그인함 '✓ 계정 ›' */
+.acct-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--focus) 10%, transparent);
+  color: var(--focus);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+:root[data-scheme="dark"] .acct-pill {
+  color: #8ea0ff;
+  background: color-mix(in srgb, #8ea0ff 14%, transparent);
+}
+.acct-pill-cloud {
+  width: 18px;
+  height: 18px;
+}
+.acct-pill-check {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--win);
+  color: #fff;
+  font-size: 0.625rem;
+}
+.pchip-btn {
+  flex: none;
+}
+/* 계정 화면: 가운데 한 줄(넓은 화면 480px) */
+.acct {
+  max-width: 480px;
+  margin-inline: auto;
+}
+.acct-top-label {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+.acct-guest {
+  display: grid;
+  gap: 12px;
+}
+.acct-cloud {
+  display: block;
+  width: 92px;
+  height: auto;
+  margin: 4px auto 0;
+}
+.acct-h1 {
+  font-size: 1.5625rem;
+}
+@media (min-width: 900px) {
+  .acct-cloud {
+    width: 110px;
+  }
+  .acct-h1 {
+    font-size: 1.875rem;
+  }
+}
+/* 로그인 단추: 셋 다 높이 46. 구글·카카오는 각 회사 규정 색 */
+.sso-list {
+  display: grid;
+  gap: 9px;
+}
+.sso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  width: 100%;
+  padding: 0 14px;
+  cursor: pointer;
+}
+.sso:disabled,
+.sso.busy {
+  opacity: 0.6;
+  cursor: default;
+}
+.sso-mark {
+  flex: none;
+}
+.sso-google {
+  background: #fff;
+  border: 1px solid #747775;
+  border-radius: 4px;
+  color: #1f1f1f;
+  font: 500 14px/20px Roboto, var(--sans);
+}
+:root[data-scheme="dark"] .sso-google {
+  background: #131314;
+  border-color: #8e918f;
+  color: #e3e3e3;
+}
+.sso-kakao {
+  background: #fee500;
+  border: 0;
+  border-radius: 12px;
+  color: rgba(0, 0, 0, 0.85);
+  font: 600 15px/20px system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.sso-email,
+.sso-test {
+  background: var(--surface);
+  border: 1.5px solid var(--line-2);
+  border-radius: 12px;
+  color: var(--ink);
+  font: 700 0.9375rem/1.3 var(--sans);
+}
+.acct-soon {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.acct-soon-pill {
+  padding: 2px 10px;
+  border: 1px dashed var(--line-2);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.acct-foot {
+  margin-top: 16px;
+  text-align: center;
+}
+.acct-err {
+  margin: 0;
+  color: var(--lose);
+  font-size: 0.875rem;
+}
+/* 가입·이메일 칸 */
+.acct-form {
+  display: grid;
+  gap: 12px;
+}
+.acct-form[hidden] {
+  display: none;
+}
+.acct-field {
+  display: grid;
+  gap: 6px;
   min-width: 0;
 }
-.plogin-btns {
+.acct-label {
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.acct-hint {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.acct-pw {
+  position: relative;
+}
+.acct-pw .text-input {
+  width: 100%;
+  padding-right: 64px;
+}
+.acct-see {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.acct-see[aria-pressed="true"] {
+  color: var(--focus);
+}
+.acct-consent {
   display: grid;
   gap: 8px;
 }
-.plogin-btn,
-.plogin-row .btn {
-  min-height: 44px;
+.acct-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  cursor: pointer;
 }
-.account-sheet {
-  max-height: min(88vh, 640px);
+.acct-check input,
+.ask-box {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: none;
+  accent-color: var(--ink);
+}
+.acct-need {
+  margin: 0;
+  text-align: center;
+}
+.acct-need[hidden] {
+  display: none;
+}
+.acct-with {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--sunk);
+  font-size: 0.8125rem;
+}
+.acct-with:has(.acct-row-mark) {
+  padding-left: 4px;
+}
+.acct-faces {
+  max-height: 210px;
   overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
 }
-.account-sheet .pname-label {
-  margin: 4px 0 0;
+.acct-box {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
 }
-.account-logins {
+.acct-box .o-p {
+  margin: 0;
+}
+.acct-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--sunk);
+}
+.acct-tab {
+  min-height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.acct-tab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.acct-link {
+  justify-self: center;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--focus);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.acct-email {
+  display: grid;
+  gap: 14px;
+}
+.acct-step {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.acct-step-label {
+  margin: 0;
+  font-weight: 700;
+}
+/* 6자리 코드: 보이는 칸 여섯 위에 투명한 진짜 입력 하나 */
+.code6 {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+}
+.code6-boxes {
+  display: flex;
+  gap: 6px;
+}
+.code6-box {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 46px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--surface);
+  font-family: var(--display);
+  font-size: 22px;
+}
+.code6-box.on {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 10%, transparent);
+}
+.code6-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  font-size: 16px;
+  cursor: text;
+}
+/* 로그인한 뒤: 나 카드, 로그인 방법 줄 */
+.acct-me {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.acct-me-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.acct-me-name {
+  overflow-wrap: anywhere;
+}
+.acct-me-text small {
+  color: var(--muted);
+}
+.acct-h2 {
+  margin: 16px 0 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.acct-rows {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 6px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
 }
-.account-login {
+.acct-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  padding: 10px 12px;
 }
-.account-login-name {
+.acct-row + .acct-row {
+  border-top: 1px solid var(--line);
+}
+.acct-row-text {
+  display: grid;
+  min-width: 0;
+}
+.acct-row-text small {
+  color: var(--muted);
+}
+.acct-row-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.acct-row-mark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+.acct-row-mark img {
+  width: 100%;
+  height: 100%;
+}
+/* 카카오 말풍선은 노란 바탕 위에(카카오 규정) */
+.mark-kakao:has(img) {
+  background: #fee500;
+}
+.mark-kakao img {
+  width: 64%;
+  height: 64%;
+}
+.acct-with .acct-row-mark {
+  width: 18px;
+  height: 18px;
+}
+.acct-on {
+  color: var(--win);
+  font-size: 0.8125rem;
   font-weight: 700;
 }
-.account-privacy {
-  justify-self: center;
+.acct-add {
+  min-height: 36px;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  color: var(--focus);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.acct-actions {
+  display: grid;
+  gap: 9px;
+  margin-top: 18px;
 }
 .btn-danger {
-  background: var(--lose);
-  border-color: var(--lose);
+  background: #c23b3b;
+  border-color: #c23b3b;
   color: #fff;
 }
-:root[data-scheme="dark"] .btn-danger {
-  color: #0f1126;
+.btn-danger-soft {
+  background: color-mix(in srgb, #c23b3b 8%, transparent);
+  border-color: transparent;
+  color: #c23b3b;
 }
-.btn-danger-ghost {
-  color: var(--lose);
-  border-color: color-mix(in srgb, var(--lose) 45%, var(--line));
+:root[data-scheme="dark"] .btn-danger-soft {
+  color: #ff8a8a;
+}
+/* 묻기 창(디자인 ⑪): 가운데 대화 상자 */
+dialog.ask {
+  width: min(calc(100% - 32px), 400px);
+  padding: 16px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+dialog.ask::backdrop {
+  background: rgba(15, 17, 38, 0.45);
+}
+.ask-title {
+  margin: 0 0 6px;
+  font-size: 1.0625rem;
+}
+.ask-text {
+  margin: 0 0 12px;
+}
+.ask-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+  cursor: pointer;
+}
+.ask-check-text {
+  display: grid;
+}
+.ask-check-text small {
+  color: var(--muted);
+}
+.ask-act {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 /* 화면 아래 짧은 알림(ui/toast.js) */
 .toast-slot {

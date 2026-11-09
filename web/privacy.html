@@ -7,6 +7,7 @@
 <meta name="description" content="Ultimate RSP(궁극의 가위바위보)가 받는 것과 두는 기간, 맡기는 곳.">
 <meta name="theme-color" content="#f1f3f8">
 <meta name="color-scheme" content="light dark">
+<meta name="policy-version" content="2026-11-09">
 <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
 <script>
   // 개인정보 처리방침(규약 8장, 백엔드 초안 '자료\개인정보_처리방침_초안.md'). 구글·카카오 로그인 등록에 이 주소를 적는다.
@@ -85,19 +86,22 @@
       <tr><td data-label="무엇">닉네임, 고른 프로필 그림</td><td data-label="언제">온라인 대전·도전장·순위표를 쓸 때</td><td data-label="두는 곳">서버(방·도전장·순위표), 이 기기</td></tr>
       <tr><td data-label="무엇">기기 번호(브라우저가 만든 무작위 id)</td><td data-label="언제">온라인을 처음 쓸 때</td><td data-label="두는 곳">이 기기, 서버(순위표에는 해시로)</td></tr>
       <tr><td data-label="무엇">낸 손과 경기 결과, 점수</td><td data-label="언제">온라인에서 게임을 할 때</td><td data-label="두는 곳">서버</td></tr>
-      <tr><td data-label="무엇">IP 주소에서 만든 하루짜리 해시</td><td data-label="언제">랜덤 매칭을 할 때</td><td data-label="두는 곳">서버. 같은 곳에서 온 두 사람의 순위 경기를 세지 않는 데만 쓰고, 날이 바뀌면 지웁니다</td></tr>
-      <tr><td data-label="무엇">로그인한 경우: 로그인 방법(Google·카카오)과 그 회사가 알려 준 회원번호</td><td data-label="언제">로그인할 때</td><td data-label="두는 곳">서버. 회원번호는 그대로 두지 않고 알아볼 수 없게 바꾼 값(HMAC)만 둡니다</td></tr>
+      <tr><td data-label="무엇">IP 주소에서 만든 하루짜리 해시</td><td data-label="언제">랜덤 매칭, 이메일 가입·로그인을 할 때</td><td data-label="두는 곳">서버. 같은 곳에서 온 두 사람의 순위 경기를 세지 않고 메일·로그인 시도가 지나치게 잦은 것을 막는 데만 쓰며, 날이 바뀌면 지웁니다</td></tr>
+      <tr><td data-label="무엇">Google·카카오로 로그인한 경우: 로그인 방법과 그 회사가 알려 준 회원번호</td><td data-label="언제">로그인할 때</td><td data-label="두는 곳">서버. 회원번호는 그대로 두지 않고 알아볼 수 없게 바꾼 값(HMAC)만 둡니다</td></tr>
+      <tr><td data-label="무엇">이메일로 가입한 경우: 메일 주소와 비밀번호</td><td data-label="언제">이메일로 가입하거나 로그인할 때</td><td data-label="두는 곳">서버. 메일 주소는 알아볼 수 없게 바꾼 값(HMAC)만 둡니다. 비밀번호는 서버로 보내지 않고, 화면이 바꾼 값(PBKDF2)을 서버가 한 번 더 바꾼 값(HMAC)만 둡니다</td></tr>
+      <tr><td data-label="무엇">동의한 처리방침 판과 시각, 만 14세 이상 확인</td><td data-label="언제">가입할 때</td><td data-label="두는 곳">서버(계정)</td></tr>
       <tr><td data-label="무엇">로그인한 경우: 로그인 유지용 토큰</td><td data-label="언제">로그인할 때</td><td data-label="두는 곳">이 기기. 서버에는 알아볼 수 없게 바꾼 값(SHA-256)만 둡니다</td></tr>
     </tbody>
   </table>
   <ul>
-    <li>이메일, 실명, 전화번호, 생일은 받지 않습니다. Google·카카오에도 묻지 않습니다.</li>
+    <li>실명, 전화번호, 생일은 받지 않습니다. Google·카카오에도 메일 주소 등을 묻지 않습니다.</li>
+    <li>메일 주소는 이메일로 가입할 때만 받고, 확인 코드를 보내는 데만 씁니다. 알림이나 광고 메일은 보내지 않습니다.</li>
     <li>자유 채팅은 없습니다. 정해진 이모트만 보낼 수 있습니다.</li>
     <li>컴퓨터와 한 기록과 화면 설정은 이 기기에만 남고 서버로 보내지 않습니다.</li>
   </ul>
 
   <h2>2. 쓰는 곳</h2>
-  <p>온라인 대전·도전장·순위표를 돌리는 데, 로그인한 사람이 다른 기기에서도 같은 기록과 이름을 쓰게 하는 데, 순위 부정(혼자 여러 사람인 척)을 막는 데만 씁니다. 광고나 분석에는 쓰지 않습니다.</p>
+  <p>온라인 대전·도전장·순위표를 돌리는 데, 로그인한 사람이 다른 기기에서도 같은 기록과 이름을 쓰게 하는 데, 확인 코드 메일을 보내는 데, 순위 부정(혼자 여러 사람인 척)과 지나친 로그인 시도를 막는 데만 씁니다. 광고나 분석에는 쓰지 않습니다.</p>
 
   <h2>3. 두는 기간</h2>
   <ul>
@@ -105,6 +109,7 @@
     <li>도전장: 만든 뒤 30일이 지나면 지웁니다.</li>
     <li>순위표 기록: 계속 둡니다. 지워 달라고 연락하면 지웁니다.</li>
     <li>계정: 계정 지우기를 누를 때까지 둡니다. 로그인 유지 토큰은 180일 동안 쓰지 않으면 끝납니다.</li>
+    <li>확인 코드·시도 횟수처럼 가입과 로그인에 잠깐 쓰는 값: 30분에서 하루가 지나면 쓰지 않고, 서버가 정리할 때 지웁니다.</li>
     <li>서버를 돌리는 Cloudflare가 운영 기록(요청 시각·주소 등)을 며칠 둘 수 있습니다.</li>
   </ul>
 
@@ -114,6 +119,7 @@
     <li>GitHub: 웹 화면을 올려 두는 곳</li>
     <li>jsDelivr: 글꼴 파일을 내려받는 곳</li>
     <li>Google·카카오: 로그인할 때만, 그 회사의 로그인 창에서</li>
+    <li>Resend(미국): 이메일로 가입하거나 비밀번호를 찾을 때 확인 코드 메일을 보내는 곳. 받는 메일 주소와 메일 내용이 이 회사를 거치고, 이 회사가 보낸 기록을 30일 둡니다.</li>
   </ul>
   <p>이 밖의 누구에게도 주거나 팔지 않습니다.</p>
 
@@ -126,7 +132,7 @@
   </ul>
 
   <h2>6. 만 14세 미만</h2>
-  <p>만 14세 미만은 보호자와 함께 쓰거나 로그인하지 않고 쓰기를 권합니다.</p>
+  <p>만 14세 미만은 가입할 수 없습니다. 가입하지 않아도 손님으로 모두 쓸 수 있습니다.</p>
 
   <h2>7. 바뀔 때</h2>
   <p>이 쪽을 고치면 위 시행 날짜를 바꾸고 첫 화면에 알립니다.</p>
@@ -144,19 +150,22 @@
       <tr><td data-label="What">Your nickname and chosen profile picture</td><td data-label="When">When you use online play, challenges or the leaderboard</td><td data-label="Where it's kept">The server (rooms, challenges, leaderboard) and this device</td></tr>
       <tr><td data-label="What">A device id (a random id your browser makes)</td><td data-label="When">The first time you go online</td><td data-label="Where it's kept">This device and the server (hashed on the leaderboard)</td></tr>
       <tr><td data-label="What">The hands you throw, match results and scores</td><td data-label="When">When you play online</td><td data-label="Where it's kept">The server</td></tr>
-      <tr><td data-label="What">A one-day hash made from your IP address</td><td data-label="When">When you use random match</td><td data-label="Where it's kept">The server. It's only used to skip ranked matches between two people from the same place, and it's deleted when the day changes</td></tr>
-      <tr><td data-label="What">If you sign in: the sign-in method (Google or Kakao) and the member number that company gives us</td><td data-label="When">When you sign in</td><td data-label="Where it's kept">The server. The member number is never kept as is, only as an unreadable HMAC</td></tr>
+      <tr><td data-label="What">A one-day hash made from your IP address</td><td data-label="When">When you use random match, or sign up or sign in with email</td><td data-label="Where it's kept">The server. It's only used to skip ranked matches between two people from the same place and to limit too many email or sign-in attempts, and it's deleted when the day changes</td></tr>
+      <tr><td data-label="What">If you sign in with Google or Kakao: the sign-in method and the member number that company gives us</td><td data-label="When">When you sign in</td><td data-label="Where it's kept">The server. The member number is never kept as is, only as an unreadable HMAC</td></tr>
+      <tr><td data-label="What">If you sign up with email: your email address and password</td><td data-label="When">When you sign up or sign in with email</td><td data-label="Where it's kept">The server. Your address is kept only as an unreadable HMAC. Your password never reaches the server: your browser turns it into a key (PBKDF2), and the server keeps only an HMAC of that key</td></tr>
+      <tr><td data-label="What">The policy version you agreed to, when you agreed, and that you're 14 or older</td><td data-label="When">When you sign up</td><td data-label="Where it's kept">The server (your account)</td></tr>
       <tr><td data-label="What">If you sign in: a token that keeps you signed in</td><td data-label="When">When you sign in</td><td data-label="Where it's kept">This device. The server keeps only an unreadable SHA-256 of it</td></tr>
     </tbody>
   </table>
   <ul>
-    <li>We don't collect your email, real name, phone number or birthday, and we don't ask Google or Kakao for them.</li>
+    <li>We don't collect your real name, phone number or birthday, and we don't ask Google or Kakao for your email address or anything like it.</li>
+    <li>We only get your email address if you sign up with email, and we only use it to send codes. We never send notices or ads.</li>
     <li>There's no free chat, only set emotes.</li>
     <li>Your games against the computer and your settings stay on this device and are never sent to the server.</li>
   </ul>
 
   <h2>2. How we use it</h2>
-  <p>Only to run online play, challenges and the leaderboard, to let signed-in players keep the same record and name on other devices, and to stop leaderboard cheating (one person posing as several). We never use it for ads or analytics.</p>
+  <p>Only to run online play, challenges and the leaderboard, to let signed-in players keep the same record and name on other devices, to send email codes, and to stop leaderboard cheating (one person posing as several) and excessive sign-in attempts. We never use it for ads or analytics.</p>
 
   <h2>3. How long we keep it</h2>
   <ul>
@@ -164,6 +173,7 @@
     <li>Challenges: deleted 30 days after they're made.</li>
     <li>Leaderboard records: kept. Ask us and we'll delete yours.</li>
     <li>Accounts: kept until you delete your account. Sign-in tokens expire after 180 days without use.</li>
+    <li>Short-lived sign-up and sign-in data, like email codes and attempt counts: no longer used after 30 minutes to a day, and deleted when the server tidies up.</li>
     <li>Cloudflare, which runs the server, may keep operational logs (request times, addresses and so on) for a few days.</li>
   </ul>
 
@@ -173,6 +183,7 @@
     <li>GitHub: hosts the website</li>
     <li>jsDelivr: serves the font files</li>
     <li>Google and Kakao: only when you sign in, in their own sign-in window</li>
+    <li>Resend (US): sends the code email when you sign up with email or reset your password. Your address and the email pass through it, and it keeps a record of sent emails for 30 days.</li>
   </ul>
   <p>We don't give or sell your data to anyone else.</p>
 
@@ -185,7 +196,7 @@
   </ul>
 
   <h2>6. Children under 14</h2>
-  <p>If you're under 14, play with a parent or guardian, or play without signing in.</p>
+  <p>If you're under 14, you can't sign up, but you can still play everything as a guest.</p>
 
   <h2>7. Changes</h2>
   <p>When this page changes, we update the effective date above and say so on the home screen.</p>
