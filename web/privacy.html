@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>개인정보 처리방침 — Ultimate RSP</title>
+<meta name="description" content="Ultimate RSP(궁극의 가위바위보)가 받는 것과 두는 기간, 맡기는 곳.">
+<meta name="theme-color" content="#f1f3f8">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<script>
+  // 개인정보 처리방침(규약 8장, 백엔드 초안 '자료\개인정보_처리방침_초안.md'). 구글·카카오 로그인 등록에 이 주소를 적는다.
+  // 밝기·언어는 앱과 같은 값(ursp.set.scheme·ursp.set.lang)을 따른다. ?lang=en 으로 영어를 바로 연다
+  (function () {
+    var s = "system", d = false, l = null;
+    try { s = JSON.parse(localStorage.getItem("ursp.set.scheme")) || "system"; } catch (e) {}
+    try { d = s === "dark" || (s !== "light" && matchMedia("(prefers-color-scheme: dark)").matches); } catch (e) {}
+    document.documentElement.dataset.scheme = d ? "dark" : "light";
+    document.querySelector('meta[name="theme-color"]').content = d ? "#0f1126" : "#f1f3f8";
+    try { l = new URLSearchParams(location.search).get("lang"); } catch (e) {}
+    if (l !== "ko" && l !== "en") { try { l = JSON.parse(localStorage.getItem("ursp.set.lang")); } catch (e) {} }
+    if (l !== "ko" && l !== "en") l = /^ko\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || "ko") ? "ko" : "en";
+    document.documentElement.lang = l;
+  })();
+</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/black-han-sans@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans-kr@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans-kr@5.3.0/700.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  html[lang="ko"] [lang="en"].policy, html[lang="en"] [lang="ko"].policy { display: none; }
+  .policy { max-width: 720px; margin: 0 auto; padding: 8px var(--gutter) 48px; line-height: 1.7; }
+  .policy h1 { font-family: var(--display); font-weight: 400; font-size: var(--step-3); line-height: 1.15; margin: 8px 0 6px; }
+  .policy h2 { font-size: var(--step-1); margin: 32px 0 8px; }
+  .policy .meta { color: var(--muted); margin: 0; font-size: var(--step--1); }
+  .policy ul { padding-left: 1.2em; }
+  .policy li + li { margin-top: 4px; }
+  .policy table { width: 100%; border-collapse: collapse; font-size: var(--step--1); }
+  .policy th, .policy td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .policy th { color: var(--ink-2); font-weight: 700; }
+  /* 좁은 화면: 줄마다 카드처럼 쌓고 칸 머리 글을 앞에 붙인다 */
+  @media (max-width: 599px) {
+    .policy table, .policy tbody, .policy tr, .policy td { display: block; }
+    .policy thead { display: none; }
+    .policy tr { border: 1px solid var(--line); border-radius: 12px; padding: 6px 12px; margin-bottom: 8px; }
+    .policy td { border: 0; padding: 4px 0; }
+    .policy td::before { content: attr(data-label); display: block; color: var(--muted); font-size: 0.75rem; font-weight: 700; }
+  }
+  .policy a { color: var(--ink); }
+  .lang-switch { margin-left: auto; display: flex; gap: 4px; }
+  .lang-switch button { font: inherit; }
+  .lang-switch button[aria-pressed="true"] { color: var(--ink); background: var(--sunk); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.35">
+        <path d="M32 14 L47.6 41"/><path d="M47.6 41 L16.4 41"/><path d="M16.4 41 L32 14"/>
+      </g>
+      <circle cx="32" cy="14" r="9" fill="#2a78d6"/>
+      <circle cx="47.6" cy="41" r="9" fill="#eb6834"/>
+      <circle cx="16.4" cy="41" r="9" fill="#1baf7a"/>
+    </svg>
+    <span>Ultimate RSP</span>
+  </a>
+  <div class="lang-switch">
+    <button class="theme-btn" type="button" data-lang="ko" lang="ko">한국어</button>
+    <button class="theme-btn" type="button" data-lang="en" lang="en">English</button>
+  </div>
+</header>
+
+<main id="main">
+<article class="policy" lang="ko">
+  <h1>개인정보 처리방침</h1>
+  <p class="meta">Ultimate RSP(궁극의 가위바위보) · 만든 사람: 서울대학교 동물생명공학전공 25학번 이영표 · 연락: <a href="mailto:sanger.lee138@gmail.com">sanger.lee138@gmail.com</a></p>
+  <p class="meta">시행: 2026년 11월 9일</p>
+
+  <h2>1. 받는 것</h2>
+  <table>
+    <thead><tr><th>무엇</th><th>언제</th><th>어디에 두나</th></tr></thead>
+    <tbody>
+      <tr><td data-label="무엇">닉네임, 고른 프로필 그림</td><td data-label="언제">온라인 대전·도전장·순위표를 쓸 때</td><td data-label="어디에 두나">서버(방·도전장·순위표), 이 기기</td></tr>
+      <tr><td data-label="무엇">기기 번호(브라우저가 만든 무작위 id)</td><td data-label="언제">온라인을 처음 쓸 때</td><td data-label="어디에 두나">이 기기, 서버(순위표에는 해시로)</td></tr>
+      <tr><td data-label="무엇">낸 손과 경기 결과, 점수</td><td data-label="언제">온라인에서 게임을 할 때</td><td data-label="어디에 두나">서버</td></tr>
+      <tr><td data-label="무엇">IP 주소에서 만든 하루짜리 해시</td><td data-label="언제">랜덤 매칭을 할 때</td><td data-label="어디에 두나">서버. 같은 곳에서 온 두 사람의 순위 경기를 세지 않는 데만 쓰고, 날이 바뀌면 지웁니다</td></tr>
+      <tr><td data-label="무엇">로그인한 경우: 로그인 방법(Google·카카오)과 그 회사가 알려 준 회원번호</td><td data-label="언제">로그인할 때</td><td data-label="어디에 두나">서버. 회원번호는 그대로 두지 않고 알아볼 수 없게 바꾼 값(HMAC)만 둡니다</td></tr>
+      <tr><td data-label="무엇">로그인한 경우: 로그인 유지용 토큰</td><td data-label="언제">로그인할 때</td><td data-label="어디에 두나">이 기기. 서버에는 알아볼 수 없게 바꾼 값(SHA-256)만 둡니다</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li>이메일, 실명, 전화번호, 생일은 받지 않습니다. Google·카카오에도 묻지 않습니다.</li>
+    <li>자유 채팅은 없습니다. 정해진 이모트만 보낼 수 있습니다.</li>
+    <li>컴퓨터와 한 기록과 화면 설정은 이 기기에만 남고 서버로 보내지 않습니다.</li>
+  </ul>
+
+  <h2>2. 쓰는 곳</h2>
+  <p>온라인 대전·도전장·순위표를 돌리는 데, 로그인한 사람이 다른 기기에서도 같은 기록과 이름을 쓰게 하는 데, 순위 부정(혼자 여러 사람인 척)을 막는 데만 씁니다. 광고나 분석에는 쓰지 않습니다.</p>
+
+  <h2>3. 두는 기간</h2>
+  <ul>
+    <li>방: 경기가 끝나고 아무도 없으면 10분 뒤 지웁니다.</li>
+    <li>도전장: 만든 뒤 30일이 지나면 지웁니다.</li>
+    <li>순위표 기록: 계속 둡니다. 지워 달라고 연락하면 지웁니다.</li>
+    <li>계정: 계정 지우기를 누를 때까지 둡니다. 로그인 유지 토큰은 180일 동안 쓰지 않으면 끝납니다.</li>
+    <li>서버를 돌리는 Cloudflare가 운영 기록(요청 시각·주소 등)을 며칠 둘 수 있습니다.</li>
+  </ul>
+
+  <h2>4. 맡기는 곳</h2>
+  <ul>
+    <li>Cloudflare: 온라인 서버와 저장. 서버가 동북아시아 등 나라 밖에 있을 수 있습니다.</li>
+    <li>GitHub: 웹 화면을 올려 두는 곳</li>
+    <li>jsDelivr: 글꼴 파일을 내려받는 곳</li>
+    <li>Google·카카오: 로그인할 때만, 그 회사의 로그인 창에서</li>
+  </ul>
+  <p>이 밖의 누구에게도 주거나 팔지 않습니다.</p>
+
+  <h2>5. 할 수 있는 것</h2>
+  <ul>
+    <li>로그인하지 않고도 모두 쓸 수 있습니다.</li>
+    <li>온라인 첫 화면의 프로필 → 계정에서 로그아웃, 로그인 방법 떼기, 계정 지우기를 할 수 있습니다. 계정을 지우면 계정과 로그인 정보가 바로 사라집니다.</li>
+    <li>순위표 기록을 지우거나 그 밖에 묻고 싶은 것은 <a href="mailto:sanger.lee138@gmail.com">sanger.lee138@gmail.com</a>으로 보내 주십시오.</li>
+    <li>이 기기에 둔 값(기기 번호·이름·설정·토큰)은 브라우저의 사이트 데이터를 지우면 사라집니다.</li>
+  </ul>
+
+  <h2>6. 만 14세 미만</h2>
+  <p>만 14세 미만은 보호자와 함께 쓰거나 로그인하지 않고 쓰기를 권합니다.</p>
+
+  <h2>7. 바뀔 때</h2>
+  <p>이 쪽을 고치면 위 시행 날짜를 바꾸고 첫 화면에 알립니다.</p>
+</article>
+
+<article class="policy" lang="en">
+  <h1>Privacy policy</h1>
+  <p class="meta">Ultimate RSP · Made by Youngpyo Lee (Animal Biotechnology, Seoul National University) · Contact: <a href="mailto:sanger.lee138@gmail.com">sanger.lee138@gmail.com</a></p>
+  <p class="meta">Effective November 9, 2026</p>
+
+  <h2>1. What we collect</h2>
+  <table>
+    <thead><tr><th>What</th><th>When</th><th>Where it's kept</th></tr></thead>
+    <tbody>
+      <tr><td data-label="What">Your nickname and chosen profile picture</td><td data-label="When">When you use online play, challenges or the leaderboard</td><td data-label="Where it's kept">The server (rooms, challenges, leaderboard) and this device</td></tr>
+      <tr><td data-label="What">A device id (a random id your browser makes)</td><td data-label="When">The first time you go online</td><td data-label="Where it's kept">This device and the server (hashed on the leaderboard)</td></tr>
+      <tr><td data-label="What">The hands you throw, match results and scores</td><td data-label="When">When you play online</td><td data-label="Where it's kept">The server</td></tr>
+      <tr><td data-label="What">A one-day hash made from your IP address</td><td data-label="When">When you use random match</td><td data-label="Where it's kept">The server. It's only used to skip ranked matches between two people from the same place, and it's deleted when the day changes</td></tr>
+      <tr><td data-label="What">If you sign in: the sign-in method (Google or Kakao) and the member number that company gives us</td><td data-label="When">When you sign in</td><td data-label="Where it's kept">The server. The member number is never kept as is, only as an unreadable HMAC</td></tr>
+      <tr><td data-label="What">If you sign in: a token that keeps you signed in</td><td data-label="When">When you sign in</td><td data-label="Where it's kept">This device. The server keeps only an unreadable SHA-256 of it</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li>We don't collect your email, real name, phone number or birthday, and we don't ask Google or Kakao for them.</li>
+    <li>There's no free chat, only set emotes.</li>
+    <li>Your games against the computer and your settings stay on this device and are never sent to the server.</li>
+  </ul>
+
+  <h2>2. How we use it</h2>
+  <p>Only to run online play, challenges and the leaderboard, to let signed-in players keep the same record and name on other devices, and to stop leaderboard cheating (one person posing as several). We never use it for ads or analytics.</p>
+
+  <h2>3. How long we keep it</h2>
+  <ul>
+    <li>Rooms: deleted 10 minutes after the match ends and everyone has left.</li>
+    <li>Challenges: deleted 30 days after they're made.</li>
+    <li>Leaderboard records: kept. Ask us and we'll delete yours.</li>
+    <li>Accounts: kept until you delete your account. Sign-in tokens expire after 180 days without use.</li>
+    <li>Cloudflare, which runs the server, may keep operational logs (request times, addresses and so on) for a few days.</li>
+  </ul>
+
+  <h2>4. Services we use</h2>
+  <ul>
+    <li>Cloudflare: the online server and storage. Servers may be outside Korea, such as elsewhere in Northeast Asia.</li>
+    <li>GitHub: hosts the website</li>
+    <li>jsDelivr: serves the font files</li>
+    <li>Google and Kakao: only when you sign in, in their own sign-in window</li>
+  </ul>
+  <p>We don't give or sell your data to anyone else.</p>
+
+  <h2>5. Your choices</h2>
+  <ul>
+    <li>You can use everything without signing in.</li>
+    <li>From your profile on the online home, open Account to sign out, remove a sign-in method or delete your account. Deleting it removes the account and its sign-in data right away.</li>
+    <li>To delete your leaderboard record or ask anything else, email <a href="mailto:sanger.lee138@gmail.com">sanger.lee138@gmail.com</a>.</li>
+    <li>What's stored on this device (device id, name, settings, token) is removed when you clear this site's data in your browser.</li>
+  </ul>
+
+  <h2>6. Children under 14</h2>
+  <p>If you're under 14, play with a parent or guardian, or play without signing in.</p>
+
+  <h2>7. Changes</h2>
+  <p>When this page changes, we update the effective date above and say so on the home screen.</p>
+</article>
+</main>
+
+<script>
+  // 언어 단추: 앱과 같은 값(ursp.set.lang)에 남긴다
+  (function () {
+    var btns = document.querySelectorAll(".lang-switch button");
+    function show() {
+      var l = document.documentElement.lang;
+      document.title = l === "en" ? "Privacy policy — Ultimate RSP" : "개인정보 처리방침 — Ultimate RSP";
+      for (var i = 0; i < btns.length; i++) btns[i].setAttribute("aria-pressed", String(btns[i].dataset.lang === l));
+    }
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener("click", function () {
+        document.documentElement.lang = this.dataset.lang;
+        try { localStorage.setItem("ursp.set.lang", JSON.stringify(this.dataset.lang)); } catch (e) {}
+        show();
+      });
+    }
+    show();
+  })();
+</script>
+</body>
+</html>

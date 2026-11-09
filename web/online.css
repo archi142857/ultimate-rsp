@@ -1693,6 +1693,98 @@ button.varrow {
 .o-sheet-wrap[hidden] {
   display: none;
 }
+/* ── 로그인(규약 8장). 생김새는 디자인 시안이 정해지면 입힌다 ── */
+.plogin {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.plogin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.plogin-who {
+  min-width: 0;
+}
+.plogin-btns {
+  display: grid;
+  gap: 8px;
+}
+.plogin-btn,
+.plogin-row .btn {
+  min-height: 44px;
+}
+.account-sheet {
+  max-height: min(88vh, 640px);
+  overflow-y: auto;
+}
+.account-sheet .pname-label {
+  margin: 4px 0 0;
+}
+.account-logins {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.account-login {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.account-login-name {
+  font-weight: 700;
+}
+.account-privacy {
+  justify-self: center;
+}
+.btn-danger {
+  background: var(--lose);
+  border-color: var(--lose);
+  color: #fff;
+}
+:root[data-scheme="dark"] .btn-danger {
+  color: #0f1126;
+}
+.btn-danger-ghost {
+  color: var(--lose);
+  border-color: color-mix(in srgb, var(--lose) 45%, var(--line));
+}
+/* 화면 아래 짧은 알림(ui/toast.js) */
+.toast-slot {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(calc(100% - 24px), 480px);
+  z-index: 60;
+}
+.toast {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.toast-x {
+  align-self: flex-start;
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 4px 6px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.toast-x:hover {
+  opacity: 1;
+}
+
 /* 친 코드가 남의 방일 때 묻는 시트: 방장 그림과 '○○의 방' */
 .join-host {
   display: flex;

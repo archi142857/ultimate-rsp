@@ -1,5 +1,5 @@
 // 서버·연결 상태를 문장으로. 서버는 코드만 보내고 문장은 화면이 사용자 언어로 만든다.
-// 서버 오류 코드는 온라인 규약 5장(server/src/protocol.js 의 ERRORS·WS_ERRORS). 그 밖에 화면이 만드는 코드:
+// 서버 오류 코드는 온라인 규약 5장(server/src/protocol.js 의 ERRORS·WS_ERRORS)과 8장(AUTH_ERRORS). 그 밖에 화면이 만드는 코드:
 // offline(인터넷 없음), timeout(답 없음), network(닿지 않음: 서버 꺼짐·하루 한도·CORS), bad_reply(답을 못 읽음)
 
 import { t, lang } from "../i18n.js";
@@ -41,6 +41,19 @@ export function errorText(code) {
       return t("그 손은 이 게임에 없습니다.");
     case "too_fast":
       return t("너무 자주 보냈습니다. 잠시 뒤 다시 해 주십시오.");
+    // 로그인·계정(규약 8장, AUTH_ERRORS)
+    case "bad_token":
+      return t("로그인이 끝났습니다. 다시 로그인해 주십시오.");
+    case "bad_login":
+      return t("로그인을 마치지 못했습니다. 처음부터 다시 해 주십시오.");
+    case "bad_back":
+      return t("이 주소에서는 로그인할 수 없습니다.");
+    case "no_provider":
+      return t("이 로그인 방법은 지금 쓸 수 없습니다.");
+    case "in_use":
+      return t("이 로그인은 이미 다른 계정에 붙어 있습니다.");
+    case "last_login":
+      return t("마지막 로그인 방법은 뗄 수 없습니다. 모두 지우려면 계정 지우기를 눌러 주십시오.");
     default:
       // network·busy·server·http_5xx: 서버가 꺼졌거나 하루 한도에 닿았다(규약 5장: 모두 busy 처럼 안내)
       return t("서버에 연결할 수 없습니다. 잠시 뒤 다시 해 주십시오. 하루 무료 한도를 넘었다면 {time}에 풀립니다.", { time: resetTime() });

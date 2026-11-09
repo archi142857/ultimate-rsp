@@ -20,6 +20,7 @@ import { myChallenges } from "./mine.js";
 import { randomGame } from "./games.js";
 import { playerId, meFields, meWho } from "./identity.js";
 import { hello, OnlineError } from "./net.js";
+import { syncAccount } from "./account.js";
 import { noticeFor } from "./messages.js";
 import { createRoom } from "./api.js";
 import { checkCode, normalizeCode, randomCode, hasBadCodeChar, CODE_LEN } from "./ids.js";
@@ -265,6 +266,8 @@ export function onlineHomeView(main, params = {}) {
       notices.clear("wait");
       setReady(true);
       showRanks(true);
+      // 로그인했으면 한 번 계정을 읽어 다른 기기에서 바꾼 이름·그림을 따른다(규약 8.5)
+      syncAccount();
     } catch (e) {
       if (ctl.signal.aborted) return;
       notices.clear("wait");

@@ -2,12 +2,15 @@
 // 넓은 화면은 칩 바로 아래 팝오버(꼭지가 칩을 가리킨다), 좁은 화면은 아래 시트(뒤는 어둡게).
 // 그림은 게임 그림 가운데 고르고(face-picker.js), 고르지 않으면 이름에서 정한다(11-08 사용자: 이름과 그림을 따로).
 // 열면 입력칸에 포커스. Enter·저장은 이름과 그림을 함께 남기고, Esc 나 바깥을 누르면 둘 다 그대로 둔다.
+// 아래에 로그인 칸(켜진 방법이 있을 때, 규약 8장). 로그인했으면 '계정'이고, 저장한 이름·그림은 계정에도 올린다(다른 기기에도 따라간다).
 
 import { h } from "../ui/dom.js";
 import { t } from "../i18n.js";
 import { avatar, fillFace } from "./avatar.js";
 import { myName, setMyName, randomName, cleanName, NAME_MAX, myFace, setMyFace, meWho } from "./identity.js";
 import { facePicker } from "./face-picker.js";
+import { signedIn, pushProfile, onAccount } from "./account.js";
+import { loginBlock } from "./account-view.js";
 
 const NARROW = "(max-width: 599px)";
 let seq = 0;
@@ -66,10 +69,21 @@ export function profileChip({ align = "start", ranked = false, onChange = null }
   });
   const save = h("button", { type: "submit", class: "btn btn-ink" }, t("저장"));
   const note = h("p", { class: "o-p o-small", id: `${id}-note` });
+  let rankedNow = ranked;
   const setRanked = (on) => {
-    note.textContent = on ? t("가입은 필요 없다. 이름과 그림은 이 브라우저에 저장되고, 상대와 순위표에 보인다.") : t("가입은 필요 없다. 이름과 그림은 이 브라우저에 저장되고, 상대에게 보인다.");
+    rankedNow = on;
+    if (signedIn())
+      note.textContent = on ? t("로그인했습니다. 이름과 그림은 다른 기기에도 따라가고, 상대와 순위표에 보입니다.") : t("로그인했습니다. 이름과 그림은 다른 기기에도 따라가고, 상대에게 보입니다.");
+    else note.textContent = on ? t("가입은 필요 없다. 이름과 그림은 이 브라우저에 저장되고, 상대와 순위표에 보인다.") : t("가입은 필요 없다. 이름과 그림은 이 브라우저에 저장되고, 상대에게 보인다.");
   };
   setRanked(ranked);
+  // 로그인 칸: 계정 시트를 열 때는 이 칸을 닫고, 시트를 닫으면 칩으로 초점을 돌린다
+  const login = loginBlock({
+    beforeSheet: () => {
+      close(false);
+      return chip;
+    },
+  });
   // 그림: 지금 입력한 이름으로 '자동' 칸을 그린다
   const typed = () => ({ kind: "human", name: cleanName(input.value) || myName() });
   const preview = avatar(meWho(), { size: 42, cls: "pname-preview" });
@@ -85,6 +99,7 @@ export function profileChip({ align = "start", ranked = false, onChange = null }
     h("div", { class: "pname-faces" }, picker.el),
     h("div", { class: "pname-act" }, again, save),
     note,
+    login.el,
   );
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -98,6 +113,8 @@ export function profileChip({ align = "start", ranked = false, onChange = null }
     show(name);
     close();
     if (onChange) onChange(name);
+    // 로그인했으면 계정에도(다른 기기에도 따라가게). 끝난 토큰이면 account.js 가 로그아웃된 것으로 돌린다
+    if (signedIn()) pushProfile().catch(() => {});
   });
   input.addEventListener("input", () => {
     input.removeAttribute("aria-invalid");
@@ -139,6 +156,7 @@ export function profileChip({ align = "start", ranked = false, onChange = null }
     document.addEventListener("keydown", onKey, true);
     document.addEventListener("pointerdown", onOutside, true);
     picker.reveal();
+    login.draw();
     input.focus();
     input.select();
   }
@@ -169,6 +187,14 @@ export function profileChip({ align = "start", ranked = false, onChange = null }
 
   chip.addEventListener("click", () => (open ? close() : openIt()));
 
+  // 로그인·로그아웃·새 손님·다른 기기에서 바꾼 이름이 오면 칩과 바깥(고리·순위표)을 맞춘다
+  const offAccount = onAccount(() => {
+    const name = myName();
+    show(name);
+    setRanked(rankedNow);
+    if (onChange) onChange(name);
+  });
+
   return {
     el: wrap,
     open: openIt,
@@ -178,6 +204,8 @@ export function profileChip({ align = "start", ranked = false, onChange = null }
     setRanked,
     destroy() {
       close(false);
+      offAccount();
+      login.destroy();
     },
   };
 }

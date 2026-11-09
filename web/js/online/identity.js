@@ -1,4 +1,4 @@
-// 로그인 없이 쓰는 나: 브라우저가 만든 무작위 id(pid)와 이름, 프로필 그림.
+// 나: 브라우저가 만든 무작위 id(pid)와 이름, 프로필 그림. 로그인은 고를 수 있고(account.js), 로그인하면 계정의 pid·이름·그림으로 바뀐다.
 // pid 는 비밀번호처럼 쓴다. 서버만 알고, 다시 들어올 때 내 자리를 찾는 데 쓴다. 화면에 보이지 않는다.
 // 모두 이 브라우저에만 남는다(ursp.online.pid, ursp.set.nick, ursp.set.online.face). 저장이 막혀 있으면 이 창이 열려 있는 동안만 쓴다.
 // 프로필 그림은 게임 그림(web/art) 가운데 하나다. 고르지 않으면(null) 이름에서 정한다(avatar.js).
@@ -29,6 +29,14 @@ export function playerId() {
     save("online.pid", id);
   }
   return (pidMemo = id);
+}
+
+/** pid 를 바꾼다(로그인한 계정의 pid, 규약 8.3). 꼴이 틀리면 그대로 두고 false */
+export function setPlayerId(id) {
+  if (typeof id !== "string" || !PID.test(id)) return false;
+  pidMemo = id;
+  save("online.pid", id);
+  return true;
 }
 
 // 줄바꿈·제어 글자, 빈칸처럼 보이는 글자(한글 채움 U+3164·U+FFA0·U+115F·U+1160, 점자 빈칸 U+2800, U+034F,
@@ -98,6 +106,13 @@ export function setMyFace(id) {
   const f = faceId(id);
   setSetting("online.face", f);
   return f;
+}
+
+/** 새 손님: 새 pid, 무작위 이름, 그림은 이름에 맞춘다(로그아웃·계정 지우기 뒤 함께 쓰는 기기에 계정 pid 가 남지 않게, 규약 8.5) */
+export function newGuest() {
+  setPlayerId(newId());
+  setMyName(randomName());
+  setMyFace(null);
 }
 
 /** 나(사람 고리·그림에 넘기는 꼴) */

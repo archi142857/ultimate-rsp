@@ -8,6 +8,7 @@ import { homeView } from "./views/home.js";
 import { aboutView } from "./views/about.js";
 import { entryView } from "./views/entry.js";
 import { onlineView, parseOnline } from "./online/index.js";
+import { handleLoginReturn } from "./online/account-view.js";
 
 const main = document.getElementById("main");
 let current = null;
@@ -171,4 +172,6 @@ document.getElementById("lang-btn").addEventListener("click", () => {
 
 applyLangChrome();
 applyScheme();
+// 로그인에서 돌아왔으면(?login=) 그리기 전에 주소에서 지우고 로그인을 마친다(규약 8.3)
+handleLoginReturn();
 route();
