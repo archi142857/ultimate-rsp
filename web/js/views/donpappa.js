@@ -30,7 +30,7 @@ export function donpappaView(main, entry) {
 
   const score = scoreboard();
   const st = stage();
-  const steps = stepList([t("가위바위보로 공격을 정함"), t("공격이 지금 손을 두 번 외치고, 둘이 셋째 손을 같이 낸다"), t("셋째 손이 같으면 '돈!'을 먼저 누른 쪽이 이긴다")]);
+  const steps = stepList([t("가위바위보로 공격을 정함"), t("공격이 지금 손을 두 번 외치고, 둘이 셋째 손을 같이 냄"), t("셋째 손이 같으면 '돈!'을 먼저 누른 쪽이 이김")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("donpappa")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -60,8 +60,8 @@ export function donpappaView(main, entry) {
     if (game.phase === "janken") return t("가위바위보! 이기는 쪽이 공격");
     const now = callOf(game.current[game.attacker]);
     return game.attacker === 0
-      ? t("내가 공격이다. '{c}, {c}' 다음에 낼 손을 고르자.", { c: now })
-      : t("컴퓨터가 공격이다. '{c}, {c}' 다음에 낼 손을 고르자.", { c: now });
+      ? t("내가 공격. '{c}, {c}' 다음에 낼 손 고르기", { c: now })
+      : t("컴퓨터가 공격. '{c}, {c}' 다음에 낼 손 고르기", { c: now });
   }
 
   function newGame() {
@@ -105,7 +105,7 @@ export function donpappaView(main, entry) {
     const r = g.janken(i, j);
     st.me.set(V, i);
     st.op.set(V, j);
-    if (r.cmp === 0) st.say(t("비겼다. 다시"));
+    if (r.cmp === 0) st.say(t("비김. 다시"));
     else {
       st.say(g.attacker === 0 ? t("내가 공격") : t("컴퓨터 공격"), g.attacker === 0 ? "win" : "lose");
       log.add(g.attacker === 0 ? t("가위바위보: {s}. 내가 공격.", { s: V.sentence(i, j) }) : t("가위바위보: {s}. 컴퓨터가 공격.", { s: V.sentence(i, j) }));
@@ -137,8 +137,8 @@ export function donpappaView(main, entry) {
       grid.el.hidden = true;
       clearPad(pad);
       pad.el.hidden = false;
-      st.say(same ? t("같다!") : t("다르다"), same ? "win" : "");
-      st.sub(same ? t("먼저 누르자.") : t("누르면 진다."));
+      st.say(same ? t("같음!") : t("다름"), same ? "win" : "");
+      st.sub(same ? t("먼저 누르기") : t("누르면 패배"));
       if (same) comp = reactionMs(rng, level);
       let cue = 0;
       mine = await pad.wait(same ? DON_MS : FALSE_MS, {
@@ -159,24 +159,24 @@ export function donpappaView(main, entry) {
       st.say(text, tone);
       if (pressed) padResult(pad, text, tone);
     };
-    const shown = (ms) => (Number.isFinite(ms) ? t("{s}초", { s: secs(ms) }) : t("안 눌렀다"));
+    const shown = (ms) => (Number.isFinite(ms) ? t("{s}초", { s: secs(ms) }) : t("안 누름"));
     let line;
     if (r.result === "don") {
       const meWon = g.winner === 0;
-      say(meWon ? t("돈! 내가 이겼다") : t("돈! 컴퓨터가 이겼다"), meWon ? "win" : "lose");
+      say(meWon ? t("돈! 내가 승리") : t("돈! 컴퓨터가 승리"), meWon ? "win" : "lose");
       st.sub(t("나 {a}, 컴퓨터 {b}", { a: shown(mine), b: shown(comp) }));
       const said = { c: callOf(i), a: shown(mine), b: shown(comp) };
       line = meWon ? t("둘 다 {c}. 내가 먼저 '돈!' (나 {a}, 컴퓨터 {b})", said) : t("둘 다 {c}. 컴퓨터가 먼저 '돈!' (나 {a}, 컴퓨터 {b})", said);
     } else if (r.result === "missed") {
-      say(t("아무도 안 외쳤다"));
-      line = t("둘 다 {c}. 아무도 '돈!'을 외치지 않아 다시 한다.", { c: callOf(i) });
+      say(t("아무도 안 외침"));
+      line = t("둘 다 {c}. 아무도 '돈!'을 외치지 않아 다시", { c: callOf(i) });
     } else if (r.result === "false") {
-      say(t("손이 다른데 외쳐서 졌다"), "lose");
+      say(t("손이 다른데 외쳐서 패배"), "lose");
       st.sub(t("나 {a}", { a: shown(mine) }));
-      line = t("{a} 대 {b}. 손이 다른데 '돈!'을 외쳐서 졌다.", { a: callOf(i), b: callOf(j) });
+      line = t("{a} 대 {b}. 손이 다른데 '돈!'을 외쳐서 패배", { a: callOf(i), b: callOf(j) });
     } else {
-      say(g.attacker === 0 ? t("이제 내가 공격이다") : t("공격 넘어감"), g.attacker === 0 ? "win" : "lose");
-      line = t("{a} 대 {b}. 공격과 수비가 바뀐다.", { a: callOf(i), b: callOf(j) });
+      say(g.attacker === 0 ? t("이제 내가 공격") : t("공격 넘어감"), g.attacker === 0 ? "win" : "lose");
+      line = t("{a} 대 {b}. 공격과 수비가 바뀜", { a: callOf(i), b: callOf(j) });
     }
     log.add(line, g.done ? (g.winner === 0 ? "w" : "l") : "");
     roleTag();
@@ -209,8 +209,8 @@ export function donpappaView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("손마다 외치는 말이 있다. ")),
-      t("바위는 {r}, 가위는 {s}, 보는 {p}({kr}·{ks}·{kp}). 셋째 손이 같아지면 '{d}!'을 먼저 외친다. 동시에 외치면 공격이 이긴다.", {
+      h("b", {}, t("손마다 외치는 말이 있습니다. ")),
+      t("바위는 {r}, 가위는 {s}, 보는 {p}({kr}·{ks}·{kp})입니다. 셋째 손이 같아지면 '{d}!'을 먼저 외칩니다. 동시에 외치면 공격이 이깁니다.", {
         r: donCalls().rock,
         s: donCalls().scissors,
         p: donCalls().paper,

@@ -147,7 +147,7 @@ export function teamTagView(main, entry) {
     moved = new Set(r.caught);
     const ours = c > 0;
     if (c === 0) {
-      say(t("비겼다. 다시"));
+      say(t("비김. 다시"));
       st.sub(t("둘 다 {h}", { h: lower(V.hands[i].name) }));
       log.add(t("{r}판: 둘 다 {h}. 다시.", { r: r.round, h: lower(V.hands[i].name) }));
     } else {

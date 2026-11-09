@@ -151,7 +151,7 @@ export function morraView(main, entry) {
       st.say(won ? t("승리!") : t("패배"), won ? "win" : "lose");
       rec.textContent = recordLine(addRecord(key(), won ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, won ? t("내가 먼저 {n}점을 냈다", { n: TARGET }) : t("컴퓨터가 먼저 {n}점을 냈다", { n: TARGET })),
+        h("strong", {}, won ? t("내가 먼저 {n}점", { n: TARGET }) : t("컴퓨터가 먼저 {n}점", { n: TARGET })),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;

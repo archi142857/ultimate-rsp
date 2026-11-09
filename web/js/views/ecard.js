@@ -26,7 +26,7 @@ export function ecardView(main, entry) {
   const score = scoreboard();
   const st = stage();
   const sideLine = h("p", { class: "note", style: { margin: "0 0 14px" }, "aria-live": "polite" });
-  const steps = stepList([t("카드 한 장씩 같이 낸다"), t("시민끼리 만나면 남은 카드로 계속 낸다"), t("황제나 노예가 나오면 그 판이 끝난다")]);
+  const steps = stepList([t("카드를 한 장씩 같이 냄"), t("시민끼리 만나면 남은 카드로 계속 냄"), t("황제나 노예가 나오면 그 판 끝")]);
   const hand = h("div", { class: "ecards", role: "group", "aria-label": t("내 카드") });
   const opHand = h("div", { class: "ecards op", "aria-label": t("컴퓨터 카드") });
   const log = logList();
@@ -54,8 +54,8 @@ export function ecardView(main, entry) {
     clear(opHand).append(...Array.from({ length: left }, () => h("span", { class: "ecard ecard-back", "aria-hidden": "true" })));
     opHand.setAttribute("aria-label", t("컴퓨터 카드 {n}장", { n: left }));
     sideLine.textContent = g.done
-      ? t("{n}판을 다 했다.", { n: g.rounds })
-      : t("{r}/{n}판, 나는 {side}이다. 노예 쪽으로 이기면 {s}점, 황제 쪽으로 이기면 {e}점이다.", {
+      ? t("{n}판 끝", { n: g.rounds })
+      : t("{r}/{n}판, 나는 {side}. 노예 쪽 승리 {s}점, 황제 쪽 승리 {e}점", {
           r: g.round + 1,
           n: g.rounds,
           side: mine === "emperor" ? N().emperorSide : N().slaveSide,
@@ -74,7 +74,7 @@ export function ecardView(main, entry) {
     st.me.set(null, null);
     st.op.set(null, null);
     st.say("");
-    st.sub(t("낼 카드를 고르자."));
+    st.sub(t("낼 카드 고르기"));
     steps.set(0);
     draw();
   }
@@ -95,17 +95,17 @@ export function ecardView(main, entry) {
     st.me.art(CARD_ART[c], N()[c]);
     st.op.art(CARD_ART[oc], N()[oc]);
     if (r.cmp === 0) {
-      st.say(t("시민끼리 비겼다. 계속"));
-      st.sub(t("남은 카드로 다시 낸다."));
+      st.say(t("시민끼리 비김. 계속"));
+      st.sub(t("남은 카드로 다시 내기"));
       steps.set(1);
     } else {
       const w = r.roundWinner;
       (w === 0 ? st.op : st.me).mark("lost");
-      st.say(w === 0 ? t("이 판은 내가 이겼다. +{n}점", { n: r.points }) : t("이 판은 컴퓨터가 이겼다. +{n}점", { n: r.points }), w === 0 ? "win" : "lose");
+      st.say(w === 0 ? t("이 판은 내가 승리. +{n}점", { n: r.points }) : t("이 판은 컴퓨터가 승리. +{n}점", { n: r.points }), w === 0 ? "win" : "lose");
       const line = t("{r}판 {t}번째: {a} 대 {b}.", { r: r.round + 1, t: r.turn, a: N()[c], b: N()[oc] });
       log.add(`${line} ${w === 0 ? t("내가 +{n}점.", { n: r.points }) : t("컴퓨터가 +{n}점.", { n: r.points })}`, w === 0 ? "w" : "l");
       const swapped = !g.done && g.sides[0] !== sides[0];
-      st.sub(swapped ? t("이제 쪽을 바꾼다. 나는 {side}이다.", { side: g.sides[0] === "emperor" ? N().emperorSide : N().slaveSide }) : "");
+      st.sub(swapped ? t("쪽 바꿈. 이제 나는 {side}", { side: g.sides[0] === "emperor" ? N().emperorSide : N().slaveSide }) : "");
       steps.set(2);
     }
     if (g.done) {
@@ -130,8 +130,8 @@ export function ecardView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("결국 몇 번째에 내느냐다. ")),
-      t("황제·노예를 몇 번째에 낼지 둘이 몰래 고르는 셈이다. 둘 다 낼 차례를 고르게 정하면 노예 쪽은 다섯 판에 한 번 이긴다. 그래서 노예 쪽 승리를 4점, 황제 쪽 승리를 1점으로 하면 기대 점수가 같다."),
+      h("b", {}, t("결국 몇 번째에 내느냐의 문제입니다. ")),
+      t("황제·노예를 몇 번째에 낼지 둘이 몰래 고르는 셈입니다. 둘 다 낼 차례를 고르게 정하면 노예 쪽은 다섯 판에 한 번 이깁니다. 그래서 노예 쪽 승리를 4점, 황제 쪽 승리를 1점으로 하면 기대 점수가 같습니다."),
     ),
   );
   const panel = h(

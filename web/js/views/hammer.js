@@ -60,7 +60,7 @@ export function hammerView(main, entry) {
 
   const score = scoreboard();
   const st = stage();
-  const steps = stepList([t("가위바위보"), t("이긴 쪽은 치기, 진 쪽은 막기를 누른다"), t("막기 전에 치면 1점, 먼저 3점을 내면 이긴다")]);
+  const steps = stepList([t("가위바위보"), t("이긴 쪽은 치기, 진 쪽은 막기를 누름"), t("막기 전에 치면 1점, 먼저 3점을 내면 승리")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("hammer")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -83,7 +83,7 @@ export function hammerView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(t("가위바위보부터 한다. 이기면 치고, 지면 막는다."));
+    st.sub(t("가위바위보부터. 이기면 치기, 지면 막기"));
     score.set(0, 0, t("먼저 {n}점", { n: TARGET }));
     steps.set(0);
   }
@@ -104,7 +104,7 @@ export function hammerView(main, entry) {
     st.me.set(V, i);
     st.op.set(V, j);
     if (r.cmp === 0) {
-      st.say(t("비겼다. 다시"));
+      st.say(t("비김. 다시"));
       grid.lock(false);
       busy = false;
       return;
@@ -119,7 +119,7 @@ export function hammerView(main, entry) {
     pad.set(iHit ? t("치기") : t("막기"));
     pad.el.classList.toggle("hot", iHit);
     pad.el.hidden = false;
-    st.say(iHit ? t("쳐라!") : t("막아라!"), iHit ? "win" : "lose");
+    st.say(iHit ? t("치기!") : t("막기!"), iHit ? "win" : "lose");
     st.sub(iHit ? t("컴퓨터가 헬멧을 쓰기 전에") : t("뿅망치가 닿기 전에"));
     st.me.art(iHit ? HAMMER : HELMET, iHit ? t("치기") : t("막기"));
     st.op.art(iHit ? HELMET : HAMMER, iHit ? t("막기") : t("치기"));
@@ -140,18 +140,18 @@ export function hammerView(main, entry) {
     clearTimeout(cue);
     if (game !== g) return;
     const r = iHit ? g.strike(mine, comp) : g.strike(comp, mine);
-    const shown = (ms) => (Number.isFinite(ms) && ms <= STRIKE_MS ? t("{s}초", { s: secs(ms) }) : t("안 눌렀다"));
+    const shown = (ms) => (Number.isFinite(ms) && ms <= STRIKE_MS ? t("{s}초", { s: secs(ms) }) : t("안 누름"));
     st.sub(t("나 {a}, 컴퓨터 {b}", { a: shown(mine), b: shown(comp) }));
     let say;
     let tone = "";
     if (r.result === "hit") {
-      say = iHit ? t("맞혔다! 1점") : t("맞았다");
+      say = iHit ? t("맞힘! 1점") : t("맞음");
       tone = iHit ? "win" : "lose";
       (iHit ? st.op : st.me).mark("lost");
     } else if (r.result === "blocked") {
-      say = iHit ? t("막혔다") : t("막았다!");
+      say = iHit ? t("막힘") : t("막음!");
       tone = iHit ? "" : "win";
-    } else say = iHit ? t("헛쳤다") : t("컴퓨터가 헛쳤다");
+    } else say = iHit ? t("헛침") : t("컴퓨터가 헛침");
     st.say(say, tone);
     padResult(pad, say, tone);
     const said = { res: say, a: shown(mine), b: shown(comp) };
@@ -162,7 +162,7 @@ export function hammerView(main, entry) {
       st.say(won ? t("승리!") : t("패배"), won ? "win" : "lose");
       rec.textContent = recordLine(addRecord("hammer", won ? 1 : -1));
       clear(doneBar).append(
-        h("strong", {}, won ? t("내가 먼저 {n}점을 냈다", { n: TARGET }) : t("컴퓨터가 먼저 {n}점을 냈다", { n: TARGET })),
+        h("strong", {}, won ? t("내가 먼저 {n}점", { n: TARGET }) : t("컴퓨터가 먼저 {n}점", { n: TARGET })),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
@@ -185,8 +185,8 @@ export function hammerView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("이긴 쪽도 서둘러야 한다. ")),
-      t("{s}초 안에 치지 않으면 헛친 것이다. 막기가 치기보다 먼저거나 동시면 막은 것이다. 컴퓨터는 빠르기에 따라 평균 {a}·{b}·{c}초에 누른다.", {
+      h("b", {}, t("이긴 쪽도 서둘러야 합니다. ")),
+      t("{s}초 안에 치지 않으면 헛친 것입니다. 막기가 치기보다 먼저거나 동시면 막은 것입니다. 컴퓨터는 빠르기에 따라 평균 {a}·{b}·{c}초에 누릅니다.", {
         s: secs(STRIKE_MS),
         a: secs(REACTION_LEVELS.easy),
         b: secs(REACTION_LEVELS.normal),

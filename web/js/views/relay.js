@@ -30,7 +30,7 @@ export function relayView(main, entry) {
   const st = stage({ meLabel: t("우리 편"), opLabel: t("상대 편") });
   const track = h("div", { class: "relay-track", role: "img" });
   const clock = h("p", { class: "note", style: { margin: "0 0 14px" }, "aria-live": "polite" });
-  const steps = stepList([t("한 명씩 달려 나간다"), t("만나면 가위바위보를 하고, 진 편은 다음 사람이 나온다"), t("상대 진지에 들어가면 1점")]);
+  const steps = stepList([t("한 명씩 달려 나감"), t("만나면 가위바위보를 하고, 진 편은 다음 사람이 나옴"), t("상대 진지에 들어가면 1점")]);
   const log = logList();
   const rec = h("p", { class: "rec" });
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -81,17 +81,17 @@ export function relayView(main, entry) {
     track.setAttribute(
       "aria-label",
       g.done
-        ? t("길은 {n}칸이다.", { n: g.cells })
-        : t("길은 {n}칸이다. 우리 편 {a}번째 주자는 {x}칸째, 상대 편 {b}번째 주자는 {y}칸째에 있다.", { n: g.cells, a: g.runner[0], x: g.pos[0], b: g.runner[1], y: g.cells + 1 - g.pos[1] }),
+        ? t("길 {n}칸", { n: g.cells })
+        : t("길 {n}칸. 우리 편 {a}번째 주자는 {x}칸째, 상대 편 {b}번째 주자는 {y}칸째", { n: g.cells, a: g.runner[0], x: g.pos[0], b: g.runner[1], y: g.cells + 1 - g.pos[1] }),
     );
-    clock.textContent = t("{s}초가 지났다(한 칸 1초, 가위바위보 한 번 1초). 가위바위보는 {n}번 했다.", { s: g.seconds(), n: g.throws });
+    clock.textContent = t("{s}초 지남(한 칸 1초, 가위바위보 한 번 1초). 가위바위보 {n}번", { s: g.seconds(), n: g.throws });
     score.set(g.score[0], g.score[1], target > 1 ? t("먼저 {n}점", { n: target }) : t("먼저 들어가기"));
   }
 
   async function runUntilMeet() {
     const g = game;
     const quick = fastMode() || reducedMotion();
-    st.say(t("달린다"));
+    st.say(t("달리는 중"));
     st.sub("");
     while (g.step()) {
       if (!quick) {
@@ -101,8 +101,8 @@ export function relayView(main, entry) {
       }
     }
     drawTrack();
-    st.say(t("만났다"));
-    st.sub(t("가위바위보로 겨루자."));
+    st.say(t("만남"));
+    st.sub(t("가위바위보로 겨루기"));
     steps.set(1);
     grid.el.hidden = false;
     grid.lock(false);
@@ -140,7 +140,7 @@ export function relayView(main, entry) {
     st.me.set(V, i);
     st.op.set(V, j);
     if (r.cmp === 0) {
-      st.say(t("비겼다. 다시"));
+      st.say(t("비김. 다시"));
       grid.lock(false);
       busy = false;
       return;
@@ -148,11 +148,11 @@ export function relayView(main, entry) {
     const w = r.winner;
     (w === 0 ? st.op : st.me).mark("lost");
     if (r.point !== null) {
-      st.say(w === 0 ? t("상대 진지에 들어갔다!") : t("상대가 우리 진지에 들어왔다"), w === 0 ? "win" : "lose");
-      log.add(w === 0 ? t("{s}. 상대 진지에 들어갔다. 1점.", { s: V.sentence(i, j) }) : t("{s}. 상대가 우리 진지에 들어왔다.", { s: V.sentence(i, j) }), w === 0 ? "w" : "l");
+      st.say(w === 0 ? t("상대 진지에 들어감!") : t("상대가 우리 진지에 들어옴"), w === 0 ? "win" : "lose");
+      log.add(w === 0 ? t("{s}. 상대 진지에 들어감. 1점", { s: V.sentence(i, j) }) : t("{s}. 상대가 우리 진지에 들어옴", { s: V.sentence(i, j) }), w === 0 ? "w" : "l");
     } else {
-      st.say(w === 0 ? t("이겼다. 계속 달린다") : t("졌다. 다음 사람이 나간다"), w === 0 ? "win" : "lose");
-      log.add(w === 0 ? t("{s}. 상대 편 다음 사람이 나온다.", { s: V.sentence(i, j) }) : t("{s}. 우리 편 다음 사람이 나간다.", { s: V.sentence(i, j) }));
+      st.say(w === 0 ? t("승리. 계속 달림") : t("패배. 다음 사람이 나감"), w === 0 ? "win" : "lose");
+      log.add(w === 0 ? t("{s}. 상대 편 다음 사람이 나옴", { s: V.sentence(i, j) }) : t("{s}. 우리 편 다음 사람이 나감", { s: V.sentence(i, j) }));
     }
     drawTrack();
     if (g.done) {
@@ -162,7 +162,7 @@ export function relayView(main, entry) {
       rec.textContent = recordLine(addRecord(key(), won ? 1 : -1));
       clear(doneBar).append(
         h("strong", {}, won ? t("우리 편 승리") : t("우리 편 패배")),
-        h("span", { class: "muted" }, t("{s}초 걸렸다", { s: g.seconds() })),
+        h("span", { class: "muted" }, t("{s}초 걸림", { s: g.seconds() })),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
       );
       doneBar.hidden = false;
@@ -178,8 +178,8 @@ export function relayView(main, entry) {
     steps.set(0);
     if (g.phase === "janken") {
       // 진지에서 막 나온 사람과 바로 붙었다
-      st.say(t("만났다"));
-      st.sub(t("가위바위보로 겨루자."));
+      st.say(t("만남"));
+      st.sub(t("가위바위보로 겨루기"));
       grid.el.hidden = false;
       grid.lock(false);
       busy = false;
@@ -202,7 +202,7 @@ export function relayView(main, entry) {
     block(t("하는 법"), steps.el),
     block(
       t("걸리는 시간"),
-      h("p", {}, t("둘 다 아무렇게나 내면 길이 길수록 오래 걸린다. 진지에서 막 나온 사람을 이겨야 들어가기 때문이다.")),
+      h("p", {}, t("둘 다 아무렇게나 내면 길이 길수록 오래 걸립니다. 진지에서 막 나온 사람을 이겨야 들어가기 때문입니다.")),
       h("p", { class: "field-label", style: { margin: "4px 0 8px" } }, t("한 번 들어가면 끝나는 규칙으로 600판을 돌린 평균")),
       statsBox,
     ),
