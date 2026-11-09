@@ -14,9 +14,9 @@ export const BUBBLE_MS = 2000;
 const MAX_W = 360;
 const MIN_W = 240;
 
-/** 사람 수에 따른 동그라미 지름(px): 2–4명 56, 5–6명 48, 7–8명 42, 그 위 38 */
+/** 사람 수에 따른 동그라미 지름(px): 2–4명 56, 5–6명 48, 7–8명 42, 9–12명 38, 그 위(손 많은 바탕 20명까지) 32 */
 export function nodeSize(n) {
-  return n <= 4 ? 56 : n <= 6 ? 48 : n <= 8 ? 42 : 38;
+  return n <= 4 ? 56 : n <= 6 ? 48 : n <= 8 ? 42 : n <= 12 ? 38 : 32;
 }
 
 /**
@@ -93,6 +93,8 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
     el.style.height = `${H}px`;
     el.style.setProperty("--s", `${size}px`);
     el.classList.toggle("small", size < 44);
+    // 많이 모이면(13명부터) 이름 줄이 서로 덮는다: 나와 강조한 사람만 이름을 쓰고 나머지는 그림과 title 로
+    el.classList.toggle("crowd", n > 12);
     const L = ringLayout(Math.max(n, 1), W, H, size, radius, start);
     el.style.setProperty("--lbw", `${L.labelW}px`);
     // 선: 고리 + 모든 쌍(+ 화살표)
@@ -101,7 +103,8 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
     svg.setAttribute("height", H);
     const lines = s("g", { class: "pring-chords" + (arrows.length ? " faded" : "") });
     if (n >= 2) lines.append(s("circle", { cx: L.cx, cy: L.cy, r: L.R.toFixed(1) }));
-    if (chords && n >= 3) {
+    // 13명부터는 모든 쌍을 잇는 선(78개 넘음)이 고리를 덮어 고리 선만 둔다
+    if (chords && n >= 3 && n <= 12) {
       for (let i = 0; i < n; i++)
         for (let j = i + 1; j < n; j++) {
           const [x1, y1] = L.pos[i];
@@ -199,6 +202,9 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
     nd.sub.textContent = p.sub || "";
     nd.sub.hidden = !p.sub;
     e.setAttribute("aria-label", p.title || [p.label, p.host, p.badge && p.badge.say, p.sub].filter(Boolean).join(", "));
+    // 많이 모여 이름 줄을 감추면 마우스를 올렸을 때 이름이 보이게
+    if (people.length > 12 && p.label) e.title = p.label;
+    else e.removeAttribute("title");
   }
 
   // 칸 폭이 바뀌면 다시 놓는다

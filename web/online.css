@@ -1315,6 +1315,10 @@ button.varrow {
   color: var(--ink);
   font-weight: 700;
 }
+.pring.crowd .pring-node:not(.me):not(.strong) .pring-name,
+.pring.crowd .pring-node:not(.me):not(.strong) .pring-sub {
+  display: none;
+}
 .pring-sub {
   font-size: 0.6875rem;
 }

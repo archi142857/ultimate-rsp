@@ -2,7 +2,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseOnline, normalizeCode, checkCode } from "../web/js/online/ids.js";
+import { parseOnline, normalizeCode, checkCode, hasBadCodeChar } from "../web/js/online/ids.js";
 import { pickServer, DEFAULT_SERVER, PROTOCOL } from "../web/js/online/config.js";
 import { cleanName, randomName, newId, playerId, NAME_MAX, faceId, myFace, setMyFace, setMyName, meWho, meFields } from "../web/js/online/identity.js";
 import { NICK_WORDS } from "../web/js/i18n/nicknames.js";
@@ -20,6 +20,13 @@ test("온라인 주소를 읽는다", () => {
   assert.deepEqual(parseOnline("/room/k7q2"), { kind: "room", code: "K7Q2" });
   assert.deepEqual(parseOnline("/room/K7%20Q2"), { kind: "room", code: "K7Q2" });
   assert.equal(normalizeCode(" k7-q2 "), "K7Q2");
+  // 검수 11-09: 한글 입력 상태로 친 코드, 링크를 통째로 붙여 넣은 코드
+  assert.equal(normalizeCode("ㅠㅁㅠㄷ"), "BABE");
+  assert.equal(normalizeCode("뮤ㅠㄷ"), "ABBE", "조합된 글자(ㅁ+ㅠ)도 누른 차례대로");
+  assert.equal(normalizeCode("https://archi142857.github.io/ultimate-rsp/#/room/babe"), "BABE");
+  assert.equal(normalizeCode("https://archi142857.github.io/ultimate-rsp/#/c/7kq2m9xa"), "7KQ2M9XA");
+  assert.equal(hasBadCodeChar("B0BE"), true);
+  assert.equal(hasBadCodeChar("babe"), false);
   assert.equal(checkCode("K7Q0", "room"), null, "0 은 코드 글자가 아니다");
   assert.equal(checkCode("7KQ2M9X", "challenge"), null, "도전장 코드는 8자");
   for (const p of ["/c/", "/c/%E0%A4%A", "/c/<script>", "/c/7KQ2M9XAB", "/c/7KQ2M9XI"]) assert.deepEqual(parseOnline(p), { kind: "bad", what: "challenge" }, p);

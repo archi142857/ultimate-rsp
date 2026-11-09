@@ -24,7 +24,7 @@ import { openSocket } from "./socket.js";
 import { PROTOCOL, shareLink } from "./config.js";
 import { CLOSE, EMOTE_GAP_MS, REVEAL_MS } from "./protocol.js";
 import { serverNow } from "./net.js";
-import { rulesEditor, rulesRows, gameName, isGroup } from "./rules.js";
+import { rulesEditor, rulesRows, gameName, isGroup, groupRuleNote } from "./rules.js";
 import { sidesOf, seatName, seatBot, secondsLeft, canSit, finalFor, duelRound, groupRound, groupHead, headcount, ringOrder, readyInfo, mmss, ranking } from "./room-model.js";
 import { closeText, wsErrorText, noticeFor } from "./messages.js";
 
@@ -286,6 +286,8 @@ export function roomView(main, code) {
       if (hw !== shown.win) return;
       shown.hands.forEach((hl, l) => {
         if (hl === null || hl === undefined || hl === shown.win) return;
+        // 손 많은 바탕(점수 규칙)은 남은 손이 모두를 이기지는 않는다: 실제로 이긴 상대에게만 긋는다
+        if (V.cmp(hw, hl) !== 1) return;
         arrows.push({ from: at(w), to: at(l), hand: { V, i: hw } });
       });
     });
@@ -416,11 +418,14 @@ export function roomView(main, code) {
     const ring = peopleRing({ height: ringHeight(room.seats.length, "lobby") });
     const editor = host ? rulesEditor(room.rules, { onChange: (r) => (setSetting("online.rules", r), send({ t: "rules", rules: r })) }) : null;
     const rows = h("dl", { class: "rules-rows" });
+    // 손 많은 바탕이면 점수로 정한다는 한 줄
+    const ruleNote = h("p", { class: "o-p o-small", hidden: true });
     const rulesCard = h(
       "section",
       { class: "o-card rules-card" },
       h("div", { class: "o-row" }, h("h2", { class: "o-h3 o-grow" }, t("규칙")), h("span", { class: "o-p o-small" }, t("방장만 바꾼다"))),
       editor ? editor.el : rows,
+      ruleNote,
     );
     const info = h("p", { class: "o-p o-center" });
     const start = host ? h("button", { type: "button", class: "btn btn-ink btn-big", onclick: () => send({ t: "start" }) }) : null;
@@ -456,6 +461,9 @@ export function roomView(main, code) {
         ring.center(ri.supported ? midText(`${ri.ready}/${ri.total}`, t("준비")) : midText(`${hc.humans}/${hc.total}`, t("모임")));
         if (editor) editor.set(room.rules);
         else rows.replaceChildren(...rulesRows(room.rules).flatMap(([k, v]) => [h("dt", {}, k), h("dd", {}, v)]));
+        const note = groupRuleNote(room.rules);
+        ruleNote.hidden = !note;
+        ruleNote.textContent = note || "";
         const mine = you !== null ? room.seats[you] : null;
         ready.hidden = !(ri.supported && !host && mine && mine.kind === "human");
         if (!ready.hidden) {
@@ -583,7 +591,11 @@ export function roomView(main, code) {
       const mine = mineNow();
       markPicked(mine);
       const alive = !group || (room.alive || []).includes(you);
-      if (grid) grid.lock(!r || mine !== null || !alive);
+      if (grid) {
+        grid.lock(!r || mine !== null || !alive);
+        // 여럿이에서 빠졌으면 손 단추를 숨긴다(검수 11-09: 색 그대로 보여 누를 수 있는 줄 알았다)
+        grid.el.hidden = !alive;
+      }
       reclaim.hidden = !botHasMe();
       if (score) score.set();
       drawRing();

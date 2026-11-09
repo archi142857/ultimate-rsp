@@ -15,7 +15,7 @@ import { topBar, bigTitle, variantRow } from "./common.js";
 import { noticeSlot } from "./notice.js";
 import { peopleRing, timerDial } from "./people-ring.js";
 import { randomGames, randomGame } from "./games.js";
-import { groupBases, gameName, modeName, seatsOf } from "./rules.js";
+import { groupBases, gameName, modeName, seatsOf, groupRuleNote } from "./rules.js";
 import { myName, playerId, meFields, meWho } from "./identity.js";
 import { openSocket } from "./socket.js";
 import { PROTOCOL } from "./config.js";
@@ -79,7 +79,8 @@ export function matchView(main, params = {}) {
     });
     const groupNote = () => {
       const r = seatsOf(base);
-      return t("{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이 하는 경기는 순위에 들지 않는다.", { a: r.min, b: r.max, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) });
+      const score = groupRuleNote({ game: "group", base, mode });
+      return [t("{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이 하는 경기는 순위에 들지 않는다.", { a: r.min, b: r.max, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) }), score].filter(Boolean).join(" ");
     };
     const note = group ? h("p", { class: "o-p o-small" }, groupNote()) : null;
     choose(rows, (id) => {

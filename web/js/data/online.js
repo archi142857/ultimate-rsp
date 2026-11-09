@@ -16,7 +16,7 @@ export function isOneHand(entry) {
  * 손이 셋보다 많은 변종도 여럿이 바탕으로 연다(11-08 사용자 '모든 변종을 방에서 여럿이').
  * 서버(seatRange·진 손 lose)와 화면이 준비되면 true 로 바꾼다. 그 전에도 { manyHands: true } 를 넘기면 늘어난 목록을 본다
  */
-export const MANY_HAND_GROUP = false;
+export const MANY_HAND_GROUP = true;
 
 /**
  * 여럿이 가위바위보의 바탕이 될 수 있는 변종: 손 하나짜리 변종(MANY_HAND_GROUP 이 false 면 손이 셋인 것만).

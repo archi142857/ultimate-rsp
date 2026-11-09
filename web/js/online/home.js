@@ -21,7 +21,7 @@ import { playerId, meFields, meWho } from "./identity.js";
 import { hello, OnlineError } from "./net.js";
 import { noticeFor } from "./messages.js";
 import { createRoom } from "./api.js";
-import { checkCode, normalizeCode, randomCode, CODE_LEN } from "./ids.js";
+import { checkCode, normalizeCode, randomCode, hasBadCodeChar, CODE_LEN } from "./ids.js";
 import { cleanRules } from "./rules.js";
 
 const MINE_SHOWN = 3;
@@ -100,7 +100,12 @@ export function onlineHomeView(main, params = {}) {
     let code = friend ? checkCode(codeInput.value, "room") : fresh;
     if (!code) {
       codeInput.setAttribute("aria-invalid", "true");
-      notices.set("note", { title: t("방 코드는 {n}글자다. 받은 코드를 다시 확인하자.", { n: CODE_LEN.room }) });
+      // 길이는 맞는데 안 쓰는 글자(0·1·I·L·O)가 있으면 그것부터 알려 준다(검수 11-09)
+      notices.set("note", {
+        title: hasBadCodeChar(codeInput.value)
+          ? t("방 코드에는 0·1·I·L·O 가 없다. 받은 코드를 다시 확인하자.")
+          : t("방 코드는 {n}글자다. 받은 코드를 다시 확인하자.", { n: CODE_LEN.room }),
+      });
       return;
     }
     go.disabled = true;
@@ -121,11 +126,24 @@ export function onlineHomeView(main, params = {}) {
       go.disabled = false;
     }
   });
-  codeInput.addEventListener("input", () => {
+  // 한글 입력 상태로 쳐도(ㅠㅁㅠㄷ) 영문 자판 글자로 바꾼다. 글자를 조합하는 동안은 건드리지 않는다(조합이 깨진다)
+  const tidy = () => {
     codeInput.removeAttribute("aria-invalid");
     const v = normalizeCode(codeInput.value);
     if (v !== codeInput.value) codeInput.value = v;
     relabel();
+  };
+  codeInput.addEventListener("input", (e) => {
+    if (!e.isComposing) tidy();
+  });
+  codeInput.addEventListener("compositionend", tidy);
+  // 방 링크를 통째로 붙여 넣으면 코드만(칸 길이에 잘리기 전에)
+  codeInput.addEventListener("paste", (e) => {
+    const text = e.clipboardData ? e.clipboardData.getData("text") : "";
+    if (!text) return;
+    e.preventDefault();
+    codeInput.value = normalizeCode(text).slice(0, CODE_LEN.room + 2);
+    tidy();
   });
   const roomNote = h("p", { class: "o-p o-small o-col-foot", hidden: true }, t("방과 도전장 경기는 순위에 들지 않는다."));
   ranked.push(roomNote);
