@@ -49,8 +49,12 @@ export function checkPid(pid) {
 
 // 줄바꿈·제어 문자, 보이지 않는 서식 문자 모두(\p{Cf}: 빈칸 U+200B, 방향 표시 U+200E·U+200F, 글 방향 뒤집기, 소프트 하이픈 U+00AD,
 // 태그 글자 U+E0001–E007F 등. 이모지를 잇는 U+200D 만 받는다), 빈칸처럼 보이는 글자(한글 채움 U+3164·U+FFA0·U+115F·U+1160,
-// 점자 빈칸 U+2800, U+034F). 11-08 검수: 이 글자로 빈 이름이나 겉보기에 똑같은 이름을 만들 수 있었다. 화면 identity.js 의 HIDDEN 도 같은 모음으로
-const BAD_NAME = /[\p{Cc}\u2028\u2029\u034F\u115F\u1160\u2800\u3164\uFFA0]|(?!\u200D)\p{Cf}/u;
+// 점자 빈칸 U+2800, U+034F, 크메르 안 보이는 모음 U+17B4·U+17B5, 몽골 이체 선택자 U+180B–U+180F).
+// 이체 선택자는 제 짝 글자 뒤에서만 받는다: U+FE0E·U+FE0F 는 그림 글자(\p{Extended_Pictographic})나 키캡 바탕(0–9 # *) 바로 뒤,
+// U+E0100–U+E01EF 는 한자 바로 뒤. U+FE00–U+FE0D 는 안 받는다.
+// 11-08·11-09 검수: 이 글자로 빈 이름이나 겉보기에 똑같은 이름('ab' 와 'a'+U+17B4+'b')을 만들 수 있었다. 화면 identity.js 의 HIDDEN 도 같은 모음으로
+const BAD_NAME =
+  /[\p{Cc}\u2028\u2029\u034F\u115F\u1160\u17B4\u17B5\u180B-\u180F\u2800\u3164\uFFA0\uFE00-\uFE0D]|(?!\u200D)\p{Cf}|(?<![\p{Extended_Pictographic}0-9#*])[\uFE0E\uFE0F]|(?<!\p{Ideographic})[\u{E0100}-\u{E01EF}]/u;
 const VISIBLE = /[\p{L}\p{N}\p{S}\p{P}]/u;
 
 /** 닉네임: 줄바꿈·제어 문자가 있으면 안 받는다. 앞뒤 공백을 떼고, 가운데 공백은 하나로. 1–20자(코드 포인트) */

@@ -125,3 +125,10 @@ test("이름: 빈칸처럼 보이는 글자와 서식 문자는 안 받는다(�
   assert.equal(checkName("👍🏽 엄지"), "👍🏽 엄지", "피부색 이모지는 받는다");
   assert.equal(checkName("1️⃣ 첫째"), "1️⃣ 첫째", "키캡 이모지는 받는다");
 });
+
+test("이름: 크메르 안 보이는 모음·몽골 선택자는 안 받고, 이체 선택자는 제 짝 글자 뒤에서만 받는다(11-09 검수)", () => {
+  for (const bad of ["a\u17B4b", "a\u17B5", "ab\u180B", "ab\uFE00", "ab\uFE0D", "ab\uFE0F", "a\uFE0Eb", "가\uFE0F", "❤️\uFE0F", "ab\u{E0100}", "\uFE0F\uFE0F"]) {
+    assert.equal(failCode(() => checkName(bad)), "bad_name", JSON.stringify(bad));
+  }
+  for (const ok of ["❤️ 하트", "#️⃣ 샵", "1️⃣ 첫째", "☺︎ 웃음", "🏳️‍🌈 무지개", "❤️‍🔥 불", "葛\u{E0100}城 이름"]) assert.equal(checkName(ok), ok, JSON.stringify(ok));
+});
