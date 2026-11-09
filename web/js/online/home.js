@@ -1,7 +1,7 @@
 // 온라인 첫 화면(#/play, 디자인 시안2 ① 깔끔한 세 칸). 맨 위 줄: 왼쪽 프로필 칩(누르면 이름 바꾸기), 오른쪽 '전체 순위표 →'.
-// 그 아래 제목과 세 칸: 랜덤 매칭(시작, 마지막에 고른 게임의 순위) · 방(미리 채운 코드로 만들기·친구 코드로 들어가기) · 도전장(쓰기, 내 도전장).
+// 그 아래 제목과 세 칸: 랜덤 매칭(시작, 마지막에 고른 게임의 순위) · 방(미리 채운 코드로 만들기·친구 코드로 들어가기, 남의 방이면 한 번 묻기) · 도전장(쓰기, 내 도전장).
 // 랜덤 칸에는 게임 고르는 칸을 두지 않는다. '시작'이 여는 매칭 화면에서 게임과 판 수를 고른다(11-08 사용자).
-// 폭 900px 이상이면 세 칸을 나란히, 그 아래에서는 랜덤 → 방 → 도전장 차례로 쌓는다.
+// 폭 900px 이상이면 세 칸을 나란히(세 칸의 단추가 같은 높이에), 그 아래에서는 랜덤 → 방 → 도전장 차례로 쌓는다.
 // 서버가 답하기 전에는 단추를 잠가 둔다(서버가 꺼졌거나 하루 한도를 넘었을 때 만들다가 막히지 않게).
 // 순위 자리(순위표 링크, 게임 순위, 순위 안내 글)는 서버가 답한 뒤에 보인다(순위가 없는 옛 서버면 다시 거둔다).
 
@@ -11,6 +11,7 @@ import { setting } from "../ui/store.js";
 import { bigTitle } from "./common.js";
 import { noticeSlot } from "./notice.js";
 import { peopleRing } from "./people-ring.js";
+import { avatar } from "./avatar.js";
 import { profileChip } from "./profile.js";
 import { parchmentArt } from "./parchment.js";
 import { rankBox, rankGameOf } from "./rank-view.js";
@@ -25,6 +26,13 @@ import { checkCode, normalizeCode, randomCode, hasBadCodeChar, CODE_LEN } from "
 import { cleanRules } from "./rules.js";
 
 const MINE_SHOWN = 3;
+const MARK = "\u0001";
+
+/** 글 틀에 넣은 MARK 자리에 이름을 <bdi> 로 넣는다(오른쪽에서 쓰는 글자가 섞인 이름도 앞뒤 글 차례가 흔들리지 않게) */
+function withName(text, name) {
+  const [pre, post = ""] = text.split(MARK);
+  return [pre, h("bdi", { class: "who-name" }, name), post];
+}
 
 export function onlineHomeView(main, params = {}) {
   setTitle(t("온라인 대전"));
@@ -85,13 +93,20 @@ export function onlineHomeView(main, params = {}) {
     "aria-label": t("방 코드"),
     "aria-describedby": "room-code-hint",
   });
-  const go = h("button", { type: "submit", class: "btn btn-ink" }, t("방 만들기"));
+  // 단추 글 둘을 한 칸에 겹쳐 두고 하나만 보인다: 글을 바꿔도 단추 폭(옆 코드 칸 폭)이 흔들리지 않게
+  const goMake = h("span", {}, t("방 만들기"));
+  const goJoin = h("span", { class: "is-off" }, t("들어가기"));
+  const go = h("button", { type: "submit", class: "btn btn-ink btn-swap" }, goMake, goJoin);
   gated.push(go);
   const typed = () => {
-    const v = normalizeCode(codeInput.value);
+    const v = normalizeCode(codeInput.value, "room");
     return v !== "" && v !== fresh;
   };
-  const relabel = () => (go.textContent = typed() ? t("들어가기") : t("방 만들기"));
+  const relabel = () => {
+    const join = typed();
+    goMake.classList.toggle("is-off", join);
+    goJoin.classList.toggle("is-off", !join);
+  };
   const form = h("form", { class: "room-form" }, codeInput, go);
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -112,6 +127,11 @@ export function onlineHomeView(main, params = {}) {
     try {
       for (let k = 0; k < 3; k++) {
         const r = await createRoom({ rules: cleanRules(setting("online.rules", {})), ...meFields(), pid: playerId(), code });
+        if (r.taken && friend && r.host && !(await askJoin(r.host))) {
+          go.disabled = false;
+          codeInput.focus();
+          return;
+        }
         if (!r.taken || friend) {
           location.hash = `#/room/${r.code}`;
           return;
@@ -129,7 +149,7 @@ export function onlineHomeView(main, params = {}) {
   // 한글 입력 상태로 쳐도(ㅠㅁㅠㄷ) 영문 자판 글자로 바꾼다. 글자를 조합하는 동안은 건드리지 않는다(조합이 깨진다)
   const tidy = () => {
     codeInput.removeAttribute("aria-invalid");
-    const v = normalizeCode(codeInput.value);
+    const v = normalizeCode(codeInput.value, "room");
     if (v !== codeInput.value) codeInput.value = v;
     relabel();
   };
@@ -137,14 +157,58 @@ export function onlineHomeView(main, params = {}) {
     if (!e.isComposing) tidy();
   });
   codeInput.addEventListener("compositionend", tidy);
-  // 방 링크를 통째로 붙여 넣으면 코드만(칸 길이에 잘리기 전에)
+  // 방 링크나 채팅 글을 통째로 붙여 넣으면 코드만(칸 길이에 잘리기 전에. 검수 11-09)
   codeInput.addEventListener("paste", (e) => {
     const text = e.clipboardData ? e.clipboardData.getData("text") : "";
     if (!text) return;
     e.preventDefault();
-    codeInput.value = normalizeCode(text).slice(0, CODE_LEN.room + 2);
+    codeInput.value = normalizeCode(text, "room").slice(0, CODE_LEN.room + 2);
     tidy();
   });
+  // 친 코드가 남의 방이면 들어가기 전에 한 번 묻는다(사용자 11-09 '○○의 방 / 입장하시겠습니까?' 그대로).
+  // 방장이 없으면(빈 방, 옛 서버) 묻지 않고 들어간다. 미리 채운 코드가 남의 방이면 묻지 않고 새 코드로 다시 한다
+  const sheet = h("div", { class: "o-sheet-wrap", hidden: true });
+  function askJoin(host) {
+    return new Promise((resolve) => {
+      const keys = new AbortController();
+      const close = (ok) => {
+        keys.abort();
+        sheet.hidden = true;
+        sheet.replaceChildren();
+        resolve(ok);
+      };
+      const yes = h("button", { type: "button", class: "btn btn-ink btn-big", onclick: () => close(true) }, t("입장"));
+      const no = h("button", { type: "button", class: "btn btn-big", onclick: () => close(false) }, t("취소"));
+      sheet.replaceChildren(
+        h("div", { class: "o-scrim", onclick: () => close(false) }),
+        h(
+          "div",
+          { class: "o-sheet join-sheet", role: "dialog", "aria-modal": "true", "aria-labelledby": "join-title", "aria-describedby": "join-text" },
+          h("div", { class: "join-host" }, avatar(host, { size: 48 }), h("h2", { class: "o-h2", id: "join-title" }, ...withName(t("{name}의 방", { name: MARK }), host.name))),
+          h("p", { class: "o-p", id: "join-text" }, t("입장하시겠습니까?")),
+          yes,
+          no,
+        ),
+      );
+      sheet.hidden = false;
+      // Esc 는 취소, Tab 은 두 단추 사이만 돈다. 화면을 떠나면(ctl) 같이 거둔다
+      const signal = AbortSignal.any ? AbortSignal.any([keys.signal, ctl.signal]) : keys.signal;
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            close(false);
+          } else if (e.key === "Tab") {
+            e.preventDefault();
+            (document.activeElement === yes ? no : yes).focus();
+          }
+        },
+        { signal },
+      );
+      yes.focus();
+    });
+  }
   const roomNote = h("p", { class: "o-p o-small o-col-foot", hidden: true }, t("방과 도전장 경기는 순위에 들지 않는다."));
   ranked.push(roomNote);
   const roomCol = col(
@@ -239,6 +303,7 @@ export function onlineHomeView(main, params = {}) {
       head,
       titleRow,
       h("div", { class: "o-cols" }, randomCol, roomCol, challengeCol),
+      sheet,
     ),
   );
   check();

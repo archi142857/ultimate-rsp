@@ -40,17 +40,50 @@ export function hangulToKeys(s) {
   return out;
 }
 
+const WORD = /[0-9A-Za-z\u3131-\u318E\uAC00-\uD7A3]+/g; // 영문·숫자·한글이 이어진 덩어리(빈칸·문장부호에서 끊는다)
+const LATIN = /[0-9A-Za-z]+/g;
+
+function codeLike(s, lens) {
+  return lens.includes(s.length) && [...s].every((ch) => CODE_ABC.includes(ch));
+}
+
 /**
- * 사람이 친 코드를 고친다: 방·도전장 링크를 통째로 붙여 넣으면 코드만 뽑고(…#/room/BABE),
- * 한글 입력 상태로 친 글자는 영문 자판 글자로, 빈칸·줄표를 빼고 대문자로
+ * 사람이 쓴 글에서 코드를 고른다(검수 11-09: 채팅 글을 통째로 붙여 넣어도).
+ * 낱말 안의 영문·숫자 덩어리('BABE로'처럼 조사가 붙어도) 가운데 코드 꼴(길이 · CODE_ABC)인 것을 고르되, 대문자나 숫자가 든 것을 먼저,
+ * 같은 차례면 뒤의 것('here's the code babe'). 코드 꼴이 없으면 낱말이 하나일 때(치는 중, 한글 입력 상태로 친 ㅠㅁㅠㄷ) 통째로
+ * 자판 글자로 바꾸고, 여럿이면 영문·숫자만 잇는다(K7-Q2 → K7Q2). 영문이 없는 문장('방 코드 알려줘')은 빈칸
  */
-export function normalizeCode(s) {
-  let v = String(s || "");
+function pickCode(text, lens) {
+  const words = text.match(WORD) || [];
+  let best = null;
+  let rank = 2;
+  for (const w of words)
+    for (const run of w.match(LATIN) || []) {
+      const up = run.toUpperCase();
+      const r = /\d/.test(run) || run === up ? 0 : 1;
+      if (r <= rank && codeLike(up, lens)) [best, rank] = [up, r];
+    }
+  if (best) return best;
+  if (words.length === 1) return hangulToKeys(words[0]).toUpperCase();
+  return words
+    .flatMap((w) => w.match(LATIN) || [])
+    .join("")
+    .toUpperCase();
+}
+
+/**
+ * 사람이 친 코드를 고친다: 방·도전장 링크를 통째로 붙여 넣으면 코드만 뽑고(…#/room/BABE), 채팅 글이면 코드 꼴 낱말을,
+ * 한글 입력 상태로 친 글자는 영문 자판 글자로, 빈칸·줄표·문장부호를 빼고 대문자로.
+ * kind("room"·"challenge")를 주면 그 길이만 코드 꼴로 본다
+ */
+export function normalizeCode(s, kind = null) {
+  let v = String(s || "")
+    .normalize("NFC")
+    // 전각 영문·숫자(ＢＡＢＥ)는 반각으로
+    .replace(/[\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0));
   const m = /\/(?:room|c)\/([^/?#\s]+)/i.exec(v);
   if (m) v = decode(m[1]) ?? m[1];
-  return hangulToKeys(v)
-    .replace(/[\s-]+/g, "")
-    .toUpperCase();
+  return pickCode(v, kind && CODE_LEN[kind] ? [CODE_LEN[kind]] : Object.values(CODE_LEN));
 }
 
 /** 코드에 쓰지 않는 글자(0·1·I·L·O 같은)가 들어 있나 */
@@ -67,7 +100,7 @@ export function randomCode(kind = "room") {
 
 /** 코드 꼴이 맞으면 고친 코드, 아니면 null */
 export function checkCode(s, kind) {
-  const c = normalizeCode(s);
+  const c = normalizeCode(s, kind);
   if (c.length !== CODE_LEN[kind]) return null;
   for (const ch of c) if (!CODE_ABC.includes(ch)) return null;
   return c;

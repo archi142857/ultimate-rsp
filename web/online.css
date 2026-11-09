@@ -425,6 +425,17 @@ a.o-back:hover {
   border: 1px solid var(--line);
   border-radius: 18px;
 }
+/* 넓은 화면: 세 칸이 줄(그림 · 제목 · 설명 · 단추 · 아래 칸 · 밑줄)을 함께 쓴다. 설명 길이가 달라도 단추가 같은 높이에(11-09 사용자) */
+@media (min-width: 900px) {
+  @supports (grid-template-rows: subgrid) {
+    .o-col {
+      display: grid;
+      grid-row: span 6;
+      grid-template-rows: subgrid;
+      row-gap: 9px;
+    }
+  }
+}
 .o-col-title {
   margin: 4px 0 0;
   font-family: var(--display);
@@ -486,14 +497,28 @@ a.o-back:hover {
 .text-input:hover {
   border-color: var(--line-2);
 }
-/* 방 칸: 미리 채운 코드 칸 + 방 만들기(코드를 고치면 들어가기) */
+/* 방 칸: 미리 채운 코드 칸 + 방 만들기(코드를 고치면 들어가기)를 한 줄에. 세 칸의 단추가 같은 높이에 온다(11-09 사용자) */
 .room-form {
   display: grid;
-  gap: 9px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
   min-width: 0;
+  /* 세 칸이 좁은 넓이(900px 언저리)에서는 코드 칸이 좁아진다: 아래 @container 로 글자 사이와 여백을 줄인다 */
+  container-type: inline-size;
 }
 .room-form > .btn {
   min-height: 44px;
+}
+/* 글 둘을 한 칸에 겹친다: 단추 폭은 긴 글에 맞고, 보이지 않는 글은 읽지 않는다 */
+.btn-swap {
+  display: inline-grid;
+  place-items: center;
+}
+.btn-swap > span {
+  grid-area: 1 / 1;
+}
+.btn-swap > .is-off {
+  visibility: hidden;
 }
 .code-input {
   padding-inline: 10px;
@@ -503,6 +528,9 @@ a.o-back:hover {
 .code-input.room-code {
   width: 100%;
   min-height: 44px;
+  /* 큰 글씨여도 옆 단추와 같은 44px */
+  padding-block: 4px;
+  line-height: 1.25;
   text-align: center;
   font-family: var(--display);
   font-size: 1.25rem;
@@ -517,8 +545,27 @@ a.o-back:hover {
   font-size: 1rem;
   text-indent: 0;
 }
+/* 방 코드 칸은 단추 옆이라 좁다: 안내 글(코드 4자리)이 칸 안에 들게 */
+.code-input.room-code::placeholder {
+  letter-spacing: 0;
+  font-size: 0.9375rem;
+}
 .code-input[aria-invalid="true"] {
   border-color: var(--lose);
+}
+/* 좁은 방 칸(.room-form container): 위 규칙을 덮도록 뒤에 둔다 */
+@container (max-width: 270px) {
+  .code-input.room-code {
+    padding-inline: 6px;
+    letter-spacing: 0.2em;
+    text-indent: 0.2em;
+  }
+  .code-input.room-code::placeholder {
+    font-size: 0.75rem;
+  }
+  .room-form > .btn {
+    padding-inline: 14px;
+  }
 }
 .mine {
   display: grid;
@@ -1315,9 +1362,23 @@ button.varrow {
   color: var(--ink);
   font-weight: 700;
 }
-.pring.crowd .pring-node:not(.me):not(.strong) .pring-name,
+.pring.crowd .pring-node:not(.me):not(.strong):not(.is-host) .pring-name,
 .pring.crowd .pring-node:not(.me):not(.strong) .pring-sub {
   display: none;
+}
+/* 많이 모이면(13명부터, 동그라미 32px) 배지를 작게 해 위쪽 두 귀퉁이로: 얼굴을 덮지 않게(검수 11-09). 방장은 이름도 보인다 */
+.pring.crowd .pring-badge {
+  top: calc(var(--s) / -2 - 9px);
+  left: 3px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 8px;
+  font-size: 0.625rem;
+}
+.pring.crowd .pring-badge.host {
+  left: auto;
+  right: 3px;
 }
 .pring-sub {
   font-size: 0.6875rem;
@@ -1631,6 +1692,18 @@ button.varrow {
 }
 .o-sheet-wrap[hidden] {
   display: none;
+}
+/* 친 코드가 남의 방일 때 묻는 시트: 방장 그림과 '○○의 방' */
+.join-host {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.join-host .o-h2 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .o-scrim {
   position: absolute;

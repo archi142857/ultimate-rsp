@@ -25,6 +25,23 @@ test("온라인 주소를 읽는다", () => {
   assert.equal(normalizeCode("뮤ㅠㄷ"), "ABBE", "조합된 글자(ㅁ+ㅠ)도 누른 차례대로");
   assert.equal(normalizeCode("https://archi142857.github.io/ultimate-rsp/#/room/babe"), "BABE");
   assert.equal(normalizeCode("https://archi142857.github.io/ultimate-rsp/#/c/7kq2m9xa"), "7KQ2M9XA");
+  // 검수 11-09: 채팅 글을 통째로 붙여 넣으면 코드 꼴 낱말만(한글 낱말을 자판 글자로 바꾸지 않는다)
+  for (const [text, want] of [
+    ["방 코드: babe", "BABE"],
+    ["코드 BABE", "BABE"],
+    ["BABE 방으로 와", "BABE"],
+    ["babe!", "BABE"],
+    ["BABE로 들어와", "BABE"],
+    ["here's the code: babe", "BABE"],
+    ["Join my rock paper scissors room K7Q2. Open the link to come right in.", "K7Q2"],
+    ["방 BABE 도전장 7KQ2M9XA", "BABE"],
+    ["ＢＡＢＥ", "BABE"],
+    ["BAㅠㄷ", "BABE"],
+    ["B0BE로 와", "B0BE"],
+    ["방 코드 알려줘", ""],
+  ])
+    assert.equal(normalizeCode(text, "room"), want, text);
+  assert.equal(normalizeCode("방 BABE 도전장 7KQ2M9XA", "challenge"), "7KQ2M9XA");
   assert.equal(hasBadCodeChar("B0BE"), true);
   assert.equal(hasBadCodeChar("babe"), false);
   assert.equal(checkCode("K7Q0", "room"), null, "0 은 코드 글자가 아니다");

@@ -171,7 +171,8 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
       (p.dim ? " dim" : "") +
       (p.away ? " away" : "") +
       (p.hand ? " shown" : "") +
-      (p.strong ? " strong" : "");
+      (p.strong ? " strong" : "") +
+      (p.host ? " is-host" : "");
     // 얼굴: 바뀔 때만 다시 넣는다
     const f = p.empty ? `empty:${p.emptyText || ""}` : JSON.stringify(faceOf(p.who));
     if (f !== nd.faceKey) {

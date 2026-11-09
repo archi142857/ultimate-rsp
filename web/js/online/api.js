@@ -170,5 +170,8 @@ export async function createRoom({ rules, name, face = null, pid, code = null },
   if (code) body.code = code;
   const d = await api("/api/rooms", { ...opts, body });
   if (typeof d.code !== "string" || !d.code) throw new OnlineError("bad_reply", d);
-  return { code: d.code, taken: d.taken === true };
+  // 고른 코드가 이미 있는 방이면 지금 방장 {name, face}(서버 9d404ab). 아무도 없거나 옛 서버면 null
+  const hostName = d.taken === true && d.host ? cleanName(d.host.name) : "";
+  const host = hostName ? { name: hostName, face: faceId(d.host.face) } : null;
+  return { code: d.code, taken: d.taken === true, host };
 }
