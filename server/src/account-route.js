@@ -4,13 +4,18 @@
 //  GET  /api/auth/<제공자>/callback       제공자가 돌려보내는 곳(출처 머리 없음). 끝나면 화면 주소?login=<한 번 쓰는 코드>
 //  POST /api/auth/redeem                  웹: 한 번 쓰는 코드 → 세션 토큰
 //  POST /api/auth/<제공자>/token          앱·스팀: 그 플랫폼이 준 토큰 → 세션 토큰
+//  POST /api/auth/signup                  처음 보는 로그인: 가입 화면(이름·처리방침 동의·만 14세 이상)을 마치고 계정을 만든다
+//  POST /api/auth/email/signup|verify|login|reset|reset/confirm   이메일·비밀번호(비밀번호는 화면이 PBKDF2 로 바꿔 보낸다)
 //  POST /api/account[/profile|/logout|/unlink|/delete]   세션 토큰으로 계정 보기·이름·로그아웃·로그인 떼기·지우기
 // 세션 토큰은 쿠키가 아니라 본문으로 주고받는다(웹·앱·스팀이 같은 방식. text/plain POST 라 CORS 미리 묻기도 없다)
 
-import { backWith, checkBack, checkHandoff, checkNonce, checkToken, isState } from "./account.js";
+import { backWith, checkBack, checkCode, checkConsent, checkEmail, checkHandoff, checkKey, checkNonce, checkTicket, checkToken, isState } from "./account.js";
 import { PROVIDERS, enabledProviders, pkceChallenge, providerOf, randomId, sha256Hex } from "./auth.js";
 import { checkFace, checkName, checkPid } from "./check.js";
 import { Fail, checkVersion, json, originList, readBody } from "./http.js";
+import { mailReady, mailTest, mailText, sendMail } from "./mail.js";
+import { PRIVACY_VERSION } from "./protocol.js";
+import { ipTag } from "./rank.js";
 import { ACCOUNT_HINT } from "./where.js";
 
 const AUTH_BODY_MAX = 8192;
@@ -87,8 +92,20 @@ export async function authRoute(request, env, rest, url, now, origin) {
   const m = request.method;
   if (rest.length === 0 && m === "GET") {
     checkVersion(url.searchParams.get("v"));
-    return json({ providers: enabledProviders(env, url), now }, 200, origin);
+    const providers = enabledProviders(env, url);
+    if (mailReady(env, url)) providers.push("email");
+    return json({ providers, policy: PRIVACY_VERSION, now }, 200, origin);
   }
+  if (rest.length === 1 && rest[0] === "signup" && m === "POST") {
+    const body = await readBody(request);
+    const ticket = checkTicket(body.ticket);
+    const name = checkName(body.name);
+    const face = checkFace(body.face);
+    const consent = checkConsent(body);
+    const r = await call(() => accounts(env).signup({ ticket, name, face, consent }));
+    return json({ ...r, now }, 200, origin);
+  }
+  if (rest[0] === "email" && m === "POST") return emailRoute(request, env, rest.slice(1), url, now, origin);
   if (rest.length === 1 && rest[0] === "redeem" && m === "POST") {
     const body = await readBody(request);
     const code = checkHandoff(body.code);
@@ -147,9 +164,58 @@ export async function accountRoute(request, env, rest, now, origin) {
   }
   else if (what === "logout") r = await call(() => accounts(env).logout({ token }));
   else if (what === "unlink") {
-    if (typeof body.provider !== "string" || !Object.hasOwn(PROVIDERS, body.provider)) throw new Fail("bad_request");
+    if (typeof body.provider !== "string" || (!Object.hasOwn(PROVIDERS, body.provider) && body.provider !== "email")) throw new Fail("bad_request");
     r = await call(() => accounts(env).unlink({ token, provider: body.provider }));
   } else if (what === "delete") r = await call(() => accounts(env).remove({ token }));
   else throw new Fail("not_found");
   return json({ ...r, now }, 200, origin);
+}
+
+/** 메일을 보낸다(로컬 시험이면 보내지 않고 코드를 답에 싣는다) */
+async function deliver(env, url, email, mail) {
+  if (!mail) return {};
+  if (mailTest(env, url)) return { devKind: mail.kind, devCode: mail.code ?? null };
+  await sendMail(env, { to: email, ...mailText(mail.kind, mail.code) });
+  return {};
+}
+
+/** /api/auth/email/… 이메일·비밀번호 */
+async function emailRoute(request, env, rest, url, now, origin) {
+  if (!mailReady(env, url)) throw new Fail("no_provider");
+  const what = rest.join("/");
+  const body = await readBody(request);
+  const email = checkEmail(body.email);
+  const ip = await ipTag(request.headers.get("CF-Connecting-IP"), now);
+  if (what === "signup") {
+    const key = checkKey(body.key);
+    const pid = checkPid(body.pid);
+    const token = body.token === undefined || body.token === null ? null : checkToken(body.token);
+    // 로그인한 채 더하기(token)면 계정이 이미 있으니 이름·동의는 묻지 않는다
+    const name = token ? null : checkName(body.name);
+    const face = token ? null : checkFace(body.face);
+    const consent = token ? null : checkConsent(body);
+    const r = await call(() => accounts(env).emailSignup({ email, key, pid, name, face, consent, token, ip }));
+    return json({ sent: true, ...(await deliver(env, url, email, r.mail)), now }, 200, origin);
+  }
+  if (what === "verify") {
+    const code = checkCode(body.code);
+    const r = await call(() => accounts(env).emailVerify({ email, code }));
+    return json({ ...r, now }, 200, origin);
+  }
+  if (what === "login") {
+    const key = checkKey(body.key);
+    const r = await call(() => accounts(env).emailLogin({ email, key, ip }));
+    return json({ ...r, now }, 200, origin);
+  }
+  if (what === "reset") {
+    const r = await call(() => accounts(env).emailReset({ email, ip }));
+    return json({ sent: true, ...(await deliver(env, url, email, r.mail)), now }, 200, origin);
+  }
+  if (what === "reset/confirm") {
+    const code = checkCode(body.code);
+    const key = checkKey(body.key);
+    const r = await call(() => accounts(env).emailResetConfirm({ email, code, key }));
+    return json({ ...r, now }, 200, origin);
+  }
+  throw new Fail("not_found");
 }

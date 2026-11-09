@@ -71,8 +71,8 @@ export const RANK_DAILY = { pid: 30, home: 60 };
 
 // 로그인(계정, 11-09 사용자 '나중에 앱·스팀에도 낼 수 있게 범용성 있게'). 로그인은 고를 수 있고, 안 해도 지금처럼 논다.
 // 계정 하나에 로그인 여러 개. 게임은 지금처럼 pid 만 본다(계정은 pid 를 어느 기기에서든 되찾는 열쇠)
-/** 로그인 제공자 id. 서버에 열쇠가 있는 것만 켜진다(GET /api/auth). 나중에 apple(iOS 앱), steam(스팀) */
-export const AUTH_PROVIDERS = ["google", "kakao"];
+/** 로그인 방법 id. 서버에 열쇠가 있는 것만 켜진다(GET /api/auth). email 은 메일 열쇠(RESEND_API_KEY·MAIL_FROM)가 있을 때. 나중에 apple(iOS 앱), steam(스팀) */
+export const AUTH_PROVIDERS = ["google", "kakao", "email"];
 /** 제공자 로그인 창에 다녀오는 시간 */
 export const AUTH_STATE_MS = 10 * 60_000;
 /** 돌아온 화면이 한 번 쓰는 코드(login=)를 세션 토큰으로 바꾸는 시간 */
@@ -81,6 +81,25 @@ export const AUTH_HANDOFF_MS = 2 * 60_000;
 export const SESSION_IDLE_MS = 180 * 24 * 3600_000;
 /** 계정 하나에 남겨 두는 세션(기기) 수. 넘으면 오래 안 쓴 것부터 지운다 */
 export const SESSION_MAX = 20;
+/** 새 로그인은 가입 화면(이름·처리방침 동의·만 14세 이상)을 거친다(사용자 11-09). 가입 표(ticket)는 이만큼 쓸 수 있다 */
+export const AUTH_SIGNUP_MS = 15 * 60_000;
+/** 지금 개인정보 처리방침 판(web/privacy.html 시행일). 가입할 때 화면이 이 값을 보내고, 서버는 동의한 판과 시각을 남긴다 */
+export const PRIVACY_VERSION = "2026-11-09";
+/**
+ * 이메일·비밀번호(사용자 11-09). 비밀번호는 화면이 바꿔 보낸다: key = base64url(PBKDF2-HMAC-SHA256(비밀번호, salt + 다듬은 메일, iterations, 32바이트)).
+ * 서버는 비밀번호를 모르고 key 의 HMAC 만 둔다(무료 플랜 CPU 10ms 안에 느린 해시를 못 돌리니 느린 쪽은 화면이 한다). 메일 주소도 HMAC 만 둔다
+ */
+export const EMAIL_KDF = { hash: "SHA-256", iterations: 600_000, salt: "ursp-email-v1:", bytes: 32 };
+/** 확인 코드(6자리)를 쓸 수 있는 시간, 한 코드로 틀릴 수 있는 횟수, 메일 하나에 한 시간 동안 보내는 코드 수 */
+export const EMAIL_CODE_MS = 30 * 60_000;
+export const EMAIL_CODE_TRIES = 5;
+/** 메일 하나에 하루 동안 틀릴 수 있는 확인 코드 수(코드를 새로 받아도 같이 센다. 넘으면 too_fast) */
+export const EMAIL_CODE_FAILS_PER_DAY = 15;
+export const EMAIL_SEND_PER_HOUR = 5;
+/** 이메일 로그인: 메일 하나에 15분 동안 틀릴 수 있는 횟수(넘으면 too_fast) */
+export const EMAIL_LOGIN_FAILS = 10;
+/** 하루에 보내는 메일 수(Resend 무료 100통 아래로). 넘으면 busy */
+export const EMAIL_DAY_MAX = 90;
 
 // 연결 유지: 화면이 PING 글자를 보내면 서버가 PONG 으로 바로 답한다(서버를 깨우지 않는다)
 export const PING = "ping";
@@ -112,6 +131,16 @@ export const ERRORS = {
   last_login: 409,
   busy: 503,
   server: 500,
+};
+/**
+ * 가입 화면·이메일 주소(규약 8장, 11-09 저녁)에서만 나는 오류. 화면이 아직 이 주소를 부르지 않아 문구가 없다.
+ * 화면이 문구를 넣고 tests/online-protocol.test.mjs 가 이것도 보게 되면 ERRORS 로 합친다
+ */
+export const NEW_ERRORS = {
+  need_agree: 400,
+  old_policy: 409,
+  bad_email: 400,
+  bad_code: 400,
 };
 /** WebSocket 에서만 쓰는 오류 코드({"t":"error","code"}, 연결은 그대로) */
 export const WS_ERRORS = ["not_host", "phase", "stale", "already", "full"];

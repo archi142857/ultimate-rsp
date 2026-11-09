@@ -4,9 +4,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { b64url, unb64url, randomId, sha256Hex, hmacHex, pkceChallenge, verifyJwt, clearJwks, PROVIDERS, enabledProviders, providerOf } from "../src/auth.js";
-import { planLogin, checkBack, backWith, checkNonce, checkToken, checkHandoff, isState, newPid } from "../src/account.js";
+import { planLogin, checkBack, backWith, checkNonce, checkToken, checkHandoff, isState, newPid, checkEmail, checkKey, checkCode, checkConsent, checkTicket, newCode } from "../src/account.js";
+import { mailReady, mailTest, mailText, sendMail } from "../src/mail.js";
 import { Fail } from "../src/http.js";
-import { AUTH_PROVIDERS } from "../src/protocol.js";
+import { AUTH_PROVIDERS, EMAIL_KDF, PRIVACY_VERSION } from "../src/protocol.js";
 
 const enc = new TextEncoder();
 const NOW = 1_800_000_000_000;
@@ -144,7 +145,7 @@ test("제공자: 열쇠가 있어야 켜지고, 시험 제공자는 로컬 주�
     assert.throws(() => providerOf(bad, { AUTH_TEST: "1" }, local), (e) => e instanceof Fail && e.code === "no_provider", String(bad));
   }
   assert.throws(() => providerOf("google", {}, live), (e) => e.code === "no_provider");
-  for (const id of AUTH_PROVIDERS) assert.ok(Object.hasOwn(PROVIDERS, id), id);
+  for (const id of AUTH_PROVIDERS) assert.ok(id === "email" || Object.hasOwn(PROVIDERS, id), id);
   assert.ok(!AUTH_PROVIDERS.includes("test"));
 });
 
@@ -254,4 +255,59 @@ test("값 꼴: nonce·토큰·한 번 쓰는 코드·state", () => {
   assert.throws(() => checkHandoff(t), (e) => e.code === "bad_login");
   assert.ok(isState(randomId(32)));
   assert.ok(!isState("x") && !isState(null) && !isState(`${randomId(32)}/`));
+});
+
+test("가입 동의: 처리방침 동의와 만 14세 이상이 둘 다 true, 판은 지금 판", () => {
+  assert.deepEqual(checkConsent({ agree: true, age14: true, policy: PRIVACY_VERSION }), { policy: PRIVACY_VERSION, age14: true });
+  for (const bad of [{}, { agree: true, policy: PRIVACY_VERSION }, { age14: true, policy: PRIVACY_VERSION }, { agree: "true", age14: true, policy: PRIVACY_VERSION }, { agree: 1, age14: 1, policy: PRIVACY_VERSION }, null]) {
+    assert.throws(() => checkConsent(bad), (e) => e.code === "need_agree", JSON.stringify(bad));
+  }
+  assert.throws(() => checkConsent({ agree: true, age14: true, policy: "2026-01-01" }), (e) => e.code === "old_policy");
+  assert.throws(() => checkConsent({ agree: true, age14: true }), (e) => e.code === "old_policy");
+  const t = randomId(32);
+  assert.equal(checkTicket(t), t);
+  assert.throws(() => checkTicket(randomId(24)), (e) => e.code === "bad_login");
+});
+
+test("이메일: 다듬기(빈칸·대소문자·NFC)와 꼴, 열쇠·코드 꼴, 코드는 6자리", () => {
+  assert.equal(checkEmail("  Foo.Bar@Example.COM "), "foo.bar@example.com");
+  assert.equal(checkEmail("e\u0301@x.kr"), "\u00e9@x.kr", "NFC");
+  assert.equal(checkEmail("가나@다라.한국"), "가나@다라.한국");
+  for (const bad of ["x@y", "a b@c.de", "a@b..cd", "a@b.c", "<a@b.cd>", "a@@b.cd", "@b.cd", "a@.cd", `${"a".repeat(250)}@b.cd`, "", null, 3]) {
+    assert.throws(() => checkEmail(bad), (e) => e.code === "bad_email", String(bad));
+  }
+  const k = randomId(32);
+  assert.equal(checkKey(k), k);
+  for (const bad of ["password123", randomId(16), `${k}=`, null]) assert.throws(() => checkKey(bad), (e) => e.code === "bad_request", String(bad));
+  assert.equal(checkCode("012345"), "012345");
+  for (const bad of ["12345", "1234567", "12a456", 123456, null]) assert.throws(() => checkCode(bad), (e) => e.code === "bad_code", String(bad));
+  for (let i = 0; i < 50; i++) assert.match(newCode(), /^[0-9]{6}$/);
+  assert.equal(EMAIL_KDF.iterations, 600_000, "OWASP 권장(PBKDF2-HMAC-SHA256)");
+});
+
+test("메일: 열쇠가 둘 다 있어야 켜지고, 로컬 시험은 보내지 않는다. 글은 한·영, 코드가 제목과 본문에", async () => {
+  const live = new URL("https://ultimate-rsp.youngpyo.workers.dev/api/auth");
+  const local = new URL("http://127.0.0.1:8787/api/auth");
+  assert.equal(mailReady({}, live), false);
+  assert.equal(mailReady({ RESEND_API_KEY: "k" }, live), false);
+  assert.equal(mailReady({ RESEND_API_KEY: "k", MAIL_FROM: "a <b@c.d>" }, live), true);
+  assert.equal(mailReady({ AUTH_TEST: "1" }, live), false);
+  assert.equal(mailTest({ AUTH_TEST: "1" }, local), true);
+  for (const kind of ["signup", "reset", "link"]) {
+    const m = mailText(kind, "123456");
+    assert.match(m.subject, /123456/);
+    assert.match(m.text, /123456/);
+    assert.match(m.text, /[가-힣]/);
+    assert.match(m.text, /Your .* code is 123456/);
+  }
+  assert.doesNotMatch(mailText("exists").text, /[0-9]{6}/);
+  const calls = [];
+  await sendMail({ RESEND_API_KEY: "rk", MAIL_FROM: "RSP <no-reply@x.test>" }, { to: "a@b.cd", subject: "s", text: "t" }, async (u, init) => {
+    calls.push({ u, init });
+    return new Response("{}", { status: 200 });
+  });
+  assert.equal(calls[0].u, "https://api.resend.com/emails");
+  assert.equal(calls[0].init.headers.Authorization, "Bearer rk");
+  assert.deepEqual(JSON.parse(calls[0].init.body), { from: "RSP <no-reply@x.test>", to: ["a@b.cd"], subject: "s", text: "t" });
+  await assert.rejects(sendMail({ RESEND_API_KEY: "rk", MAIL_FROM: "x" }, { to: "a@b.cd", subject: "s", text: "t" }, async () => new Response("no", { status: 429 })), (e) => e.code === "busy");
 });

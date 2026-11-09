@@ -4,6 +4,7 @@
 
 import { Fail, allowedOrigin } from "./http.js";
 import { randomId } from "./auth.js";
+import { PRIVACY_VERSION } from "./protocol.js";
 
 /** 화면과 같은 pid 꼴(16바이트 → 22자). 서버가 새 pid 를 줄 때 쓴다 */
 export const newPid = () => randomId(16);
@@ -76,4 +77,56 @@ export function planLogin({ idAcc = null, linkAcc = null, pidAcc = null }) {
   }
   if (idAcc) return { act: "login", account: idAcc };
   return { act: "create", keepPid: !pidAcc };
+}
+
+const TICKET = /^[A-Za-z0-9_-]{43}$/;
+/** 가입 표(새 로그인 → 가입 화면 → POST /api/auth/signup) */
+export function checkTicket(t) {
+  if (typeof t !== "string" || !TICKET.test(t)) throw new Fail("bad_login");
+  return t;
+}
+
+/**
+ * 가입 동의: 개인정보 처리방침 동의(agree)와 만 14세 이상(age14)이 둘 다 true 여야 한다.
+ * policy 는 화면이 보여 준 처리방침 판. 지금 판(PRIVACY_VERSION)과 다르면 old_policy(화면이 새로 읽고 다시 묻는다)
+ */
+export function checkConsent(body) {
+  if (!body || body.agree !== true || body.age14 !== true) throw new Fail("need_agree");
+  if (body.policy !== PRIVACY_VERSION) throw new Fail("old_policy");
+  return { policy: PRIVACY_VERSION, age14: true };
+}
+
+/**
+ * 메일 주소 다듬기: 앞뒤 빈칸 지우기, NFC, 소문자. 꼴은 넉넉하게 본다(로컬@도메인.끝, 254자까지, 빈칸·꺾쇠 없음).
+ * 다듬은 값이 같으면 같은 계정이다(화면도 같은 방식으로 다듬어 PBKDF2 소금에 쓴다)
+ */
+export function checkEmail(e) {
+  if (typeof e !== "string") throw new Fail("bad_email");
+  const m = e.trim().normalize("NFC").toLowerCase();
+  if (m.length < 3 || m.length > 254 || !/^[^\s@<>()",;:\\]+@[^\s@<>()",;:\\]+\.[^\s@<>()",;:\\.]{2,}$/u.test(m) || /\.\./.test(m)) throw new Fail("bad_email");
+  return m;
+}
+
+const KEY = /^[A-Za-z0-9_-]{43}$/;
+/** 화면이 비밀번호로 만든 열쇠(PBKDF2 32바이트 → 43자). 비밀번호 자체는 오지 않는다 */
+export function checkKey(k) {
+  if (typeof k !== "string" || !KEY.test(k)) throw new Fail("bad_request");
+  return k;
+}
+
+/** 메일로 보낸 6자리 확인 코드 */
+export function checkCode(c) {
+  if (typeof c !== "string" || !/^[0-9]{6}$/.test(c)) throw new Fail("bad_code");
+  return c;
+}
+
+/** 6자리 확인 코드(000000–999999, 고르게) */
+export function newCode() {
+  const a = new Uint32Array(1);
+  let x;
+  do {
+    crypto.getRandomValues(a);
+    x = a[0];
+  } while (x >= 4_294_000_000); // 1,000,000 의 배수 아래만 써서 고르게
+  return String(x % 1_000_000).padStart(6, "0");
 }

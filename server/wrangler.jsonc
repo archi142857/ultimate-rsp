@@ -12,7 +12,7 @@
     "ORIGINS": "https://archi142857.github.io",
     // 사이트 첫 주소(로그인 주소가 지났을 때 보이는 쪽의 링크)
     "HOME": "https://archi142857.github.io/ultimate-rsp/"
-    // 로그인 열쇠(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, KAKAO_REST_KEY, KAKAO_CLIENT_SECRET, KAKAO_APP_ID, GOOGLE_APP_CLIENT_IDS)는
+    // 로그인 열쇠(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, KAKAO_REST_KEY, KAKAO_CLIENT_SECRET, KAKAO_APP_ID, GOOGLE_APP_CLIENT_IDS, RESEND_API_KEY, MAIL_FROM)는
     // 여기 적지 않는다. GitHub Secrets 에 있으면 배포(server.yml)가 Worker secrets 로 넣는다. 없는 제공자는 꺼져 있다
   },
   "durable_objects": {
