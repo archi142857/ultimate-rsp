@@ -26,18 +26,19 @@ export function mailReady(env, url) {
 export function mailText(kind, code) {
   // 화면의 'n분'도 EMAIL_CODE_MS 에서 나온다(둘이 어긋나지 않게)
   const min = Math.round(EMAIL_CODE_MS / 60_000);
-  const tail = "요청하지 않았다면 이 메일은 무시하셔도 됩니다.\nIf you did not ask for this, you can ignore this email.";
+  const tail = "요청하지 않았다면 이 메일은 무시하셔도 됩니다.\nIf you didn't ask for this, you can ignore this email.";
   if (kind === "exists") {
     return {
       subject: "[궁극의 가위바위보] 이미 가입된 메일 주소입니다",
-      text: `이 메일 주소로 이미 가입되어 있습니다. 비밀번호가 기억나지 않으면 로그인 화면의 '비밀번호 찾기'를 이용해 주십시오.\n\nThis email address already has an account. If you forgot the password, use "Forgot password" on the sign-in screen.\n\n${tail}`,
+      text: `이 메일 주소로 이미 가입되어 있습니다. 비밀번호가 기억나지 않으면 로그인 화면의 '비밀번호 찾기'를 이용해 주십시오.\n\nThis email address already has an account. If you forgot your password, use "Forgot password" on the sign-in screen.\n\n${tail}`,
     };
   }
-  const what = kind === "reset" ? "비밀번호 찾기" : kind === "link" ? "로그인 방법 더하기" : "가입";
-  const whatEn = kind === "reset" ? "password reset" : kind === "link" ? "adding a sign-in method" : "sign-up";
+  // 낱말은 문구 규칙(로그인 방법을 잇는 것은 '연결')
+  const what = kind === "reset" ? "비밀번호 찾기" : kind === "link" ? "로그인 연결" : "가입";
+  const en = kind === "reset" ? `Your password reset code is ${code}.` : kind === "link" ? `Your code to add a sign-in method is ${code}.` : `Your sign-up code is ${code}.`;
   return {
     subject: `[궁극의 가위바위보] 확인 코드 ${code}`,
-    text: `${what} 확인 코드는 ${code} 입니다. ${min}분 안에 화면에 입력해 주십시오.\n\nYour ${whatEn} code is ${code}. Enter it within ${min} minutes.\n\n${tail}`,
+    text: `${what} 확인 코드는 ${code}입니다. ${min}분 안에 화면에 입력해 주십시오.\n\n${en} Enter it within ${min} minutes.\n\n${tail}`,
   };
 }
 

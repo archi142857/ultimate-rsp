@@ -306,7 +306,8 @@ test("메일: 열쇠가 둘 다 있어야 켜지고, 로컬 시험은 보내지 
     assert.match(m.subject, /123456/);
     assert.match(m.text, /123456/);
     assert.match(m.text, /[가-힣]/);
-    assert.match(m.text, /Your .* code is 123456/);
+    assert.match(m.text, /Your .*code.* is 123456\./);
+    assert.match(m.text, /확인 코드는 123456입니다\./, "숫자 뒤 '입니다'는 붙여 쓴다");
     // 'n분'은 코드 수명(EMAIL_CODE_MS)과 같다
     const min = EMAIL_CODE_MS / 60_000;
     assert.ok(m.text.includes(`${min}분 안에`) && m.text.includes(`within ${min} minutes`), kind);

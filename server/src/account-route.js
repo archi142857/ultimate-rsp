@@ -51,7 +51,7 @@ function stalePage(env) {
   const home = typeof env.HOME === "string" && /^https:\/\//.test(env.HOME) ? env.HOME : "";
   const link = home ? `<p><a href="${esc(home)}">Ultimate RSP</a></p>` : "";
   const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ultimate RSP</title>
-<p>로그인 시간이 지났거나 잘못된 주소다. 처음 화면에서 다시 해 보자.</p><p lang="en">This sign-in link has expired or is not valid. Please start again.</p>${link}</html>`;
+<p>로그인 시간이 지났거나 잘못된 주소입니다. 첫 화면에서 다시 로그인해 주십시오.</p><p lang="en">This sign-in link has expired or isn't valid. Sign in again from the home screen.</p>${link}</html>`;
   return new Response(html, { status: 400, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
 }
 
