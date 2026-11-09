@@ -40,8 +40,8 @@ test("가위바위보: 바위가 가위를 이기고 문장이 자연스럽다",
   assert.equal(V.cmp(rock, scissors), 1);
   assert.equal(V.cmp(scissors, paper), 1);
   assert.equal(V.cmp(paper, rock), 1);
-  assert.equal(V.sentence(scissors, rock), "바위가 가위를 부순다");
-  assert.equal(V.sentence(paper, rock), "보가 바위를 감싼다");
+  assert.equal(V.sentence(scissors, rock), "바위가 가위를 부숨");
+  assert.equal(V.sentence(paper, rock), "보가 바위를 감쌈");
   assert.ok(V.balanced);
   assert.ok(V.equilibrium.uniform);
 });
@@ -83,7 +83,7 @@ test("도마뱀 스팍: 손마다 둘을 이기고 위키 규칙과 같다", () 
   assert.deepEqual(beats("rock"), ["lizard", "scissors"]);
   assert.deepEqual(beats("paper"), ["rock", "spock"]);
   assert.deepEqual(beats("scissors"), ["lizard", "paper"]);
-  assert.equal(V.sentence(I.paper, I.spock), "보가 스팍을 반박한다");
+  assert.equal(V.sentence(I.paper, I.spock), "보가 스팍을 반박함");
 });
 
 test("우물: 최적 섞기에서 바위는 0, 나머지는 1/3", () => {
@@ -103,7 +103,7 @@ test("다이너마이트(놀이터): 보는 쓰지 않고 나머지 셋이 1/3",
   const m = mixOf(V);
   assert.ok(near(m.paper, 0));
   for (const k of ["scissors", "rock", "dynamite"]) assert.ok(near(m[k], 1 / 3), k);
-  assert.equal(V.sentence(V.index.scissors, V.index.dynamite), "가위가 다이너마이트 심지를 자른다");
+  assert.equal(V.sentence(V.index.scissors, V.index.dynamite), "가위가 다이너마이트 심지를 자름");
 });
 
 test("막대기·호랑이·닭·벌레: 이웃만 승부, 마주 보면 비긴다", () => {

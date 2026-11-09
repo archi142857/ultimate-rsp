@@ -101,7 +101,7 @@ function say(w, l, verb, en) {
     const v = verb || "beats";
     return `${w.name} ${w.plural ? plainVerb(v) : v} ${inSentence(l)}`;
   }
-  return `${josa(w.name, "이가")} ${josa(l.name, "을를")} ${verb || "이긴다"}`;
+  return `${josa(w.name, "이가")} ${josa(l.name, "을를")} ${verb || "이김"}`;
 }
 
 /** 영어 문장 가운데의 손 이름: 고유 이름·약자가 아니면 첫 글자를 소문자로 */
