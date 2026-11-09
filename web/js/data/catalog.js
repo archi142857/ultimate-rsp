@@ -1174,13 +1174,17 @@ const CATALOG_KO = [
     id: "league",
     kind: "sim",
     cat: "sim",
-    name: "전략 리그",
+    // 전략의 진화(장을 넘기는 이야기). 이름·소개는 web/js/sims/evolution-story.js 의 EVO_CATALOG 와 같다(tests/evolution-view.test.mjs)
+    name: "전략의 진화",
     origin: "컴퓨터끼리",
     about: [
-      "컴퓨터 전략끼리 수천 판씩 겨룹니다. 아무렇게나 내는 전략은 누구에게도 크게 지지 않고, 버릇이 있는 전략은 그 버릇을 읽는 전략에게 집니다.",
-      "전략끼리도 가위바위보처럼 물고 물리는 사이가 생깁니다.",
+      "컴퓨터 전략 아홉 가지가 리그를 거듭하며 겨룹니다. 꼴찌는 빠지고 1등은 늘어나서, 세대가 지나면 어떤 전략이 퍼지는지 보입니다.",
+      "경기 길이, 실수, 점수를 바꾸면 살아남는 전략도 바뀝니다. Nicky Case 의 '신뢰의 진화'처럼 장을 넘기며 직접 해 봅니다.",
     ],
-    sources: [{ t: "Wang, Xu & Zhou (2014), Social cycling and conditional responses in the Rock-Paper-Scissors game", u: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5376050/" }],
+    sources: [
+      { t: "Wang, Xu & Zhou (2014), Social cycling and conditional responses in the Rock-Paper-Scissors game", u: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5376050/" },
+      { t: "Nicky Case (2017), The Evolution of Trust", u: "https://ncase.me/trust/" },
+    ],
   },
   {
     id: "lattice",

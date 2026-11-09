@@ -13,7 +13,7 @@ import { commandView } from "./command.js";
 import { groupView } from "./group.js";
 import { trainView } from "./train.js";
 import { evolutionView } from "./evolution.js";
-import { leagueView } from "./league.js";
+import { evolutionStoryView } from "./evolution-story.js";
 import { latticeView } from "./lattice.js";
 import { warView } from "./war.js";
 import { hostView } from "./host.js";
@@ -40,7 +40,7 @@ const VIEWS = {
   group: groupView,
   train: trainView,
   evolution: evolutionView,
-  league: leagueView,
+  league: evolutionStoryView, // 전략의 진화(옛 전략 리그 자리)
   lattice: latticeView,
   war: warView,
   majority: (main, entry, params) => groupView(main, entry, params, { rules: ["majority", "minority"] }),

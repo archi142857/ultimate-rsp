@@ -667,11 +667,11 @@ export const EN_ENTRIES = {
     ],
   },
   league: {
-    name: "Strategy League",
+    name: "The Evolution of Strategy",
     origin: "Computers only",
     about: [
-      "Computer strategies play each other thousands of times. Random play loses to no one by much, while a strategy with a habit loses to one that reads it.",
-      "Strategies end up beating each other in cycles too, just like rock paper scissors.",
+      "Nine computer strategies play league after league. The bottom players leave and the top ones multiply, so you can see which strategy spreads over the generations.",
+      "Change the match length, mistakes or points, and a different strategy survives. Like Nicky Case's The Evolution of Trust, you turn the pages and try it yourself.",
     ],
   },
   lattice: {

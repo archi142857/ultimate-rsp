@@ -52,7 +52,7 @@ const META = {
   group: "직접 하기",
   train: "지켜보기",
   evolution: "지켜보기",
-  league: "전략 9가지",
+  league: "11장 이야기",
   lattice: "도마뱀과 대장균",
   war: "손 3~5가지",
   majority: "많은 손·적은 손",
