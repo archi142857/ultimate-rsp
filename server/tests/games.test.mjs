@@ -87,3 +87,16 @@ test("게임 목록은 공용 목록(web/js/data/online.js)을 따른다", async
   }
   for (const id of onlineGames("challenge")) assert.ok(id === "custom" || matrixIds().includes(id));
 });
+
+test("방 여럿이 인원은 바탕마다 seatRange 까지(손 셋 3–8명), 빠지면 5명", async () => {
+  const { seatRange } = await import("../../web/js/data/online.js");
+  assert.equal(normRules({ game: "group" }).seats, 5);
+  for (const base of groupBaseIds()) {
+    const { min, max } = seatRange(base);
+    assert.equal(normRules({ game: "group", base, seats: min }).seats, min, base);
+    assert.equal(normRules({ game: "group", base, seats: max }).seats, max, base);
+    assert.equal(failCode(() => normRules({ game: "group", base, seats: max + 1 })), "bad_rules", base);
+  }
+  assert.equal(seatRange("classic").max, 8);
+  for (const seats of [2, 9, 10, 3.5, "5", null]) assert.equal(failCode(() => normRules({ game: "group", seats })), "bad_rules", String(seats));
+});
