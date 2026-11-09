@@ -124,7 +124,7 @@ export function warView(main, entry) {
       drawStats();
       const c = sim.counts();
       const w = V.hands.find((hd) => c[hd.i] > 0);
-      clear(status).append(handArt(w), " " + t("{h}만 남았다. {n}초 걸렸다.", { h: inSentence(w), n: sim.time.toFixed(0) }));
+      clear(status).append(handArt(w), " " + t("{h}만 남음. {n}초 걸림", { h: inSentence(w), n: sim.time.toFixed(0) }));
       return;
     }
     raf = requestAnimationFrame(frame);
@@ -147,7 +147,7 @@ export function warView(main, entry) {
     V = choices.find((x) => x.e.id === variantId).V;
     sim = createWar({ win: V.win, rng: makeRng(), perKind: per, width: W, height: H, radius: per > 40 ? 9 : 11 });
     playBtn.textContent = t("시작");
-    status.textContent = t("시작을 누르면 움직인다.");
+    status.textContent = t("시작을 누르면 움직입니다.");
     setupCanvas();
     draw();
     drawStats();
@@ -160,7 +160,7 @@ export function warView(main, entry) {
     h("div", { class: "controls" }, vSel.el),
     h("div", { class: "controls" }, nSeg.el, sSeg.el),
     h("div", { class: "btn-row" }, playBtn, resetBtn),
-    h("p", { class: "rec" }, t("같은 손끼리 부딪히면 튕겨 나가기만 하고, 다른 손끼리 부딪히면 진 쪽이 이긴 쪽으로 바뀐다.")),
+    h("p", { class: "rec" }, t("같은 손끼리 부딪히면 튕겨 나가기만 하고, 다른 손끼리 부딪히면 진 쪽이 이긴 쪽으로 바뀝니다.")),
   );
   main.append(
     entryHead(entry),
@@ -168,9 +168,9 @@ export function warView(main, entry) {
     entryBody(
       entry,
       block(
-        t("왜 매번 다를까"),
-        h("p", {}, t("셋이 서로 먹고 먹히므로, 한 손이 늘면 그 손을 이기는 손도 곧 따라 는다. 그래서 수가 오르내리다가 우연히 한 손이 바닥나는 순간 승부가 난다.")),
-        h("p", {}, t("고르지 않은 변종(우물, 다이너마이트)을 고르면 약한 손이 먼저 사라지는지 볼 수 있다.")),
+        t("매번 결과가 다른 까닭"),
+        h("p", {}, t("셋이 서로 먹고 먹히므로, 한 손이 늘면 그 손을 이기는 손도 곧 따라 늘어납니다. 그래서 수가 오르내리다가 우연히 한 손이 바닥나는 순간 승부가 납니다.")),
+        h("p", {}, t("고르지 않은 변종(우물, 다이너마이트)을 고르면 약한 손이 먼저 사라지는지 볼 수 있습니다.")),
       ),
     ),
   );

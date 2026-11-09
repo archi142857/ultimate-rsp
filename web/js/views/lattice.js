@@ -192,7 +192,7 @@ export function latticeView(main, entry) {
     const m = 10 ** logM;
     mOut.textContent = sciKo(m);
     const ratio = m / CRITICAL_MOBILITY;
-    mOut.title = ratio < 1 ? t("임계값보다 작다") : t("임계값보다 크다");
+    mOut.title = ratio < 1 ? t("임계값보다 작음") : t("임계값보다 큼");
     drawStats();
   }
 
@@ -200,7 +200,7 @@ export function latticeView(main, entry) {
     const p = PRESETS.find((x) => x.id === presetId);
     if (p) return { V: compileVariant(p.def), note: p.note };
     const x = variantChoices.find((c) => c.e.id === presetId);
-    return { V: x.V, note: t("{name}의 손이 칸마다 하나씩 산다. 이기는 손은 옆의 지는 손을 없애고, 빈칸에는 옆 손이 퍼진다.", { name: x.e.name }) };
+    return { V: x.V, note: t("{name}의 손이 칸마다 하나씩 삽니다. 이기는 손은 옆의 지는 손을 없애고, 빈칸에는 옆 손이 퍼집니다.", { name: x.e.name }) };
   }
 
   function setPalette() {
@@ -277,7 +277,7 @@ export function latticeView(main, entry) {
       drawStats();
       drawChart();
       const last = V.hands.find((hd) => sim.counts[hd.i + 1] > 0);
-      status.textContent = last ? t("{h}만 남았다. 이동성을 낮추거나 접시로 바꿔 다시 해 보자.", { h: inSentence(last) }) : t("모두 사라졌다.");
+      status.textContent = last ? t("{h}만 남음. 이동성을 낮추거나 접시로 바꿔 다시 해 보십시오.", { h: inSentence(last) }) : t("모두 사라짐");
       return;
     }
     raf = requestAnimationFrame(frame);
@@ -319,7 +319,7 @@ export function latticeView(main, entry) {
     drawChart();
     draw();
     drawStats();
-    status.textContent = full ? t("시작을 누르면 시간이 흐른다.") : "";
+    status.textContent = full ? t("시작을 누르면 시간이 흐릅니다.") : "";
     playBtn.textContent = t("시작");
     if (wasRunning && !full) toggle();
   }
@@ -351,8 +351,8 @@ export function latticeView(main, entry) {
       entry,
       block(
         t("모형"),
-        h("p", {}, t("칸마다 한 개체가 살거나 비어 있다. 이웃한 두 칸을 고르면 셋 가운데 하나가 일어난다. 이기는 쪽이 지는 쪽을 없애거나(선택), 옆 개체가 빈칸으로 퍼지거나(번식), 둘이 자리를 바꾼다(이동). 선택과 번식은 같은 빠르기로 두었다.")),
-        h("p", {}, t("Reichenbach 등(2007)에 따르면 이 모형에서 이동성이 약 4.5 × 10⁻⁴를 넘으면 두 무리가 사라지고, 그보다 작으면 셋이 소용돌이를 이루며 오래 함께 산다. 플라스크는 아무 칸끼리나 만나게 해서 잘 섞인 물속처럼 만든다.")),
+        h("p", {}, t("칸마다 한 개체가 살거나 비어 있습니다. 이웃한 두 칸을 고르면 셋 가운데 하나가 일어납니다. 이기는 쪽이 지는 쪽을 없애거나(선택), 옆 개체가 빈칸으로 퍼지거나(번식), 둘이 자리를 바꿉니다(이동). 선택과 번식은 같은 빠르기로 두었습니다.")),
+        h("p", {}, t("Reichenbach 등(2007)에 따르면 이 모형에서 이동성이 약 4.5 × 10⁻⁴를 넘으면 두 무리가 사라지고, 그보다 작으면 셋이 소용돌이를 이루며 오래 함께 삽니다. 플라스크는 아무 칸끼리나 만나게 해서 잘 섞인 물속처럼 만듭니다.")),
       ),
     ),
   );

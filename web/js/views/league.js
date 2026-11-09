@@ -159,9 +159,9 @@ export function leagueView(main, entry) {
         h(
           "ul",
           { class: "plain-list" },
-          pairs.slice(0, 4).map(([i, j, v]) => h("li", {}, t("{a:이가} {b:을를} {v}%p 차이로 이겼다.", { a: names[i], b: names[j], v: Math.round(v * 100) }))),
+          pairs.slice(0, 4).map(([i, j, v]) => h("li", {}, t("{a:이가} {b:을를} {v}%p 차이로 이김", { a: names[i], b: names[j], v: Math.round(v * 100) }))),
         ),
-        cyc ? h("p", { class: "note" }, h("b", {}, t("전략끼리도 물고 물린다. ")), t("{chain}. 화살표 앞 전략이 뒤 전략을 이겼다.", { chain: [...cyc, cyc[0]].map((i) => names[i]).join(" → ") })) : null,
+        cyc ? h("p", { class: "note" }, h("b", {}, t("전략끼리도 물고 물립니다. ")), t("{chain}. 화살표 앞 전략이 뒤 전략을 이겼습니다.", { chain: [...cyc, cyc[0]].map((i) => names[i]).join(" → ") })) : null,
       ),
     );
   }
