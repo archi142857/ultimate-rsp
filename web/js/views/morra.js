@@ -44,7 +44,7 @@ export function morraView(main, entry) {
   const sumList = Array.from({ length: 2 * MAX_FINGERS + 1 }, (_, i) => i);
   const score = scoreboard();
   const st = stage();
-  const steps = stepList([t("손가락 몇 개를 펼지 정한다"), t("두 사람 손가락 수의 합을 외친다"), t("혼자 맞히면 1점, 먼저 3점을 내면 이긴다")]);
+  const steps = stepList([t("손가락 몇 개를 펼지 정함"), t("두 사람 손가락 수의 합을 외침"), t("혼자 맞히면 1점, 먼저 3점을 내면 승리")]);
   const log = logList();
   const rec = h("p", { class: "rec" });
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -101,10 +101,10 @@ export function morraView(main, entry) {
     st.say("");
     st.sub(
       mode === "morra"
-        ? t("손가락 수와 외칠 합을 고르자.")
+        ? t("손가락 수와 외칠 합 고르기")
         : mySide === 0
-          ? t("합이 홀이면 내가, 짝이면 컴퓨터가 1점을 얻는다.")
-          : t("합이 짝이면 내가, 홀이면 컴퓨터가 1점을 얻는다."),
+          ? t("합이 홀이면 내가, 짝이면 컴퓨터가 1점")
+          : t("합이 짝이면 내가, 홀이면 컴퓨터가 1점"),
     );
     score.set(0, 0, t("먼저 {n}점", { n: TARGET }));
     rec.textContent = recordLine(record(key()));
@@ -128,7 +128,7 @@ export function morraView(main, entry) {
       const r = game.play(fingers, guess, c.fingers, c.guess);
       st.me.text(String(fingers), t("{g}!", { g: guess }));
       st.op.text(String(c.fingers), t("{g}!", { g: c.guess }));
-      const who = r.point === 0 ? t("내가 맞혔다") : r.point === 1 ? t("컴퓨터가 맞혔다") : r.hit[0] ? t("둘 다 맞혔다") : t("아무도 못 맞혔다");
+      const who = r.point === 0 ? t("내가 맞힘") : r.point === 1 ? t("컴퓨터가 맞힘") : r.hit[0] ? t("둘 다 맞힘") : t("아무도 못 맞힘");
       st.say(t("합 {s}", { s: r.sum }), r.point === 0 ? "win" : r.point === 1 ? "lose" : "");
       st.sub(who);
       if (r.point !== null) (r.point === 0 ? st.me : st.op).mark("won");
@@ -169,8 +169,8 @@ export function morraView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("합은 여섯 가지 가운데 하나다. ")),
-      t("내 손가락 수는 알고 있으니, 합은 내 손가락 수에 상대 손가락 0~5개를 더한 수다. 상대가 아무렇게나 내면 그 여섯 가운데 무엇을 외쳐도 맞힐 확률은 1/6이다. 홀짝은 반반이다."),
+      h("b", {}, t("합은 여섯 가지 가운데 하나입니다. ")),
+      t("자기 손가락 수는 알고 있으니, 합은 자기 손가락 수에 상대 손가락 0~5개를 더한 수입니다. 상대가 아무렇게나 내면 그 여섯 가운데 무엇을 외쳐도 맞힐 확률은 1/6입니다. 홀짝은 반반입니다."),
     ),
   );
   const panel = h(
