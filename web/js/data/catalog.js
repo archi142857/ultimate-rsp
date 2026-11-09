@@ -1178,8 +1178,8 @@ const CATALOG_KO = [
     name: "전략의 진화",
     origin: "컴퓨터끼리",
     about: [
-      "컴퓨터 전략 아홉 가지가 리그를 거듭하며 겨룹니다. 꼴찌는 빠지고 1등은 늘어나서, 세대가 지나면 어떤 전략이 퍼지는지 보입니다.",
-      "경기 길이, 실수, 점수를 바꾸면 살아남는 전략도 바뀝니다. Nicky Case 의 '신뢰의 진화'처럼 장을 넘기며 직접 해 봅니다.",
+      "컴퓨터 전략 아홉 가지가 리그를 거듭하며 겨룹니다. 점수가 낮은 쪽은 빠지고 높은 쪽은 늘어나서, 세대가 지나면 어떤 전략이 퍼지는지 볼 수 있습니다.",
+      "경기 길이, 실수, 점수를 바꾸면 살아남는 전략도 바뀝니다. Nicky Case의 '신뢰의 진화'처럼 장을 넘기며 직접 해 볼 수 있습니다.",
     ],
     sources: [
       { t: "Wang, Xu & Zhou (2014), Social cycling and conditional responses in the Rock-Paper-Scissors game", u: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5376050/" },
