@@ -103,20 +103,15 @@ export const ERRORS = {
   closed: 409,
   own: 409,
   too_fast: 429,
-  busy: 503,
-  server: 500,
-};
-/**
- * 로그인·계정 주소(/api/auth, /api/account)에서만 나는 오류(규약 5장). 화면이 로그인을 붙일 때 문구를 더하고
- * tests/online-protocol.test.mjs 가 이것도 보게 되면 ERRORS 로 합친다
- */
-export const AUTH_ERRORS = {
+  // 로그인·계정 주소에서만(규약 8장)
   bad_token: 401,
   bad_login: 401,
   bad_back: 400,
   no_provider: 404,
   in_use: 409,
   last_login: 409,
+  busy: 503,
+  server: 500,
 };
 /** WebSocket 에서만 쓰는 오류 코드({"t":"error","code"}, 연결은 그대로) */
 export const WS_ERRORS = ["not_host", "phase", "stale", "already", "full"];
