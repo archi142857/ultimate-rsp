@@ -181,7 +181,7 @@ export function minusOneView(main, entry) {
       st.say(meWon ? t("승리!") : t("패배"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
-      st.sub(`${r.sentence}.`);
+      st.sub(r.sentence);
       log.add(t("나 {a}, 컴퓨터 {b}. {s}", { a: lower(V.hands[r.a].name), b: lower(V.hands[r.b].name), s: r.sentence }), meWon ? "w" : "l");
       wins[meWon ? 0 : 1] += 1;
       rec.textContent = recordLine(addRecord("minusone", r.cmp));

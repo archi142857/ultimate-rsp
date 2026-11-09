@@ -1015,7 +1015,7 @@ export const EN = {
   "합 {s}, {p}": "Total {s}, {p}",
   "내가 1점": "You score",
   "컴퓨터가 1점": "The computer scores",
-  "{a} + {b} = {s}, {p}. {who}.": "{a} + {b} = {s}, {p}. {who}.",
+  "{a} + {b} = {s}, {p}. {who}": "{a} + {b} = {s}, {p}. {who}",
   "내가 먼저 {n}점": "You got to {n} first",
   "컴퓨터가 먼저 {n}점": "The computer got to {n} first",
   "합은 여섯 가지 가운데 하나입니다. ": "The total is one of six numbers. ",

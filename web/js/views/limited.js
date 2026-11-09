@@ -114,7 +114,7 @@ export function limitedView(main, entry) {
       st.say(meWon ? t("별 하나!") : t("별 하나 잃음"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
-      st.sub(`${r.sentence}.`);
+      st.sub(r.sentence);
       log.add(t("{s}. 별 {a} 대 {b}", { s: r.sentence, a: r.stars[0], b: r.stars[1] }), meWon ? "w" : "l");
     }
     if (game.done) {

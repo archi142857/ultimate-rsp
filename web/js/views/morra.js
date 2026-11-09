@@ -141,7 +141,7 @@ export function morraView(main, entry) {
       st.say(t("합 {s}, {p}", { s: r.sum, p: parity(r.sum) }), r.winner === 0 ? "win" : "lose");
       st.sub(r.winner === 0 ? t("내가 1점") : t("컴퓨터가 1점"));
       (r.winner === 0 ? st.me : st.op).mark("won");
-      line = t("{a} + {b} = {s}, {p}. {who}.", { a: fingers, b: c.fingers, s: r.sum, p: parity(r.sum), who: r.winner === 0 ? t("내가 1점") : t("컴퓨터가 1점") });
+      line = t("{a} + {b} = {s}, {p}. {who}", { a: fingers, b: c.fingers, s: r.sum, p: parity(r.sum), who: r.winner === 0 ? t("내가 1점") : t("컴퓨터가 1점") });
       log.add(line, r.winner === 0 ? "w" : "l");
     }
     score.set(game.score[0], game.score[1], t("먼저 {n}점", { n: TARGET }));
