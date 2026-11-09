@@ -4,17 +4,26 @@
 import { createBot, botInfo } from "../core/bots.js";
 import { makeRng } from "../core/rng.js";
 
-export function playMatch(V, idA, idB, rounds, seed) {
+/**
+ * 두 봇이 rounds 판 겨룬다. noise 는 실수할 확률: 그 판에는 마음먹은 손 대신 아무 손이나 나간다(둘 다 실제로 나간 손을 기억한다).
+ * 돌려주는 값 { w, l, d } 는 A 쪽에서 본 이긴 판·진 판·비긴 판 수
+ */
+export function playMatch(V, idA, idB, rounds, seed, { noise = 0 } = {}) {
   const rng = makeRng(seed);
   const A = createBot(idA, V, makeRng(rng.int(2 ** 31)));
   const B = createBot(idB, V, makeRng(rng.int(2 ** 31)));
+  const slip = noise > 0 ? makeRng(rng.int(2 ** 31)) : null;
   const hA = [];
   const hB = [];
   let w = 0;
   let l = 0;
   for (let t = 0; t < rounds; t++) {
-    const a = A.pick({ history: hA });
-    const b = B.pick({ history: hB });
+    let a = A.pick({ history: hA });
+    let b = B.pick({ history: hB });
+    if (slip) {
+      if (slip.chance(noise)) a = slip.int(V.n);
+      if (slip.chance(noise)) b = slip.int(V.n);
+    }
     hA.push({ me: a, op: b });
     hB.push({ me: b, op: a });
     const c = V.cmp(a, b);
