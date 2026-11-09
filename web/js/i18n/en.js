@@ -121,7 +121,7 @@ export const EN = {
   "{h} 승 · {names}": "{h} wins · {names}",
   "{h} 패 · {names}": "{h} loses · {names}",
   "{h} 패": "{h} loses",
-  "손이 많아 점수로 정한다. 이긴 사람 수에서 진 사람 수를 뺀 점수가 가장 높은 손이 남는다(술래 정하기는 가장 낮은 손).": "With this many hands it's decided by score: people beaten minus people beaten by. The top-scoring hand stays (the lowest one in Who's it).",
+  "손이 많아 점수로 정한다. 이긴 사람 수에서 진 사람 수를 뺀 점수가 가장 높은 손이 남는다(술래 한 명은 가장 낮은 손).": "With this many hands it's decided by score: people beaten minus people beaten by. The top-scoring hand stays (the lowest one in Who's it).",
   "승부가 났다": "Decided",
   "승부가 났다 · {names}": "Decided · {names}",
   "비김": "Draw",
