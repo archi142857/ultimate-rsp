@@ -67,13 +67,13 @@ export function teamSplitView(main, entry) {
         return h(
           "div",
           { class: "team" + (mine ? " mine" : "") },
-          h("div", { class: "team-head" }, h("span", {}, picks ? t("{h} 편", { h: SIDES[side].name }) : side === 0 ? t("모인 사람") : t("아직 안 냈다")), picks ? h("b", {}, String(list.length)) : null),
+          h("div", { class: "team-head" }, h("span", {}, picks ? t("{h} 편", { h: SIDES[side].name }) : side === 0 ? t("모인 사람") : t("아직 안 냄")), picks ? h("b", {}, String(list.length)) : null),
           h("div", { class: "circle" }, list.map(person)),
         );
       }),
     );
     status.textContent = game.done
-      ? t("{n}번 만에 갈렸다.", { n: game.tries })
+      ? t("{n}번 만에 갈림", { n: game.tries })
       : t("{n}명이 아무렇게나 내면 한 번에 고르게 갈릴 확률은 {p}다.", { n: players, p: pct(splitChance(players)) });
     pad.hidden = game.done;
   }
@@ -88,7 +88,7 @@ export function teamSplitView(main, entry) {
     st.reset();
     st.me.set(V, null);
     st.say("");
-    st.sub(players % 2 ? t("두 편이 한 명 차이가 될 때까지 다시 낸다.") : t("두 편이 똑같이 {n}명씩 될 때까지 다시 낸다.", { n: players / 2 }));
+    st.sub(players % 2 ? t("두 편이 한 명 차이가 될 때까지 다시 냄") : t("두 편이 똑같이 {n}명씩 될 때까지 다시 냄", { n: players / 2 }));
     draw();
   }
 
@@ -103,12 +103,12 @@ export function teamSplitView(main, entry) {
     const r = game.play(all);
     picks = all;
     const [a, b] = r.counts;
-    st.say(r.even ? t("갈렸다!") : t("다시!"), r.even ? "win" : "");
+    st.say(r.even ? t("갈림!") : t("다시!"), r.even ? "win" : "");
     st.sub(t("{x} {a}명, {y} {b}명", { x: SIDES[0].name, a, y: SIDES[1].name, b }));
     log.add(t("{n}번째: {x} {a}명, {y} {b}명.", { n: r.try, x: SIDES[0].name, a, y: SIDES[1].name, b }) + (r.even ? "" : " " + t("다시.")), r.even ? "w" : "");
     if (game.done) {
       clear(doneBar).append(
-        h("strong", {}, t("{h} 편이 됐다", { h: SIDES[side].name })),
+        h("strong", {}, t("{h} 편이 됨", { h: SIDES[side].name })),
         h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("다시 가르기")),
       );
       doneBar.hidden = false;
@@ -123,7 +123,7 @@ export function teamSplitView(main, entry) {
     { class: "side-panel" },
     block(
       t("갈리기까지 내는 횟수"),
-      h("p", {}, t("사람이 많을수록 한 번에 고르게 갈리기 어렵다. 홀수면 한 명 차이까지 고르게 본다.")),
+      h("p", {}, t("사람이 많을수록 한 번에 고르게 갈리기 어렵습니다. 홀수면 한 명 차이까지 고르게 봅니다.")),
       h("p", { class: "field-label", style: { margin: "4px 0 8px" } }, t("모두 아무렇게나 낼 때: 한 번에 갈릴 확률, 평균 내는 횟수")),
       h(
         "dl",

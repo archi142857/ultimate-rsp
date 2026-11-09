@@ -25,7 +25,7 @@ export function hostView(main, entry) {
   const st = stage({ meLabel: t("나"), opLabel: t("진행자") });
   const circle = h("div", { class: "circle", "aria-label": t("모인 사람") });
   const status = h("p", { class: "note", style: { margin: "0 0 14px" } });
-  const steps = stepList([t("진행자가 먼저 손을 정한다"), t("모두 각자 낸다"), t("진행자에게 지면 빠지고, 이기면 10점, 비기면 5점")]);
+  const steps = stepList([t("진행자가 먼저 손을 정함"), t("모두 각자 냄"), t("진행자에게 지면 빠지고, 이기면 10점, 비기면 5점")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("host")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
@@ -66,8 +66,8 @@ export function hostView(main, entry) {
     grid.el.hidden = game.done || !meIn;
     finishBtn.hidden = game.done || meIn;
     status.textContent = game.done
-      ? t("{n}판 만에 끝났다.", { n: game.round })
-      : t("{r}판째다. 남은 사람은 {n}명, 내 점수는 {s}점이다.", { r: game.round + 1, n: game.alive.length, s: game.score[0] });
+      ? t("{n}판 만에 끝남", { n: game.round })
+      : t("{r}판째. 남은 사람 {n}명, 내 점수 {s}점", { r: game.round + 1, n: game.alive.length, s: game.score[0] });
     steps.set(game.done ? 2 : 1);
   }
 
@@ -82,7 +82,7 @@ export function hostView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(t("진행자는 이미 손을 정했다. 지지 않을 손을 고르자."));
+    st.sub(t("진행자는 이미 손을 정함. 지지 않을 손 고르기"));
     draw();
   }
 
@@ -100,20 +100,20 @@ export function hostView(main, entry) {
     const hostName = lower(V.hands[host].name);
     if (r.voided) {
       st.say(t("없던 판"));
-      st.sub(t("남은 사람이 모두 졌다. 다시 한다."));
-      log.add(t("진행자 {h}: 남은 사람이 모두 져서 없던 판으로 했다.", { h: hostName }));
+      st.sub(t("남은 사람이 모두 짐. 다시"));
+      log.add(t("진행자 {h}: 남은 사람이 모두 져서 없던 판", { h: hostName }));
     } else {
       const mine = meIn ? r.result[0] : null;
       if (mine) {
-        st.say(mine === "win" ? t("이겼다! +10점") : mine === "draw" ? t("비겼다. +5점") : t("졌다. 빠진다"), mine === "lose" ? "lose" : mine === "win" ? "win" : "");
+        st.say(mine === "win" ? t("승리! +10점") : mine === "draw" ? t("무승부. +5점") : t("패배. 탈락"), mine === "lose" ? "lose" : mine === "win" ? "win" : "");
         st.me.mark(mine === "win" ? "won" : mine === "lose" ? "lost" : null);
       } else st.say(t("진행자 {h}", { h: V.hands[host].name }));
       const outNames = r.out.map(name);
-      st.sub(outNames.length ? t("{names} 빠짐.", { names: listWords(outNames) }) : t("아무도 빠지지 않았다."));
+      st.sub(outNames.length ? t("{names} 빠짐.", { names: listWords(outNames) }) : t("아무도 안 빠짐"));
       log.add(
         outNames.length
           ? t("{r}판: 진행자 {h}. {names} 빠짐.", { r: r.round, h: hostName, names: listWords(outNames) })
-          : t("{r}판: 진행자 {h}. 아무도 빠지지 않았다.", { r: r.round, h: hostName }),
+          : t("{r}판: 진행자 {h}. 아무도 안 빠짐", { r: r.round, h: hostName }),
         mine === "lose" ? "l" : mine === "win" ? "w" : "",
       );
     }
@@ -153,10 +153,10 @@ export function hostView(main, entry) {
     const alone = ws.length === 1;
     const who = listWords(ws.map(name));
     st.say(meWon ? (alone ? t("나 우승") : t("공동 우승")) : alone ? t("{who} 우승", { who }) : t("{who} 공동 우승", { who }), meWon ? "win" : "lose");
-    st.sub(alone && game.alive.length === 1 ? t("혼자 남았다.") : t("{n}판을 다 했다. 점수가 가장 높은 사람이 이긴다.", { n: game.rounds }));
+    st.sub(alone && game.alive.length === 1 ? t("혼자 남음") : t("{n}판 끝. 점수가 가장 높은 사람이 승리", { n: game.rounds }));
     rec.textContent = recordLine(addRecord("host", meWon ? 1 : -1));
     clear(doneBar).append(
-      h("strong", {}, meWon ? (alone ? t("진행자를 이겨 냈다") : t("공동 우승")) : t("{who} 우승", { who })),
+      h("strong", {}, meWon ? (alone ? t("진행자를 이겨 냄") : t("공동 우승")) : t("{who} 우승", { who })),
       h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
     );
     doneBar.hidden = false;
@@ -169,8 +169,8 @@ export function hostView(main, entry) {
     h(
       "p",
       { class: "note" },
-      h("b", {}, t("어떤 손이든 같다. ")),
-      t("진행자가 아무렇게나 내면 판마다 질 확률은 1/3이다. 10명이면 한 판에 평균 3명쯤 빠지고, 내가 10판을 다 버틸 확률은 2%쯤이다."),
+      h("b", {}, t("어떤 손이든 같습니다. ")),
+      t("진행자가 아무렇게나 내면 판마다 질 확률은 1/3입니다. 10명이면 한 판에 평균 3명쯤 빠지고, 한 사람이 10판을 다 버틸 확률은 2%쯤입니다."),
     ),
   );
   const panel = h(

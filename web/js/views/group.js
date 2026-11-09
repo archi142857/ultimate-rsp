@@ -84,10 +84,10 @@ export function groupView(main, entry, params, preset = {}) {
 
   function ruleText() {
     const keep = mode === "survive";
-    if (rule === "majority") return keep ? t("가장 많이 나온 손을 낸 사람만 남는다. 마지막 한 명이 이긴다.") : t("가장 많이 나온 손을 낸 사람은 빠져나간다. 마지막 한 명이 술래다.");
-    if (rule === "minority") return keep ? t("가장 적게 나온 손을 낸 사람만 남는다. 마지막 한 명이 이긴다.") : t("가장 적게 나온 손을 낸 사람은 빠져나간다. 마지막 한 명이 술래다.");
-    if (tie3 === "scissors") return keep ? t("이긴 손을 낸 사람만 남는다. 세 가지가 다 나오면 가위가 이긴다.") : t("진 손을 낸 사람만 남는다. 세 가지가 다 나오면 가위가 이긴다.");
-    return keep ? t("이긴 손을 낸 사람만 남는다. 마지막 한 명이 이긴다.") : t("진 손을 낸 사람만 남는다. 마지막 한 명이 술래다.");
+    if (rule === "majority") return keep ? t("가장 많이 나온 손을 낸 사람만 남음. 마지막 한 명이 승리") : t("가장 많이 나온 손을 낸 사람은 빠져나감. 마지막 한 명이 술래");
+    if (rule === "minority") return keep ? t("가장 적게 나온 손을 낸 사람만 남음. 마지막 한 명이 승리") : t("가장 적게 나온 손을 낸 사람은 빠져나감. 마지막 한 명이 술래");
+    if (tie3 === "scissors") return keep ? t("이긴 손을 낸 사람만 남음. 세 가지가 다 나오면 가위가 이김") : t("진 손을 낸 사람만 남음. 세 가지가 다 나오면 가위가 이김");
+    return keep ? t("이긴 손을 낸 사람만 남음. 마지막 한 명이 승리") : t("진 손을 낸 사람만 남음. 마지막 한 명이 술래");
   }
 
   function draw() {
@@ -111,8 +111,8 @@ export function groupView(main, entry, params, preset = {}) {
     finishBtn.hidden = game.done || meIn;
     if (!game.done) {
       const c = decisive(game.alive.length);
-      chanceLine.textContent = t("{n}명이 아무렇게나 내면 이번에 승부가 날 확률은 {p}. 나지 않으면 다시 낸다.", { n: game.alive.length, p: pct(c) });
-    } else chanceLine.textContent = t("{n}번 만에 끝났다.", { n: game.rounds.length });
+      chanceLine.textContent = t("{n}명이 아무렇게나 내면 이번에 승부가 날 확률 {p}. 안 나면 다시", { n: game.alive.length, p: pct(c) });
+    } else chanceLine.textContent = t("{n}번 만에 끝남", { n: game.rounds.length });
   }
 
   function newGame() {
@@ -139,12 +139,12 @@ export function groupView(main, entry, params, preset = {}) {
         kinds.length === 1
           ? t("모두 {h}", { h: lower(V.hands[kinds[0]].name) })
           : R === "majority"
-            ? t("가장 많이 나온 손이 둘 이상이다")
+            ? t("가장 많이 나온 손이 둘 이상")
             : R === "minority"
-              ? t("가장 적게 나온 손이 둘 이상이다")
-              : t("세 가지가 다 나왔다");
+              ? t("가장 적게 나온 손이 둘 이상")
+              : t("세 가지가 다 나옴");
       st.say(t("다시!"));
-      st.sub(t("{why}. 아무도 빠지지 않는다.", { why }));
+      st.sub(t("{why}. 아무도 안 빠짐", { why }));
       log.add(t("{n}명: {why}. 다시.", { n: r.alive.length, why }));
     } else {
       const w = V.hands[r.winnerHand].name;
@@ -153,10 +153,10 @@ export function groupView(main, entry, params, preset = {}) {
       st.sub(mode === "survive" ? t("{names} 빠짐.", { names: outNames }) : t("{names} 빠져나감.", { names: outNames }));
       const lv = { n: r.alive.length, h: lower(w), names: outNames };
       const out = mode === "survive";
-      if (R === "majority") log.add(out ? t("{n}명: {h} 손이 가장 많았다. {names} 탈락.", lv) : t("{n}명: {h} 손이 가장 많았다. {names} 통과.", lv));
-      else if (R === "minority") log.add(out ? t("{n}명: {h} 손이 가장 적었다. {names} 탈락.", lv) : t("{n}명: {h} 손이 가장 적었다. {names} 통과.", lv));
-      else if (kinds.length === 3) log.add(out ? t("{n}명: 세 가지가 다 나와 {h} 손이 이겼다. {names} 탈락.", lv) : t("{n}명: 세 가지가 다 나와 {h} 손이 이겼다. {names} 통과.", lv));
-      else log.add(out ? t("{n}명: {h} 손이 이겼다. {names} 탈락.", lv) : t("{n}명: {h} 손이 이겼다. {names} 통과.", lv));
+      if (R === "majority") log.add(out ? t("{n}명: {h} 손이 가장 많음. {names} 탈락", lv) : t("{n}명: {h} 손이 가장 많음. {names} 통과", lv));
+      else if (R === "minority") log.add(out ? t("{n}명: {h} 손이 가장 적음. {names} 탈락", lv) : t("{n}명: {h} 손이 가장 적음. {names} 통과", lv));
+      else if (kinds.length === 3) log.add(out ? t("{n}명: 세 가지가 다 나와 {h} 손 승리. {names} 탈락", lv) : t("{n}명: 세 가지가 다 나와 {h} 손 승리. {names} 통과", lv));
+      else log.add(out ? t("{n}명: {h} 손 승리. {names} 탈락", lv) : t("{n}명: {h} 손 승리. {names} 통과", lv));
     }
     if (game.done) finish();
     draw();
@@ -192,7 +192,7 @@ export function groupView(main, entry, params, preset = {}) {
     st.say(mode === "survive" ? (meLast ? t("나 우승") : t("{who} 우승", { who })) : meLast ? t("나 술래") : t("{who} 술래", { who }), good ? "win" : "lose");
     rec.textContent = recordLine(addRecord(entry.id, good ? 1 : -1));
     clear(doneBar).append(
-      h("strong", {}, mode === "survive" ? (meLast ? t("끝까지 살아남았다") : t("{who} 우승", { who })) : meLast ? t("내가 술래") : t("술래를 피했다")),
+      h("strong", {}, mode === "survive" ? (meLast ? t("끝까지 살아남음") : t("{who} 우승", { who })) : meLast ? t("내가 술래") : t("술래를 피함")),
       h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")),
     );
     doneBar.hidden = false;
@@ -210,10 +210,10 @@ export function groupView(main, entry, params, preset = {}) {
   }
   const why =
     rules !== null
-      ? t("보통 가위바위보는 사람이 늘수록 승부가 잘 안 난다. 많은 손·적은 손 이기기는 5명 이상이어도 열 번에 여섯 번 넘게 승부가 난다. 둘만 남으면 보통 가위바위보로 겨룬다.")
+      ? t("보통 가위바위보는 사람이 늘수록 승부가 잘 안 납니다. 많은 손·적은 손 이기기는 5명 이상이어도 열 번에 여섯 번 넘게 승부가 납니다. 둘만 남으면 보통 가위바위보로 겨룹니다.")
       : tie3 === "scissors"
-        ? t("세 가지가 다 나와도 가위가 이겨서, 모두 같은 손을 낼 때만 다시 한다. 대신 사람이 많을수록 세 가지가 다 나오기 쉬워 가위가 유리하다.")
-        : t("한 번에 승부가 나려면 딱 두 가지 손만 나와야 한다. 셋이면 2/3 확률로 승부가 나지만, 사람이 늘수록 세 가지가 다 나오기 쉬워진다.");
+        ? t("세 가지가 다 나와도 가위가 이겨서, 모두 같은 손을 낼 때만 다시 합니다. 대신 사람이 많을수록 세 가지가 다 나오기 쉬워 가위가 유리합니다.")
+        : t("한 번에 승부가 나려면 딱 두 가지 손만 나와야 합니다. 셋이면 2/3 확률로 승부가 나지만, 사람이 늘수록 세 가지가 다 나오기 쉬워집니다.");
   const side = h(
     "div",
     { class: "side-panel" },
