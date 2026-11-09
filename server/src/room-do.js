@@ -42,9 +42,9 @@ export class RoomHost extends DurableObject {
     });
   }
 
-  /** 입구·매칭이 부른다: 새 방. 이미 쓰는 코드면 { taken: true } */
+  /** 입구·매칭이 부른다: 새 방. 이미 쓰는 코드면 { taken: true, host }(방장 이름·그림, 없으면 null) */
   async init({ code, rules, host = null, reserve = null, random = false, ranked = true }) {
-    if (this.room) return { taken: true };
+    if (this.room) return { taken: true, host: this.room.hostCard() };
     const seed = crypto.getRandomValues(new Uint32Array(1))[0];
     this.room = Room.create({ code, rules, now: Date.now(), seed, host, reserve, random, ranked });
     await this.#commit();

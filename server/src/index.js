@@ -129,7 +129,7 @@ async function createRoom(request, env, now, origin) {
   const wanted = checkRoomCode(body.code);
   if (wanted) {
     const r = await callDO(() => stub(env.ROOMS, wanted).init({ code: wanted, rules, host }));
-    return r.taken ? json({ code: wanted, taken: true, now }, 200, origin) : json({ code: wanted, now }, 201, origin);
+    return r.taken ? json({ code: wanted, taken: true, host: r.host ?? null, now }, 200, origin) : json({ code: wanted, now }, 201, origin);
   }
   for (let i = 0; i < TRIES; i++) {
     const code = makeCode(CODE_LEN.room);

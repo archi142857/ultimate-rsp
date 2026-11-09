@@ -313,6 +313,19 @@ test("손 많은 바탕 여럿이: 점수 규칙으로 끝까지, 판마다 lose
   }
 });
 
+test("방장 소개(hostCard): 고른 코드가 이미 있는 방이면 입구가 이름·그림을 알려 준다, 방장이 바뀌면 따라가고 없으면 null", () => {
+  const room = make({}, { host: { pid: A, name: "여우", face: "king" } });
+  assert.deepEqual(room.hostCard(), { name: "여우", face: "king" });
+  room.join(A, "여우", T0);
+  room.join(B, "곰", T0);
+  room.leave(A, T0, true);
+  assert.deepEqual(room.hostCard(), { name: "곰", face: null }, "방장이 나가면 남은 사람");
+  room.leave(B, T0, true);
+  assert.equal(room.hostCard(), null, "아무도 없으면 null");
+  const random = Room.create({ code: "R2D9", rules: { game: "classic" }, now: T0, seed: 3, reserve: [{ pid: A, name: "여우" }, { pid: B, name: "곰" }], random: true });
+  assert.deepEqual(random.hostCard(), { name: "여우", face: null }, "랜덤 방은 0번 자리");
+});
+
 test("들어올 때 앉는가(canSit): 제 자리, 대기실 빈자리는 앉고, 꽉 찼거나 경기 중이거나 랜덤 방이면 구경꾼", () => {
   const room = make();
   assert.equal(room.canSit(A), true, "방장 자리");

@@ -111,6 +111,12 @@ export class Room {
     return !s.reserve && (s.phase === "lobby" || s.phase === "end") && freeSeat(s.seats) >= 0;
   }
 
+  /** 방장 이름·그림 { name, face }. 고른 코드가 이미 있는 방이면 입구가 알려 준다(화면이 '○○의 방, 들어갈까?' 하고 묻는다). 방장이 없으면 null */
+  hostCard() {
+    const h = this.s.host === null ? null : this.s.seats[this.s.host];
+    return h && h.kind === "human" ? { name: h.name, face: h.face ?? null } : null;
+  }
+
   seatOf(pid) {
     return this.s.seats.findIndex((x) => x.kind === "human" && x.pid === pid);
   }
