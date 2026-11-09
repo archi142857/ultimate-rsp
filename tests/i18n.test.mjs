@@ -108,8 +108,8 @@ test("영어로 바꾸면 도감과 판정 문장이 모두 영어가 된다", (
     assert.equal(V.sentence(scissors, paper), "Scissors cut paper");
     assert.equal(V.sentence(paper, paper), "Both threw paper");
     const L = compileVariant(findEntry("rpsls"));
-    assert.equal(L.sentence(L.index.lizard, L.index.spock), "Lizard bites Spock");
-    assert.equal(L.sentence(L.index.spock, L.index.scissors), "Spock breaks scissors");
+    assert.equal(L.sentence(L.index.lizard, L.index.spock), "Lizard poisons Spock");
+    assert.equal(L.sentence(L.index.spock, L.index.scissors), "Spock smashes scissors");
 
     const custom = compileVariant(makeCustomDef({ n: 9, k: 3, seed: 7 }));
     assert.ok(custom.hands.every((x) => !HANGUL.test(x.name)), "직접 만들기 손 이름");
