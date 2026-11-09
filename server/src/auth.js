@@ -142,7 +142,10 @@ const GOOGLE = {
 const KAKAO = {
   auth: "https://kauth.kakao.com/oauth/authorize",
   token: "https://kauth.kakao.com/oauth/token",
-  // 회원번호·앱 ID·남은 시간만 준다. 사용자 정보(/v2/user/me)는 부르지 않아 동의 항목 값은 아예 받지 않는다
+  // 사용자 정보. 회원번호만 읽는다(동의 항목을 하나도 켜지 않아 다른 값은 오지 않는다).
+  // 꼭 불러야 한다: 처음 카카오 로그인 뒤 24시간 안에 개인정보 조회 API 를 부르지 않으면 카카오가 '가입 미완료'로 보고 연결을 끊는다(카카오 공지 2020-11-16)
+  me: "https://kapi.kakao.com/v2/user/me",
+  // 토큰 정보(회원번호·앱 ID). 앱이 준 토큰이 우리 앱 것인지 볼 때
   tokenInfo: "https://kapi.kakao.com/v1/user/access_token_info",
 };
 
@@ -166,12 +169,19 @@ function kakaoId(v) {
   throw new Fail("bad_login");
 }
 
-/** 액세스 토큰 → 회원번호. appId 를 주면 그 앱에서 나온 토큰만 받는다 */
-async function kakaoTokenInfo(accessToken, f, appId = null) {
-  const res = await f(KAKAO.tokenInfo, { headers: { Authorization: `Bearer ${accessToken}` } });
+/** 액세스 토큰 → 회원번호(사용자 정보). 이걸 불러야 카카오가 가입을 마친 것으로 본다 */
+async function kakaoMe(accessToken, f) {
+  const res = await f(KAKAO.me, { headers: { Authorization: `Bearer ${accessToken}` } });
   const body = await readJson(res);
   if (!res.ok || !body) throw new Fail("bad_login");
-  if (appId && String(body.app_id) !== String(appId)) throw new Fail("bad_login");
+  return kakaoId(body.id);
+}
+
+/** 앱이 준 액세스 토큰이 우리 앱(appId) 것인지 보고 회원번호를 돌려준다 */
+async function kakaoTokenInfo(accessToken, f, appId) {
+  const res = await f(KAKAO.tokenInfo, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const body = await readJson(res);
+  if (!res.ok || !body || String(body.app_id) !== String(appId)) throw new Fail("bad_login");
   return kakaoId(body.id);
 }
 
@@ -249,13 +259,16 @@ export const PROVIDERS = {
       const body = await readJson(res);
       if (!res.ok || !body || typeof body.access_token !== "string") throw new Fail("bad_login");
       // 우리 REST 키로 바꾼 토큰이라 우리 앱 것이다(앱 ID 는 안 맞춰 본다)
-      return kakaoTokenInfo(body.access_token, f);
+      return kakaoMe(body.access_token, f);
     },
     // 앱: 카카오 SDK 가 준 액세스 토큰. 우리 앱(KAKAO_APP_ID)에서 나온 토큰인지 본다
     async verify(env, { credential, fetch: f }) {
       if (!env.KAKAO_APP_ID) throw new Fail("no_provider");
       if (typeof credential !== "string" || !credential || credential.length > 1024) throw new Fail("bad_login");
-      return kakaoTokenInfo(credential, f, env.KAKAO_APP_ID);
+      const id = await kakaoTokenInfo(credential, f, env.KAKAO_APP_ID);
+      // 가입을 마친 것으로 잡히게 사용자 정보도 부른다. 두 번호가 다르면 받지 않는다
+      if ((await kakaoMe(credential, f)) !== id) throw new Fail("bad_login");
+      return id;
     },
   },
 
