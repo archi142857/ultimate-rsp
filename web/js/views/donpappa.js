@@ -108,7 +108,7 @@ export function donpappaView(main, entry) {
     if (r.cmp === 0) st.say(t("비김. 다시"));
     else {
       st.say(g.attacker === 0 ? t("내가 공격") : t("컴퓨터 공격"), g.attacker === 0 ? "win" : "lose");
-      log.add(g.attacker === 0 ? t("가위바위보: {s}. 내가 공격.", { s: V.sentence(i, j) }) : t("가위바위보: {s}. 컴퓨터가 공격.", { s: V.sentence(i, j) }));
+      log.add(g.attacker === 0 ? t("가위바위보: {s}. 내가 공격", { s: V.sentence(i, j) }) : t("가위바위보: {s}. 컴퓨터가 공격", { s: V.sentence(i, j) }));
       grid.setNames(V.hands.map((x) => calls()[x.id]));
       steps.set(1);
     }

@@ -69,8 +69,8 @@ export function makeCustomDef({ n = 7, k = maxWins(n), seed = 1 } = {}) {
     cycle: k,
     custom: { n, k, seed },
     about: [
-      t("손 {n}개가 고리를 이룬다. 손마다 고리에서 다음 {k}개를 이기고 앞의 {k}개에 진다.", { n, k }) +
-        (draws > 0 ? t(" 나머지 {d}개와는 비긴다.", { d: draws }) : t(" 같은 손이 아니면 늘 승부가 난다.")),
+      t("손 {n}개가 고리를 이룹니다. 손마다 고리에서 다음 {k}개를 이기고 앞의 {k}개에 집니다.", { n, k }) +
+        (draws > 0 ? t(" 나머지 {d}개와는 비깁니다.", { d: draws }) : t(" 같은 손이 아니면 늘 승부가 납니다.")),
     ],
   };
 }

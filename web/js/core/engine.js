@@ -80,7 +80,7 @@ export function compileVariant(def) {
       if (win[a][b]) return phrases[a][b] || say(hands[a], hands[b], verbs[a][b], en);
       if (win[b][a]) return phrases[b][a] || say(hands[b], hands[a], verbs[b][a], en);
       if (en) return a === b ? `Both threw ${inSentence(hands[a])}` : `${hands[a].name} and ${inSentence(hands[b])}: no winner`;
-      return a === b ? `둘 다 ${hands[a].name}` : `${josa(hands[a].name, "과와")} ${hands[b].name}, 승부가 없다`;
+      return a === b ? `둘 다 ${hands[a].name}` : `${josa(hands[a].name, "과와")} ${hands[b].name}, 승부 없음`;
     },
     /** 손 a 가 이기는 손들, 지는 손들 */
     beats(a) {

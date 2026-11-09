@@ -67,8 +67,8 @@ export function dynamiteWbView(main, entry) {
     potLine.textContent = carry
       ? pot > 1
         ? t("비긴 점수가 쌓임. 다음 판에 이기면 {p}점. 내 다이너마이트 {a}개, 컴퓨터 {b}개", dl)
-        : t("다음 판은 1점. 내 다이너마이트 {a}개, 컴퓨터 {b}개.", dl)
-      : t("한 판에 1점. 내 다이너마이트 {a}개, 컴퓨터 {b}개.", dl);
+        : t("다음 판은 1점. 내 다이너마이트 {a}개, 컴퓨터 {b}개", dl)
+      : t("한 판에 1점. 내 다이너마이트 {a}개, 컴퓨터 {b}개", dl);
   }
 
   function newMatch() {

@@ -149,13 +149,13 @@ export function teamTagView(main, entry) {
     if (c === 0) {
       say(t("비김. 다시"));
       st.sub(t("둘 다 {h}", { h: lower(V.hands[i].name) }));
-      log.add(t("{r}판: 둘 다 {h}. 다시.", { r: r.round, h: lower(V.hands[i].name) }));
+      log.add(t("{r}판: 둘 다 {h}. 다시", { r: r.round, h: lower(V.hands[i].name) }));
     } else {
       const names = r.caught.map(name);
       const caughtMe = r.caught.includes(0);
       if (ours) {
         say(t("우리 편이 쫓음"), "win");
-        st.sub(names.length ? t("{names} 잡음.", { names: listWords(names) }) : t("아무도 못 잡음"));
+        st.sub(names.length ? t("{names} 잡음", { names: listWords(names) }) : t("아무도 못 잡음"));
       } else if (caughtMe) {
         say(t("잡힘. 이제 상대 편"), "lose");
       } else {

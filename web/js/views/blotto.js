@@ -94,7 +94,7 @@ export function blottoView(main, entry) {
     const [a, b] = r.won;
     st.say(r.cmp > 0 ? t("이 판은 내가 가져감") : r.cmp < 0 ? t("이 판은 컴퓨터가 가져감") : t("무승부"), r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
     st.sub(t("싸움터 {a}곳 대 {b}곳", { a, b }));
-    log.add(t("나 {x}, 컴퓨터 {y}: {a}곳 대 {b}곳.", { x: r.a.join("·"), y: r.b.join("·"), a, b }), r.cmp > 0 ? "w" : r.cmp < 0 ? "l" : "");
+    log.add(t("나 {x}, 컴퓨터 {y}: {a}곳 대 {b}곳", { x: r.a.join("·"), y: r.b.join("·"), a, b }), r.cmp > 0 ? "w" : r.cmp < 0 ? "l" : "");
     score.set(game.score[0], game.score[1], t("먼저 {n}판", { n: TARGET }));
     steps.set(game.done ? 2 : 1);
     if (game.done) {

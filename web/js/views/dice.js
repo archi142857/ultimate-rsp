@@ -165,8 +165,8 @@ export function diceView(main, entry) {
     const won = g.winner === 0;
     const tie = g.winner === -1;
     if (!tie) wins[g.winner] += 1;
-    msg.textContent = t("{a} 대 {b}, 비김 {d}번.", { a: g.wins[0], b: g.wins[1], d: g.ties });
-    log.add(t("{x} 대 {y}: {a} 대 {b}.", { x: g.dice[0], y: g.dice[1], a: g.wins[0], b: g.wins[1] }), tie ? "" : won ? "w" : "l");
+    msg.textContent = t("{a} 대 {b}, 비김 {d}번", { a: g.wins[0], b: g.wins[1], d: g.ties });
+    log.add(t("{x} 대 {y}: {a} 대 {b}", { x: g.dice[0], y: g.dice[1], a: g.wins[0], b: g.wins[1] }), tie ? "" : won ? "w" : "l");
     rec.textContent = recordLine(addRecord(key(), tie ? 0 : won ? 1 : -1));
     score.set(wins[0], wins[1], t("이긴 경기"));
     steps.set(2);

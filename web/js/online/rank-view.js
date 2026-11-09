@@ -59,10 +59,10 @@ export function rankView(main, gameId = null) {
     h(
       "p",
       { class: "o-p o-wide-only" },
-      t("랜덤 매칭에서 사람끼리 끝난 경기만 센다. {n}경기부터 오르고, 점수는 {start}에서 시작한다(Elo).", { n: BOARD_MIN_GAMES, start: RATING_START }),
+      t("랜덤 매칭에서 사람끼리 끝난 경기만 셉니다. {n}경기부터 순위에 오르고, 점수는 {start}에서 시작합니다(Elo).", { n: BOARD_MIN_GAMES, start: RATING_START }),
       " ",
       // 같은 곳(서버 2a825ec)·처음 온 사람(컨셉 50d48eb NEWCOMER_WEIGHT)
-      t("같은 곳에서 접속한 사람끼리 한 경기는 세지 않고, 처음 온 사람과 한 경기는 점수가 반만 움직인다."),
+      t("같은 곳에서 접속한 사람끼리 한 경기는 세지 않고, 처음 온 사람과 한 경기는 점수가 반만 움직입니다."),
     ),
   );
 
@@ -165,7 +165,7 @@ export function rankView(main, gameId = null) {
     // 표
     const rows = board.top.map((rec, k) => boardRow(rec, { me: k === at }));
     const empty = !board.top.length
-      ? h("div", { class: "lb-empty", role: "row" }, h("span", { role: "cell" }, t("아직 순위표가 비었다.")))
+      ? h("div", { class: "lb-empty", role: "row" }, h("span", { role: "cell" }, t("순위표가 아직 비어 있음")))
       : null;
     const dots =
       board.top.length >= RANK_TOP
@@ -288,7 +288,7 @@ export function rankBox({ onMissing = null } = {}) {
           : line("–", meWho(), h("span", { class: "rk-left" }, leftText(me)), { me: true, label: t("나") });
     append(clear(list), [top, mine]);
     msg.hidden = board.top.length > 0;
-    msg.textContent = board.top.length ? "" : t("아직 순위표가 비었다.");
+    msg.textContent = board.top.length ? "" : t("순위표가 아직 비어 있음");
   }
 
   async function load(id) {
@@ -309,7 +309,7 @@ export function rankBox({ onMissing = null } = {}) {
       if (e.code === "not_found" && onMissing) return onMissing();
       clear(list);
       msg.hidden = false;
-      msg.replaceChildren(t("순위를 불러오지 못했다."), " ", h("button", { type: "button", class: "o-linkbtn", onclick: () => load(game) }, t("다시")));
+      msg.replaceChildren(t("순위를 불러오지 못했습니다."), " ", h("button", { type: "button", class: "o-linkbtn", onclick: () => load(game) }, t("다시")));
     } finally {
       if (my === loading) el.removeAttribute("aria-busy");
     }

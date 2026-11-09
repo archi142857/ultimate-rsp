@@ -132,7 +132,7 @@ export function morraView(main, entry) {
       st.say(t("합 {s}", { s: r.sum }), r.point === 0 ? "win" : r.point === 1 ? "lose" : "");
       st.sub(who);
       if (r.point !== null) (r.point === 0 ? st.me : st.op).mark("won");
-      line = t("{a} + {b} = {s}. 나 {x}, 컴퓨터 {y}. {who}.", { a: fingers, b: c.fingers, s: r.sum, x: guess, y: c.guess, who });
+      line = t("{a} + {b} = {s}. 나 {x}, 컴퓨터 {y}. {who}", { a: fingers, b: c.fingers, s: r.sum, x: guess, y: c.guess, who });
       log.add(line, r.point === 0 ? "w" : r.point === 1 ? "l" : "");
     } else {
       const r = game.play(fingers, c.fingers);

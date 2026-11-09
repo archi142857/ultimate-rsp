@@ -34,7 +34,7 @@ function badLinkView(main, what) {
       { class: "online" },
       topBar({ href: "#/play", label: t("온라인") }).el,
       bigTitle(title),
-      h("p", { class: "o-p" }, room ? t("방 코드가 잘못됐다. 코드를 다시 확인하자.") : t("링크가 잘못됐다. 받은 링크를 다시 확인하자.")),
+      h("p", { class: "o-p" }, room ? t("방 코드가 잘못됐습니다. 코드를 다시 확인해 주십시오.") : t("링크가 잘못됐습니다. 받은 링크를 다시 확인해 주십시오.")),
       h("a", { class: "btn btn-ink btn-big", href: "#/play" }, t("온라인 첫 화면")),
     ),
   );

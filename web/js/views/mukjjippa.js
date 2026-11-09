@@ -105,10 +105,10 @@ export function mukjjippaView(main, entry) {
     let line;
     if (r.note === "again") {
       st.say(t("무승부"));
-      line = t("가위바위보: 둘 다 {h}. 다시.", { h: lower(V.hands[i].name) });
+      line = t("가위바위보: 둘 다 {h}. 다시", { h: lower(V.hands[i].name) });
     } else if (r.note === "start") {
       st.say(game.attacker === 0 ? t("내가 공격") : t("컴퓨터 공격"), game.attacker === 0 ? "win" : "lose");
-      line = game.attacker === 0 ? t("가위바위보: {s}. 내가 공격.", { s: V.sentence(i, j) }) : t("가위바위보: {s}. 컴퓨터가 공격.", { s: V.sentence(i, j) });
+      line = game.attacker === 0 ? t("가위바위보: {s}. 내가 공격", { s: V.sentence(i, j) }) : t("가위바위보: {s}. 컴퓨터가 공격", { s: V.sentence(i, j) });
     } else if (r.note === "hit") {
       const meWon = game.winner === 0;
       st.say(meWon ? t("승리!") : t("패배"), meWon ? "win" : "lose");
@@ -118,8 +118,8 @@ export function mukjjippaView(main, entry) {
     } else {
       const s = V.sentence(i, j);
       st.say(r.note === "keep" ? t("공격 그대로") : t("공격 넘어감"), game.attacker === 0 ? "win" : "lose");
-      if (r.note === "keep") line = game.attacker === 0 ? t("{s}. 내가 계속 공격.", { s }) : t("{s}. 컴퓨터가 계속 공격.", { s });
-      else line = game.attacker === 0 ? t("{s}. 이제 내가 공격.", { s }) : t("{s}. 이제 컴퓨터가 공격.", { s });
+      if (r.note === "keep") line = game.attacker === 0 ? t("{s}. 내가 계속 공격", { s }) : t("{s}. 컴퓨터가 계속 공격", { s });
+      else line = game.attacker === 0 ? t("{s}. 이제 내가 공격", { s }) : t("{s}. 이제 컴퓨터가 공격", { s });
     }
     log.add(line, r.note === "hit" ? (game.winner === 0 ? "w" : "l") : "");
     st.sub(game.done ? "" : roleText());

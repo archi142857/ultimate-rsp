@@ -174,7 +174,7 @@ export function minusOneView(main, entry) {
     if (r.cmp === 0) {
       st.say(t("무승부"));
       st.sub(t("처음부터 다시 두 손 내기"));
-      log.add(t("나 {a}, 컴퓨터 {b}. 비겨서 다시.", { a: lower(V.hands[r.a].name), b: lower(V.hands[r.b].name) }));
+      log.add(t("나 {a}, 컴퓨터 {b}. 비겨서 다시", { a: lower(V.hands[r.a].name), b: lower(V.hands[r.b].name) }));
       resetPicks();
     } else {
       const meWon = r.cmp > 0;
@@ -182,7 +182,7 @@ export function minusOneView(main, entry) {
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
       st.sub(`${r.sentence}.`);
-      log.add(t("나 {a}, 컴퓨터 {b}. {s}.", { a: lower(V.hands[r.a].name), b: lower(V.hands[r.b].name), s: r.sentence }), meWon ? "w" : "l");
+      log.add(t("나 {a}, 컴퓨터 {b}. {s}", { a: lower(V.hands[r.a].name), b: lower(V.hands[r.b].name), s: r.sentence }), meWon ? "w" : "l");
       wins[meWon ? 0 : 1] += 1;
       rec.textContent = recordLine(addRecord("minusone", r.cmp));
       clear(doneBar).append(

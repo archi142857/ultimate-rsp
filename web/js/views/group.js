@@ -145,12 +145,12 @@ export function groupView(main, entry, params, preset = {}) {
               : t("세 가지가 다 나옴");
       st.say(t("다시!"));
       st.sub(t("{why}. 아무도 안 빠짐", { why }));
-      log.add(t("{n}명: {why}. 다시.", { n: r.alive.length, why }));
+      log.add(t("{n}명: {why}. 다시", { n: r.alive.length, why }));
     } else {
       const w = V.hands[r.winnerHand].name;
       const outNames = listWords(r.out.map(name));
       st.say(t("{h} 승", { h: w }));
-      st.sub(mode === "survive" ? t("{names} 빠짐.", { names: outNames }) : t("{names} 빠져나감.", { names: outNames }));
+      st.sub(mode === "survive" ? t("{names} 빠짐", { names: outNames }) : t("{names} 빠져나감", { names: outNames }));
       const lv = { n: r.alive.length, h: lower(w), names: outNames };
       const out = mode === "survive";
       if (R === "majority") log.add(out ? t("{n}명: {h} 손이 가장 많음. {names} 탈락", lv) : t("{n}명: {h} 손이 가장 많음. {names} 통과", lv));

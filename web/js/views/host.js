@@ -109,10 +109,10 @@ export function hostView(main, entry) {
         st.me.mark(mine === "win" ? "won" : mine === "lose" ? "lost" : null);
       } else st.say(t("진행자 {h}", { h: V.hands[host].name }));
       const outNames = r.out.map(name);
-      st.sub(outNames.length ? t("{names} 빠짐.", { names: listWords(outNames) }) : t("아무도 안 빠짐"));
+      st.sub(outNames.length ? t("{names} 빠짐", { names: listWords(outNames) }) : t("아무도 안 빠짐"));
       log.add(
         outNames.length
-          ? t("{r}판: 진행자 {h}. {names} 빠짐.", { r: r.round, h: hostName, names: listWords(outNames) })
+          ? t("{r}판: 진행자 {h}. {names} 빠짐", { r: r.round, h: hostName, names: listWords(outNames) })
           : t("{r}판: 진행자 {h}. 아무도 안 빠짐", { r: r.round, h: hostName }),
         mine === "lose" ? "l" : mine === "win" ? "w" : "",
       );

@@ -24,13 +24,13 @@ const PRESETS_KO = [
         { id: "yellow", name: "노랑 목", emoji: "🟡" },
       ],
       rel: [
-        ["orange", "blue", "짝을 빼앗는다"],
-        ["blue", "yellow", "쫓아낸다"],
-        ["yellow", "orange", "몰래 짝을 맺는다"],
+        ["orange", "blue", "짝을 빼앗음"],
+        ["blue", "yellow", "쫓아냄"],
+        ["yellow", "orange", "몰래 짝을 맺음"],
       ],
       colors: { light: ["#bf4a12", "#2a78d6", "#eda100"], dark: ["#b0430e", "#3987e5", "#b98d00"] },
     },
-    note: "주황 목 수컷은 넓은 땅을 지키며 파랑의 짝을 빼앗는다. 파랑은 짝 곁을 지키며 노랑을 쫓아낸다. 암컷을 닮은 노랑은 주황이 자리를 비운 틈에 몰래 짝을 맺는다. 실제 무리에서도 셋의 비율이 몇 해를 주기로 돈다.",
+    note: "주황 목 수컷은 넓은 땅을 지키며 파랑의 짝을 빼앗습니다. 파랑은 짝 곁을 지키며 노랑을 쫓아냅니다. 암컷을 닮은 노랑은 주황이 자리를 비운 틈에 몰래 짝을 맺습니다. 실제 무리에서도 셋의 비율이 몇 해를 주기로 돕니다.",
   },
   {
     id: "ecoli",
@@ -44,12 +44,12 @@ const PRESETS_KO = [
         { id: "r", name: "독을 견디는 균", emoji: "🛡️" },
       ],
       rel: [
-        ["c", "s", "독으로 죽인다"],
-        ["s", "r", "더 빨리 자란다"],
-        ["r", "c", "더 빨리 자란다"],
+        ["c", "s", "독으로 죽임"],
+        ["s", "r", "더 빨리 자람"],
+        ["r", "c", "더 빨리 자람"],
       ],
     },
-    note: "독(콜리신)을 만드는 균은 독에 약한 균을 죽인다. 독을 견디는 균은 독을 만드는 비용이 들지 않아 독 만드는 균보다 빨리 자란다. 약한 균은 독을 견디는 비용까지 들지 않아 견디는 균보다 빨리 자란다. 접시 위에서는 셋이 함께 살았고, 흔들어 섞은 플라스크에서는 견디는 균만 남았다.",
+    note: "독(콜리신)을 만드는 균은 독에 약한 균을 죽입니다. 독을 견디는 균은 독을 만드는 비용이 들지 않아 독 만드는 균보다 빨리 자랍니다. 약한 균은 독을 견디는 비용까지 들지 않아 견디는 균보다 빨리 자랍니다. 접시 위에서는 셋이 함께 살았고, 흔들어 섞은 플라스크에서는 견디는 균만 남았습니다.",
   },
 ];
 
@@ -145,7 +145,7 @@ export function latticeView(main, entry) {
     },
   });
 
-  const pSel = selectBox({ label: t("누가 사나"), value: presetId, options, onChange: (v) => ((presetId = v), reset(true)) });
+  const pSel = selectBox({ label: t("사는 손"), value: presetId, options, onChange: (v) => ((presetId = v), reset(true)) });
   const mixSeg = segmented({
     label: t("어디서"),
     small: true,
@@ -339,7 +339,7 @@ export function latticeView(main, entry) {
     h("div", { class: "controls" }, pSel.el),
     presetNote,
     h("div", { class: "controls" }, mixSeg.el),
-    h("div", { class: "range", style: { marginBottom: "14px" } }, h("span", { class: "field-label" }, t("이동성 M "), mOut), mIn, h("span", { class: "rec", style: { margin: 0 } }, t("한 개체가 한 단위 시간 동안 돌아다니는 격자 넓이의 비율. 임계값은 약 4.5 × 10⁻⁴."))),
+    h("div", { class: "range", style: { marginBottom: "14px" } }, h("span", { class: "field-label" }, t("이동성 M "), mOut), mIn, h("span", { class: "rec", style: { margin: 0 } }, t("한 개체가 한 단위 시간 동안 돌아다니는 격자 넓이의 비율입니다. 임계값은 약 4.5 × 10⁻⁴입니다."))),
     h("div", { class: "controls" }, sizeSeg.el, speedSeg.el),
     h("div", { class: "btn-row" }, playBtn, resetBtn),
   );

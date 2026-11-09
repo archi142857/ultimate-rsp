@@ -115,7 +115,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     st.me.set(V, i);
     st.op.set(V, j);
     st.say(RESULT_WORD[r.cmp], r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
-    st.sub(r.cmp === 0 ? `${V.sentence(i, j)}. ${t("다시 내기")}` : `${r.sentence}.`);
+    st.sub(r.cmp === 0 ? `${V.sentence(i, j)}. ${t("다시 내기")}` : r.sentence);
     st.me.mark(r.cmp > 0 ? "won" : r.cmp < 0 ? "lost" : null);
     st.op.mark(r.cmp < 0 ? "won" : r.cmp > 0 ? "lost" : null);
     ring.bout(i, j);
@@ -188,7 +188,7 @@ function relationsBlock(V) {
   // 손이 아주 많으면 손마다 늘어놓지 않고 고리 차례만 보여 준다(고리 그림에서 짚으면 바로 보인다)
   if (V.n > 25 && V.cycle) {
     return block(
-      t("누가 누구를 이기나"),
+      t("누가 누구를 이기는지"),
       h("p", {}, t("손을 아래 차례대로 고리에 놓습니다. 손마다 바로 뒤의 {k}개를 이기고, 끝에서는 처음으로 돌아가 셉니다. 고리 그림에서 손을 누르면 누구를 이기는지 보입니다.", { k: V.cycle })),
       h("ol", { class: "ringlist" }, V.order.map((i) => h("li", {}, handArt(V.hands[i]), ` ${V.hands[i].name}`))),
     );
@@ -213,7 +213,7 @@ function relationsBlock(V) {
   });
   const parts = [h("ul", { class: "relist" }, items)];
   if (V.n <= 9) parts.push(h("div", { class: "table-wrap" }, matrixTable(V)));
-  return block(t("누가 누구를 이기나"), ...parts);
+  return block(t("누가 누구를 이기는지"), ...parts);
 }
 
 function matrixTable(V) {

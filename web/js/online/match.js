@@ -80,7 +80,7 @@ export function matchView(main, params = {}) {
     const groupNote = () => {
       const r = seatsOf(base);
       const score = groupRuleNote({ game: "group", base, mode });
-      return [t("{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작한다. 여럿이 하는 경기는 순위에 들지 않는다.", { a: r.min, b: r.max, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) }), score].filter(Boolean).join(" ");
+      return [t("{a}명이 모이면 {s}초 뒤에, {b}명이 차면 바로 시작합니다. 여럿이 하는 경기는 순위에 들지 않습니다.", { a: r.min, b: r.max, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) }), score].filter(Boolean).join(" ");
     };
     const note = group ? h("p", { class: "o-p o-small" }, groupNote()) : null;
     choose(rows, (id) => {
@@ -132,7 +132,7 @@ export function matchView(main, params = {}) {
     find.addEventListener("click", search);
     fill(
       topBar({ href: "#/play", label: t("랜덤 매칭") }).el,
-      bigTitle(t("무엇으로 겨루시겠습니까?")),
+      bigTitle(t("게임 고르기")),
       h("div", { class: "o-card o-kv-card" }, kindSeg.el, second.el),
       note,
       list,
@@ -160,7 +160,7 @@ export function matchView(main, params = {}) {
     const sub = group ? `${gameName({ game: "group", base })} · ${modeName(mode)}` : `${randomGame(game).name} · ${formatById(format).name}`;
     fill(
       topBar({ href: "#/play", label: t("랜덤 매칭") }, sub).el,
-      bigTitle(group ? t("사람을 모으는 중이다") : t("짝을 찾는 중이다")),
+      bigTitle(group ? t("사람을 모으는 중") : t("짝을 찾는 중")),
       ring.el,
       note,
       h("div", { class: "o-actions o-bottom" }, stop),
@@ -172,7 +172,7 @@ export function matchView(main, params = {}) {
       const me = { key: "me", who: meWho(), me: true, label: t("나") };
       if (!group) {
         ring.set({ people: [me, { key: "q", empty: true, emptyText: "?", label: "" }] });
-        note.textContent = t("찾으면 바로 방으로 들어간다.");
+        note.textContent = t("찾으면 바로 방으로 들어갑니다.");
         return;
       }
       const n = queue ? queue.n : 1;
@@ -185,8 +185,8 @@ export function matchView(main, params = {}) {
       ring.set({ people });
       note.textContent =
         left() !== null
-          ? t("{n}/{max}명이 모였다. 곧 시작한다.", { n, max })
-          : t("{n}/{max}명이 모였다. {min}명이 되면 {s}초 뒤에 시작한다.", { n, max, min, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) });
+          ? t("{n}/{max}명 모임. 곧 시작", { n, max })
+          : t("{n}/{max}명 모임. {min}명이 되면 {s}초 뒤에 시작", { n, max, min, s: Math.round(GROUP_MATCH_WAIT_MS / 1000) });
       // 사람이 모자랄 때만 컴퓨터를 권한다(규약 4.2)
       if (n >= min) sheet.hidden = true;
     };
@@ -232,8 +232,8 @@ export function matchView(main, params = {}) {
           "p",
           { class: "o-p" },
           group
-            ? t("{n}초 동안 {min}명이 모이지 않았다. 지금 모인 사람에 컴퓨터를 더해 시작해도 된다.", { n, min: queue ? queue.min : GROUP_SEATS.min })
-            : t("{n}초 동안 짝을 못 찾았다. 컴퓨터와 먼저 하고 있어도 된다.", { n }),
+            ? t("{n}초 동안 {min}명이 모이지 않았습니다. 지금 모인 사람에 컴퓨터를 더해 시작해도 됩니다.", { n, min: queue ? queue.min : GROUP_SEATS.min })
+            : t("{n}초 동안 짝을 찾지 못했습니다. 기다리는 동안 컴퓨터와 해도 됩니다.", { n }),
         ),
         bot,
         more,
@@ -284,10 +284,10 @@ export function matchView(main, params = {}) {
   function onStatus(st) {
     if (st.state === "open") notices.clear("drop", "wait");
     else if (st.state === "connecting") {
-      if (!since) notices.set("wait", { title: t("서버에 연결하는 중…"), text: t("잠깐이면 된다."), spin: true });
+      if (!since) notices.set("wait", { title: t("서버에 연결하는 중…"), text: t("잠깐이면 됩니다."), spin: true });
     } else if (st.state === "retrying") {
       notices.clear("wait");
-      if (since) notices.set("drop", { title: t("연결이 끊겼다"), text: t("다시 연결하는 중… 화면을 열어 두자."), spin: true });
+      if (since) notices.set("drop", { title: t("연결 끊김"), text: t("다시 연결하는 중… 화면을 열어 두십시오."), spin: true });
       else {
         const n = noticeFor("network");
         notices.set(n.kind, n);

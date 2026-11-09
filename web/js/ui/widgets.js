@@ -313,7 +313,7 @@ export function recordLine(r) {
   const total = r.w + r.d + r.l;
   if (!total) return t("아직 기록 없음");
   const tally = t("지금까지 {w}승 {d}무 {l}패", r);
-  if (!(r.w + r.l)) return `${tally}.`;
+  if (!(r.w + r.l)) return tally;
   return tally + t(", 비긴 판을 빼면 승률 {p}%", { p: Math.round((100 * r.w) / (r.w + r.l)) });
 }
 

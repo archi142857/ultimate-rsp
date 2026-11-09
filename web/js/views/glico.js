@@ -156,15 +156,15 @@ export function glicoView(main, entry) {
       st.say(t("무승부"));
       st.sub(t("아무도 못 오름"));
       clear(kana);
-      log.add(t("둘 다 {h}. 그대로.", { h: lower(V.hands[i].name) }));
+      log.add(t("둘 다 {h}. 그대로", { h: lower(V.hands[i].name) }));
     } else {
       const meMoved = r.by === 0;
       st.say(meMoved ? t("{n}칸 오름", { n: r.moved }) : t("컴퓨터 {n}칸", { n: r.moved }), meMoved ? "win" : "lose");
       st.me.mark(meMoved ? "won" : "lost");
       st.op.mark(meMoved ? "lost" : "won");
-      st.sub(`${V.sentence(i, j)}.`);
+      st.sub(V.sentence(i, j));
       const lv = { s: V.sentence(i, j), n: r.moved, p: r.pos[r.by] };
-      log.add(meMoved ? t("{s}. 내가 {n}칸 올라 {p}칸.", lv) : t("{s}. 컴퓨터가 {n}칸 올라 {p}칸.", lv), meMoved ? "w" : "l");
+      log.add(meMoved ? t("{s}. 내가 {n}칸 올라 {p}칸", lv) : t("{s}. 컴퓨터가 {n}칸 올라 {p}칸", lv), meMoved ? "w" : "l");
       await spell(V.hands[meMoved ? i : j].id);
     }
     drawTracks();

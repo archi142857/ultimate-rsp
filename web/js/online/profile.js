@@ -74,7 +74,7 @@ export function profileChip({ align = "start", ranked = false, onChange = null }
     rankedNow = on;
     if (signedIn())
       note.textContent = on ? t("로그인했습니다. 이름과 그림은 다른 기기에도 따라가고, 상대와 순위표에 보입니다.") : t("로그인했습니다. 이름과 그림은 다른 기기에도 따라가고, 상대에게 보입니다.");
-    else note.textContent = on ? t("가입은 필요 없다. 이름과 그림은 이 브라우저에 저장되고, 상대와 순위표에 보인다.") : t("가입은 필요 없다. 이름과 그림은 이 브라우저에 저장되고, 상대에게 보인다.");
+    else note.textContent = on ? t("가입은 필요 없습니다. 이름과 그림은 이 브라우저에 저장되고, 상대와 순위표에 보입니다.") : t("가입은 필요 없습니다. 이름과 그림은 이 브라우저에 저장되고, 상대에게 보입니다.");
   };
   setRanked(ranked);
   // 로그인 칸: 계정 시트를 열 때는 이 칸을 닫고, 시트를 닫으면 칩으로 초점을 돌린다

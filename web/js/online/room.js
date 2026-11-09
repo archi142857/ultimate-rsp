@@ -76,7 +76,7 @@ export function roomView(main, code) {
       const again = { label: t("다시"), run: () => sock.reconnect() };
       if (room) {
         root.classList.add("offline");
-        notices.set("drop", { title: t("연결이 끊겼다"), text: t("다시 연결하는 중… 화면을 열어 두자."), spin: true, action: again });
+        notices.set("drop", { title: t("연결 끊김"), text: t("다시 연결하는 중… 화면을 열어 두십시오."), spin: true, action: again });
       } else {
         const n = noticeFor(st.code === CLOSE.busy ? "busy" : "network");
         notices.set(n.kind, { ...n, action: again });
@@ -149,7 +149,7 @@ export function roomView(main, code) {
   const botHasMe = () => ghostSeat !== null && you === ghostSeat;
   const send = (msg) => {
     if (sock.send(msg)) return true;
-    notices.set("note", { title: t("연결이 끊겨 보내지 못했다.") });
+    notices.set("note", { title: t("연결이 끊겨 보내지 못했습니다.") });
     return false;
   };
 
@@ -166,7 +166,7 @@ export function roomView(main, code) {
     if (pk !== panelKey || !panel) {
       if (panel && panel.destroy) panel.destroy();
       panelKey = pk;
-      panel = !V ? messagePanel(t("이 방의 게임은 이 화면에서 아직 열 수 없다. 새로고침하면 된다.")) : room.phase === "play" ? playPanel() : room.phase === "end" ? endPanel() : lobbyPanel();
+      panel = !V ? messagePanel(t("이 방의 게임은 이 화면에서 아직 열 수 없습니다. 새로고침해 주십시오.")) : room.phase === "play" ? playPanel() : room.phase === "end" ? endPanel() : lobbyPanel();
       fill(panel.el);
     }
     panel.update(ev);
@@ -186,7 +186,7 @@ export function roomView(main, code) {
       start: () => t("경기 시작"),
     };
     if (lines[ev.k]) announce.textContent = lines[ev.k]();
-    if (ev.k === "bot" && ev.why === "afk" && ev.s === you) notices.set("note", { title: t("세 번 연달아 시간을 넘겨서 컴퓨터가 내 자리를 맡았다.") });
+    if (ev.k === "bot" && ev.why === "afk" && ev.s === you) notices.set("note", { title: t("세 번 연달아 시간을 넘겨서 컴퓨터가 대신 자리를 맡았습니다.") });
   }
 
   // ── 이모트 ─────────────────
@@ -229,7 +229,7 @@ export function roomView(main, code) {
     const people = order.map((i) => {
       const seat = room.seats[i];
       // 자리가 많아 동그라미가 작으면 '빈자리' 글이 낱말 가운데서 끊긴다(검수 11-08). 그때는 점선 동그라미만 둔다
-      if (seat.kind === "empty") return { key: i, empty: true, emptyText: nodeSize(n) < 44 ? "" : t("빈자리"), label: "", title: t("빈자리. 시작하면 컴퓨터가 앉는다.") };
+      if (seat.kind === "empty") return { key: i, empty: true, emptyText: nodeSize(n) < 44 ? "" : t("빈자리"), label: "", title: t("빈자리. 시작하면 컴퓨터가 앉음") };
       const me = i === you;
       const p = { key: i, who: whoOf(i), me, label: me ? t("나") : nameOf(i) };
       const subs = [];
@@ -245,7 +245,7 @@ export function roomView(main, code) {
         if (i === room.host || seat.ready) p.badge = { text: "✓", kind: "ok", say: t("준비") };
         else subs.push(t("준비 전"));
       } else if (phase === "play" && r && r.done[i] === true && !shown) {
-        p.badge = { text: "✓", kind: "ok", say: t("냈다") };
+        p.badge = { text: "✓", kind: "ok", say: t("냄") };
       }
       if (me && seat.kind === "bot") subs.push(t("컴퓨터가 대신 내는 중"));
       else if (seat.kind === "bot" && !group && phase === "lobby") subs.push(seatBot(seat));
@@ -311,10 +311,10 @@ export function roomView(main, code) {
     if (isGroup(room.rules)) {
       // 갈렸는지는 out 으로 본다(점수 규칙의 술래 정하기는 이긴 손 없이 진 손으로 갈린다)
       const head = groupHead(V, shown);
-      if (!head) return midText(t("다시!"), t("아무도 빠지지 않는다"));
+      if (!head) return midText(t("다시!"), t("아무도 안 빠짐"));
       const n = shown.out.length;
       const sub = room.rules.mode === "loser" ? t("{n}명 빠져나감", { n }) : t("{n}명 빠짐", { n });
-      return midText(head.kind === "win" ? t("{h} 승", { h: head.name }) : head.kind === "lose" ? t("{h} 패", { h: head.name }) : t("승부가 났다"), sub);
+      return midText(head.kind === "win" ? t("{h} 승", { h: head.name }) : head.kind === "lose" ? t("{h} 패", { h: head.name }) : t("승부 결정"), sub);
     }
     const { me, op } = sidesOf(you);
     const cmp = me === 0 ? shown.cmp : -shown.cmp;
@@ -423,7 +423,7 @@ export function roomView(main, code) {
     const rulesCard = h(
       "section",
       { class: "o-card rules-card" },
-      h("div", { class: "o-row" }, h("h2", { class: "o-h3 o-grow" }, t("규칙")), h("span", { class: "o-p o-small" }, t("방장만 바꾼다"))),
+      h("div", { class: "o-row" }, h("h2", { class: "o-h3 o-grow" }, t("규칙")), h("span", { class: "o-p o-small" }, t("방장만 바꿀 수 있음"))),
       editor ? editor.el : rows,
       ruleNote,
     );
@@ -478,19 +478,19 @@ export function roomView(main, code) {
         sit.hidden = !(you === null && canSit(room));
         info.textContent = [room.random
           ? n > 2
-            ? t("랜덤 매칭 방이다. 다 들어오면 바로 시작한다.")
-            : t("랜덤 매칭 방이다. 둘 다 들어오면 바로 시작한다.")
+            ? t("랜덤 매칭 방입니다. 다 들어오면 바로 시작합니다.")
+            : t("랜덤 매칭 방입니다. 둘 다 들어오면 바로 시작합니다.")
           : you === null
-            ? t("구경하는 중이다.")
+            ? t("구경하는 중입니다.")
             : host
               ? ri.supported && ri.total > 1
                 ? ri.all
-                  ? t("다 준비했다. 이제 시작하면 된다.")
-                  : t("준비한 사람이 {a}명, 아직 {b}명이다.", { a: ri.ready, b: ri.total - ri.ready })
+                  ? t("모두 준비했습니다. 이제 시작하면 됩니다.")
+                  : t("준비한 사람이 {a}명, 아직 안 한 사람이 {b}명입니다.", { a: ri.ready, b: ri.total - ri.ready })
                 : hc.empty
-                  ? t("친구에게 코드를 알려 주자. 빈자리 {n}곳은 시작하면 컴퓨터가 앉는다.", { n: hc.empty })
-                  : t("다 모였다. 이제 시작하면 된다.")
-              : t("방장이 시작하기를 기다린다."), room.watchers ? t("구경 {n}명", { n: room.watchers }) : ""].filter(Boolean).join(" ");
+                  ? t("친구에게 코드를 알려 주십시오. 빈자리 {n}곳은 시작하면 컴퓨터가 앉습니다.", { n: hc.empty })
+                  : t("다 모였습니다. 이제 시작하면 됩니다.")
+              : t("방장이 시작하기를 기다리는 중입니다."), room.watchers ? t("구경 {n}명", { n: room.watchers }) : ""].filter(Boolean).join(" ");
       },
       bubble: (s, e) => ring.bubble(s, e),
       tick() {
@@ -503,11 +503,11 @@ export function roomView(main, code) {
   /** 방 코드 카드: 큰 코드 + 복사(링크) + 공유 */
   function codeCard() {
     const url = shareLink(`/room/${code}`);
-    const share = { title: t("가위바위보 방"), text: t("가위바위보 방 {code}에 들어와. 링크를 열면 바로 들어온다.", { code }), url };
+    const share = { title: t("가위바위보 방"), text: t("가위바위보 방 {code}에 초대합니다. 링크를 열면 바로 들어갑니다.", { code }), url };
     const done = h("span", { class: "copy-done", role: "status" });
     const copy = h("button", { type: "button", class: "btn btn-sm" }, t("복사"));
     copy.addEventListener("click", async () => {
-      done.textContent = (await copyText(url)) ? t("방 링크를 복사했다.") : t("복사하지 못했다. 코드를 직접 알려 주자.");
+      done.textContent = (await copyText(url)) ? t("방 링크 복사됨") : t("복사하지 못했습니다. 코드를 직접 알려 주십시오.");
       setTimeout(() => (done.textContent = ""), 3000);
     });
     const canShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
@@ -533,7 +533,7 @@ export function roomView(main, code) {
     const grid = watcher ? null : handGrid(V, { onPick: throwHand });
     const emotes = emoteBar();
     const reclaimBtn = h("button", { type: "button", class: "btn btn-ink btn-sm", onclick: () => sock.reconnect() }, t("자리 되찾기"));
-    const reclaim = h("p", { class: "reclaim", hidden: true }, h("span", {}, t("컴퓨터가 내 자리에서 대신 내고 있다. 손을 내면 돌아온다.")), reclaimBtn);
+    const reclaim = h("p", { class: "reclaim", hidden: true }, h("span", {}, t("컴퓨터가 대신 내고 있습니다. 손을 내면 자리로 돌아옵니다.")), reclaimBtn);
     const hist = histBox();
     const leave = h("button", { type: "button", class: "btn btn-sm btn-quiet", onclick: leaveRoom }, t("방 나가기"));
     let revealing = false;
@@ -618,20 +618,20 @@ export function roomView(main, code) {
       const done = r ? r.done.filter((x) => x === true).length : 0;
       const alive = !group || (room.alive || []).includes(you);
       const parts = [];
-      if (r) parts.push(t("{n}명 냈다", { n: done }));
+      if (r) parts.push(t("{n}명 냄", { n: done }));
       if (room.watchers) parts.push(t("구경 {n}명", { n: room.watchers }));
-      if (watcher) parts.push(t("구경하는 중이다."));
-      else if (!alive) parts.push(t("나는 빠졌다. 끝까지 볼 수 있다."));
-      else if (mineNow() !== null) parts.push(group ? t("다른 사람을 기다린다") : t("상대를 기다린다"));
-      else if (r && r.paused) parts.push(t("아무도 내지 않아 시간을 멈췄다"));
-      else if (total) parts.push(t("시간이 지나면 아무 손이나 대신 낸다"));
+      if (watcher) parts.push(t("구경하는 중"));
+      else if (!alive) parts.push(t("탈락. 끝까지 구경할 수 있음"));
+      else if (mineNow() !== null) parts.push(group ? t("다른 사람을 기다리는 중") : t("상대를 기다리는 중"));
+      else if (r && r.paused) parts.push(t("아무도 내지 않아 시간을 멈춤"));
+      else if (total) parts.push(t("시간이 지나면 아무 손이나 대신 냄"));
       line.textContent = parts.join(" · ");
       // 끊긴 사람
       const away = room.seats.map((s, i) => [s, i]).filter(([s]) => s.kind === "human" && !s.on && s.until);
       awayLine.hidden = !away.length;
       if (away.length) {
         const [s] = away[0];
-        awayLine.textContent = t("{name:이가} 나갔다. {n}초 안에 돌아오지 않으면 컴퓨터가 대신 낸다.", { name: s.name, n: secondsLeft(s.until, now) });
+        awayLine.textContent = t("{name:이가} 나감. {n}초 안에 돌아오지 않으면 컴퓨터가 대신 냄", { name: s.name, n: secondsLeft(s.until, now) });
         ring.set({ people: seatPeople("play").people });
       }
     }
@@ -775,7 +775,7 @@ export function roomView(main, code) {
       if (again) again.classList.toggle("ready-all", ri.all && ri.total > 1);
       sit.hidden = !(you === null && canSit(room));
       info.textContent =
-        you === null ? t("구경하는 중이다.") : host ? t("같은 자리로 다시 하거나, 규칙을 바꾼 뒤 다시 할 수 있다.") : t("방장이 다시 시작하기를 기다린다.");
+        you === null ? t("구경하는 중입니다.") : host ? t("같은 자리로 다시 하거나, 규칙을 바꾼 뒤 다시 할 수 있습니다.") : t("방장이 다시 시작하기를 기다리는 중입니다.");
     }
     /** 순위 경기였으면 내 새 점수와 바뀐 만큼(+12). 끝(end) 바로 뒤에 ev rated 로 온다 */
     function showRated() {
@@ -786,7 +786,7 @@ export function roomView(main, code) {
       }
       rated.hidden = false;
       if (rk.skip) {
-        rated.replaceChildren(t("이번 경기는 순위에 들지 않았다."));
+        rated.replaceChildren(t("이번 경기는 순위에 들지 않았습니다."));
         return;
       }
       const mine = Array.isArray(rk.after) ? rk.after[you] : null;
@@ -815,7 +815,7 @@ export function roomView(main, code) {
       const { me, op } = sidesOf(you);
       const fin = finalFor(room, me);
       if (you === null) return fin === 0 ? [t("무승부"), ""] : [t("{who} 우승!", { who: seatName(room.seats[fin > 0 ? me : op]) }), ""];
-      return fin > 0 ? [t("경기에서 이겼다!"), "win"] : fin < 0 ? [t("경기에서 졌다"), "lose"] : [t("무승부"), ""];
+      return fin > 0 ? [t("경기 승리!"), "win"] : fin < 0 ? [t("경기 패배"), "lose"] : [t("무승부"), ""];
     }
     if (intro) runIntro();
     return {
@@ -861,7 +861,7 @@ export function roomView(main, code) {
                     ? t("{h} 승 · {names}", { h: head.name, names })
                     : head.kind === "lose"
                       ? t("{h} 패 · {names}", { h: head.name, names })
-                      : t("승부가 났다 · {names}", { names });
+                      : t("승부 결정 · {names}", { names });
                 return h("li", { value: e.r }, text);
               }
               const d = duelRound(V, e, me);

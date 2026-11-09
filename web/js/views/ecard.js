@@ -102,8 +102,8 @@ export function ecardView(main, entry) {
       const w = r.roundWinner;
       (w === 0 ? st.op : st.me).mark("lost");
       st.say(w === 0 ? t("이 판은 내가 승리. +{n}점", { n: r.points }) : t("이 판은 컴퓨터가 승리. +{n}점", { n: r.points }), w === 0 ? "win" : "lose");
-      const line = t("{r}판 {t}번째: {a} 대 {b}.", { r: r.round + 1, t: r.turn, a: N()[c], b: N()[oc] });
-      log.add(`${line} ${w === 0 ? t("내가 +{n}점.", { n: r.points }) : t("컴퓨터가 +{n}점.", { n: r.points })}`, w === 0 ? "w" : "l");
+      const line = t("{r}판 {t}번째: {a} 대 {b}", { r: r.round + 1, t: r.turn, a: N()[c], b: N()[oc] });
+      log.add(`${line} ${w === 0 ? t("내가 +{n}점", { n: r.points }) : t("컴퓨터가 +{n}점", { n: r.points })}`, w === 0 ? "w" : "l");
       const swapped = !g.done && g.sides[0] !== sides[0];
       st.sub(swapped ? t("쪽 바꿈. 이제 나는 {side}", { side: g.sides[0] === "emperor" ? N().emperorSide : N().slaveSide }) : "");
       steps.set(2);

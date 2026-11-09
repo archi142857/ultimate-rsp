@@ -888,7 +888,7 @@ Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생깁니다. 둘씩
 
 ### 가위바위보 전쟁
 
-부딪히면 바뀐다. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/war)
+부딪히면 바뀜. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/war)
 
 가위·바위·보가 화면 위를 떠돌다 부딪히면 진 쪽이 이긴 쪽으로 바뀝니다. 한 가지만 남으면 끝납니다.
 

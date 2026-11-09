@@ -74,7 +74,7 @@ export function teamSplitView(main, entry) {
     );
     status.textContent = game.done
       ? t("{n}번 만에 갈림", { n: game.tries })
-      : t("{n}명이 아무렇게나 내면 한 번에 고르게 갈릴 확률은 {p}다.", { n: players, p: pct(splitChance(players)) });
+      : t("{n}명이 아무렇게나 내면 한 번에 고르게 갈릴 확률 {p}", { n: players, p: pct(splitChance(players)) });
     pad.hidden = game.done;
   }
 
@@ -105,7 +105,7 @@ export function teamSplitView(main, entry) {
     const [a, b] = r.counts;
     st.say(r.even ? t("갈림!") : t("다시!"), r.even ? "win" : "");
     st.sub(t("{x} {a}명, {y} {b}명", { x: SIDES[0].name, a, y: SIDES[1].name, b }));
-    log.add(t("{n}번째: {x} {a}명, {y} {b}명.", { n: r.try, x: SIDES[0].name, a, y: SIDES[1].name, b }) + (r.even ? "" : " " + t("다시.")), r.even ? "w" : "");
+    log.add(t("{n}번째: {x} {a}명, {y} {b}명", { n: r.try, x: SIDES[0].name, a, y: SIDES[1].name, b }) + (r.even ? "" : " " + t("다시")), r.even ? "w" : "");
     if (game.done) {
       clear(doneBar).append(
         h("strong", {}, t("{h} 편이 됨", { h: SIDES[side].name })),

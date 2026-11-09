@@ -10,9 +10,9 @@ import { challengeGame } from "./games.js";
 function chipOf(r) {
   // 여럿이 받는 내 도전장은 마지막으로 열어 본 답 수
   if (r.role === "maker" && r.max) return h("span", { class: "chip" }, Number.isInteger(r.n) ? t("답 {n}/{max}", { n: r.n, max: r.max }) : t("기다리는 중"));
-  if (r.result === 1) return h("span", { class: "chip ok" }, t("@chip:이겼다"));
-  if (r.result === -1) return h("span", { class: "chip no" }, t("@chip:졌다"));
-  if (r.result === 0) return h("span", { class: "chip" }, t("@chip:비겼다"));
+  if (r.result === 1) return h("span", { class: "chip ok" }, t("@chip:승리"));
+  if (r.result === -1) return h("span", { class: "chip no" }, t("@chip:패배"));
+  if (r.result === 0) return h("span", { class: "chip" }, t("@chip:무승부"));
   return h("span", { class: "chip" }, r.role === "maker" ? t("기다리는 중") : t("받음"));
 }
 
@@ -41,9 +41,9 @@ export function myChallengesView(main) {
       { class: "online" },
       topBar({ href: "#/play", label: t("온라인") }).el,
       bigTitle(t("@list:내 도전장")),
-      rows ? h("section", { class: "o-card" }, rows) : h("p", { class: "o-p" }, t("아직 만들거나 받은 도전장이 없다.")),
+      rows ? h("section", { class: "o-card" }, rows) : h("p", { class: "o-p" }, t("아직 만들거나 받은 도전장 없음")),
       h("div", { class: "o-actions" }, h("a", { class: "btn btn-ink btn-big", href: "#/c/new" }, t("도전장 쓰기"))),
-      h("p", { class: "o-p o-small" }, t("이 목록은 이 브라우저에만 저장된다. 결과는 도전장을 열어야 보인다.")),
+      h("p", { class: "o-p o-small" }, t("이 목록은 이 브라우저에만 저장됩니다. 결과는 도전장을 열어야 보입니다.")),
     ),
   );
   return {};

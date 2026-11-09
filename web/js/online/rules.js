@@ -26,7 +26,7 @@ export function seatsOf(base) {
 /** 손 많은 바탕은 점수로 정한다는 한 줄(groupRuleOf 가 "score" 일 때, 컨셉 11-08). 아니면 null */
 export function groupRuleNote(rules) {
   if (!isGroup(rules) || groupRuleOf(rules.base) !== "score") return null;
-  return t("손이 많아 점수로 정한다. 그 손이 이긴 사람 수에서 그 손을 이긴 사람 수를 뺀 것이 점수이고, 점수가 가장 높은 손이 남는다(술래 한 명은 가장 낮은 손).");
+  return t("손이 많아 점수로 정합니다. 그 손이 이긴 사람 수에서 그 손을 이긴 사람 수를 뺀 것이 점수이고, 점수가 가장 높은 손이 남습니다(술래 한 명은 가장 낮은 손).");
 }
 
 /** 고를 수 있는 여럿이 인원의 천장(바탕 가운데 가장 많은 것) */

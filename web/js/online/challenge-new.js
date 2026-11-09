@@ -46,8 +46,8 @@ function gameStep(main) {
       "div",
       { class: "online" },
       topBar({ href: "#/play", label: t("온라인") }, stepText(1)).el,
-      bigTitle(t("무엇으로 겨루시겠습니까?")),
-      h("p", { class: "o-p" }, t("손을 숨겨 링크로 보낸다. 한 사람이나 여럿이 받을 수 있다.")),
+      bigTitle(t("게임 고르기")),
+      h("p", { class: "o-p" }, t("손을 숨겨 링크로 보냅니다. 한 사람이나 여럿이 받을 수 있습니다.")),
       list,
     ),
   );
@@ -81,7 +81,7 @@ function handStep(main, entry) {
     },
   });
   // 여럿이면 결과는 마감 때 연다(reveal "end": 버리는 이름으로 먼저 답해 손을 엿보지 못하게)
-  const maxText = () => (max > 1 ? t("{n}명까지 답하고, 답마다 따로 겨룬다. 결과는 {n}명이 다 답하거나 내가 마감하거나 하루가 지나면 한꺼번에 공개된다.", { n: max }) : t("처음 답한 한 사람과 겨룬다."));
+  const maxText = () => (max > 1 ? t("{n}명까지 답할 수 있고, 답마다 따로 겨룹니다. 결과는 {n}명이 다 답하거나, 직접 마감하거나, 하루가 지나면 한꺼번에 공개됩니다.", { n: max }) : t("처음 답한 한 사람과 겨룹니다."));
   const maxNote = h("p", { class: "o-p o-small" }, maxText());
 
   function choose(i, from) {
@@ -123,11 +123,11 @@ function handStep(main, entry) {
       notices.el,
       topBar({ href: "#/c/new", label: t("도전장 만들기") }, stepText(2)).el,
       variantRow(V, { right: h("a", { class: "o-link", href: "#/c/new" }, t("바꾸기")) }),
-      h("h1", { class: "o-h2" }, t("무엇을 내시겠습니까?")),
+      h("h1", { class: "o-h2" }, t("손 고르기")),
       h("div", { class: "hand-ring-box" }, ring.el),
-      h("p", { class: "o-p o-center" }, t("상대는 내 손을 못 본다. 화살표는 이기는 손에서 지는 손으로 간다.")),
+      h("p", { class: "o-p o-center" }, t("고른 손은 상대에게 보이지 않습니다. 화살표는 이기는 손에서 지는 손으로 갑니다.")),
       grid ? grid.el : null,
-      h("p", { class: "o-label" }, t("같이 보낼 이모트(안 골라도 된다)")),
+      h("p", { class: "o-label" }, t("같이 보낼 이모트(선택)")),
       emotes.el,
       h("div", { class: "o-card o-kv-card" }, maxSeg.el, maxNote),
       h("div", { class: "o-actions o-bottom" }, send),

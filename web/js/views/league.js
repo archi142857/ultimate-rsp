@@ -145,7 +145,7 @@ export function leagueView(main, entry) {
     pairs.sort((a, b) => b[2] - a[2]);
     const cyc = findCycle(res.net);
     clear(out).append(
-      block(t("{name}, 짝마다 {n}판", { name: V.name, n: num(res.rounds) }), h("div", { class: "table-wrap" }, table), h("p", { class: "rec" }, t("승점: 맞대결마다 이긴 판이 많으면 3점, 같으면 1점. 평균 차이: 상대마다 (이긴 판 − 진 판) / 판 수의 평균."))),
+      block(t("{name}, 짝마다 {n}판", { name: V.name, n: num(res.rounds) }), h("div", { class: "table-wrap" }, table), h("p", { class: "rec" }, t("승점: 맞대결마다 이긴 판이 많으면 3점, 같으면 1점. 평균 차이: 상대마다 (이긴 판 − 진 판) / 판 수의 평균"))),
       block(
         t("맞대결 표"),
         h("div", { class: "table-wrap" }, heat),

@@ -108,14 +108,14 @@ export function limitedView(main, entry) {
     if (r.cmp === 0) {
       st.say(t("무승부"));
       st.sub(t("별은 그대로, 카드만 한 장씩 줄어듦"));
-      log.add(t("둘 다 {h}. 별 그대로.", { h: lower(V.hands[i].name) }));
+      log.add(t("둘 다 {h}. 별 그대로", { h: lower(V.hands[i].name) }));
     } else {
       const meWon = r.cmp > 0;
       st.say(meWon ? t("별 하나!") : t("별 하나 잃음"), meWon ? "win" : "lose");
       st.me.mark(meWon ? "won" : "lost");
       st.op.mark(meWon ? "lost" : "won");
       st.sub(`${r.sentence}.`);
-      log.add(t("{s}. 별 {a} 대 {b}.", { s: r.sentence, a: r.stars[0], b: r.stars[1] }), meWon ? "w" : "l");
+      log.add(t("{s}. 별 {a} 대 {b}", { s: r.sentence, a: r.stars[0], b: r.stars[1] }), meWon ? "w" : "l");
     }
     if (game.done) {
       const w = game.winner;

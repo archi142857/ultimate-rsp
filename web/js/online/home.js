@@ -55,7 +55,7 @@ export function onlineHomeView(main, params = {}) {
   );
   ranked.push(allRanks);
   const head = h("div", { class: "o-head" }, chip.el, h("span", { class: "o-grow" }), allRanks);
-  const titleRow = h("div", { class: "o-titlerow" }, bigTitle(t("온라인 대전")), h("p", { class: "o-p o-wide-only" }, t("아무나와, 친구와, 링크로 붙는다.")));
+  const titleRow = h("div", { class: "o-titlerow" }, bigTitle(t("온라인 대전")), h("p", { class: "o-p o-wide-only" }, t("아무나와, 친구와, 링크로 붙습니다.")));
 
   // ── 랜덤 매칭 ─────────────────
   const randomRing = deco([
@@ -63,7 +63,7 @@ export function onlineHomeView(main, params = {}) {
     { key: "q2", empty: true, emptyText: "?" },
     { key: "q3", empty: true, emptyText: "?" },
   ]);
-  const randomText = h("p", { class: "o-p" }, t("게임을 고르면 아무나와 붙는다."));
+  const randomText = h("p", { class: "o-p" }, t("게임을 고르면 아무나와 붙습니다."));
   // '시작'은 게임과 판 수를 고르는 랜덤 매칭 화면을 연다(마지막에 고른 게임이 골라진 채)
   const find = h("a", { class: "btn btn-ink", href: "#/match" }, t("시작"));
   gated.push(find);
@@ -119,8 +119,8 @@ export function onlineHomeView(main, params = {}) {
       // 길이는 맞는데 안 쓰는 글자(0·1·I·L·O)가 있으면 그것부터 알려 준다(검수 11-09)
       notices.set("note", {
         title: hasBadCodeChar(codeInput.value)
-          ? t("방 코드에는 0·1·I·L·O가 없다. 받은 코드를 다시 확인하자.")
-          : t("방 코드는 {n}글자다. 받은 코드를 다시 확인하자.", { n: CODE_LEN.room }),
+          ? t("방 코드에는 0·1·I·L·O가 없습니다. 받은 코드를 다시 확인해 주십시오.")
+          : t("방 코드는 {n}글자입니다. 받은 코드를 다시 확인해 주십시오.", { n: CODE_LEN.room }),
       });
       return;
     }
@@ -210,14 +210,14 @@ export function onlineHomeView(main, params = {}) {
       yes.focus();
     });
   }
-  const roomNote = h("p", { class: "o-p o-small o-col-foot", hidden: true }, t("방과 도전장 경기는 순위에 들지 않는다."));
+  const roomNote = h("p", { class: "o-p o-small o-col-foot", hidden: true }, t("방과 도전장 경기는 순위에 들지 않습니다."));
   ranked.push(roomNote);
   const roomCol = col(
     roomRing.el,
     h("h2", { class: "o-col-title" }, t("방")),
-    h("p", { class: "o-p" }, t("코드로 친구와 모인다. 빈자리는 컴퓨터가 채운다.")),
+    h("p", { class: "o-p" }, t("코드로 친구와 모입니다. 빈자리는 컴퓨터가 채웁니다.")),
     form,
-    h("p", { class: "o-p o-small", id: "room-code-hint" }, t("그대로 누르면 이 코드로 방이 생긴다. 친구 코드를 넣으면 그 방으로 들어간다.")),
+    h("p", { class: "o-p o-small", id: "room-code-hint" }, t("그대로 누르면 이 코드로 방이 생깁니다. 친구 코드를 넣으면 그 방으로 들어갑니다.")),
     roomNote,
   );
 
@@ -229,7 +229,7 @@ export function onlineHomeView(main, params = {}) {
   const challengeCol = col(
     h("div", { class: "o-col-art" }, parchmentArt()),
     h("h2", { class: "o-col-title" }, t("도전장")),
-    h("p", { class: "o-p" }, t("손을 숨기고 밀랍으로 봉인해 링크로 보낸다.")),
+    h("p", { class: "o-p" }, t("손을 숨기고 밀랍으로 봉인해 링크로 보냅니다.")),
     write,
     rows
       ? h(
@@ -253,13 +253,13 @@ export function onlineHomeView(main, params = {}) {
   }
   function showRanks(on) {
     for (const el of ranked) el.hidden = !on;
-    randomText.textContent = on ? t("게임을 고르면 아무나와 붙는다. 사람끼리 끝난 경기는 순위에 든다.") : t("게임을 고르면 아무나와 붙는다.");
+    randomText.textContent = on ? t("게임을 고르면 아무나와 붙습니다. 사람끼리 끝난 경기는 순위에 듭니다.") : t("게임을 고르면 아무나와 붙습니다.");
     if (on) board.load(game);
     else board.el.hidden = true;
     chip.setRanked(on);
   }
   async function check() {
-    notices.set("wait", { title: t("서버에 연결하는 중…"), text: t("잠깐이면 된다."), spin: true });
+    notices.set("wait", { title: t("서버에 연결하는 중…"), text: t("잠깐이면 됩니다."), spin: true });
     notices.clear("limit", "drop", "update");
     try {
       await hello({ signal: ctl.signal });

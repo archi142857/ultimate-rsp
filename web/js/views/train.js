@@ -66,7 +66,7 @@ export function trainView(main, entry) {
     if (sim.done) return;
     const ev = sim.step();
     const ties = ev.reduce((a, e) => a + e.throws - 1, 0);
-    log.add(t("{t}차례: {g}판을 겨뤄 기차가 {n}줄. 비겨서 다시 낸 것 {d}번.", { t: sim.turn, g: ev.length, n: sim.trains.length, d: ties }));
+    log.add(t("{t}차례: {g}판을 겨뤄 기차가 {n}줄. 비겨서 다시 낸 것 {d}번", { t: sim.turn, g: ev.length, n: sim.trains.length, d: ties }));
     draw();
   }
 

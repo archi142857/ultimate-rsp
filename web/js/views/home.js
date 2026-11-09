@@ -105,7 +105,7 @@ export function homeView(main, { focus } = {}) {
         handArt(classic.hands[i]),
         " " + t("컴퓨터") + " ",
         handArt(classic.hands[j]),
-        `. ${c === 0 ? t("한 번 더 하시겠습니까?") : classic.sentence(i, j) + "."}`,
+        `. ${c === 0 ? t("한 번 더 하시겠습니까?") : classic.sentence(i, j)}`,
       );
     },
   });

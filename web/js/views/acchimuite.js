@@ -60,7 +60,7 @@ export function acchimuiteView(main, entry) {
     st.me.set(V, null);
     st.op.set(V, null);
     st.say("");
-    st.sub(t("가위바위보부터."));
+    st.sub(t("가위바위보부터"));
     log.clear();
     refresh();
   }
@@ -80,12 +80,12 @@ export function acchimuiteView(main, entry) {
     st.op.set(V, j);
     if (r.cmp === 0) {
       st.say(t("무승부"));
-      st.sub(t("다시 가위바위보."));
-      log.add(t("가위바위보: 둘 다 {h}.", { h: lower(V.hands[i].name) }));
+      st.sub(t("다시 가위바위보"));
+      log.add(t("가위바위보: 둘 다 {h}", { h: lower(V.hands[i].name) }));
     } else {
       st.say(game.pointer === 0 ? t("내가 가리킴") : t("컴퓨터가 가리킴"), game.pointer === 0 ? "win" : "lose");
-      st.sub(game.pointer === 0 ? t("컴퓨터가 고개를 돌릴 쪽을 맞혀라.") : t("컴퓨터가 가리킬 쪽을 피해라."));
-      log.add(t("가위바위보: {s}.", { s: V.sentence(i, j) }));
+      st.sub(game.pointer === 0 ? t("컴퓨터가 고개를 돌릴 쪽 맞히기") : t("컴퓨터가 가리킬 쪽 피하기"));
+      log.add(t("가위바위보: {s}", { s: V.sentence(i, j) }));
     }
     grid.lock(false);
     refresh();
@@ -118,7 +118,7 @@ export function acchimuiteView(main, entry) {
       doneBar.hidden = false;
     } else {
       st.say(t("빗나감"));
-      st.sub(t("다시 가위바위보부터."));
+      st.sub(t("다시 가위바위보부터"));
       log.add(t("호이! 나 {a}, 컴퓨터 {b}. 빗나감", { a: lower(meD.name), b: lower(opD.name) }));
     }
     refresh();
