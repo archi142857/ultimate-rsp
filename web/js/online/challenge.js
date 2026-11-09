@@ -189,7 +189,7 @@ export function challengeView(main, code) {
             isEmote(c.e) ? h("span", { class: "from-emote", title: emoteLabel(c.e), role: "img", "aria-label": emoteLabel(c.e) }, emoteIcon(c.e)) : null,
           ),
           h("h2", { class: "parch-title" }, title),
-          h("p", { class: "parch-sub" }, t("무엇을 낼까?")),
+          h("p", { class: "parch-sub" }, t("무엇을 내시겠습니까?")),
           h("div", { class: "hand-ring-box parch-ring" }, ring.el),
         ],
         onOpen: (byKey) => {
@@ -442,7 +442,7 @@ export function challengeView(main, code) {
       });
       no.addEventListener("click", idleClose);
       closeBox.classList.add("asking");
-      closeBox.replaceChildren(h("p", { class: "o-p o-small" }, t("더 받지 않고 지금까지의 결과를 모두에게 공개한다. 마감할까?")), h("div", { class: "o-row" }, yes, no));
+      closeBox.replaceChildren(h("p", { class: "o-p o-small" }, t("더 받지 않고 지금까지의 결과를 모두에게 공개한다. 마감하시겠습니까?")), h("div", { class: "o-row" }, yes, no));
       yes.focus();
     };
     function idleClose() {

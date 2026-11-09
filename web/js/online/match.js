@@ -132,7 +132,7 @@ export function matchView(main, params = {}) {
     find.addEventListener("click", search);
     fill(
       topBar({ href: "#/play", label: t("랜덤 매칭") }).el,
-      bigTitle(t("무엇으로 붙을까?")),
+      bigTitle(t("무엇으로 겨루시겠습니까?")),
       h("div", { class: "o-card o-kv-card" }, kindSeg.el, second.el),
       note,
       list,
@@ -220,7 +220,7 @@ export function matchView(main, params = {}) {
     });
     const more = h("button", { type: "button", class: "btn btn-big" }, t("더 기다리기"));
     more.addEventListener("click", () => (sheet.hidden = true));
-    const title = h("h2", { class: "o-h2", id: "bot-sheet-title" }, t("컴퓨터와 할까?"));
+    const title = h("h2", { class: "o-h2", id: "bot-sheet-title" }, t("컴퓨터와 하시겠습니까?"));
     const n = Math.round(MATCH_BOT_OFFER_MS / 1000);
     sheet.replaceChildren(
       h("div", { class: "o-scrim", onclick: () => (sheet.hidden = true) }),

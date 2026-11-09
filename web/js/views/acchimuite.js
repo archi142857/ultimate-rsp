@@ -45,7 +45,7 @@ export function acchimuiteView(main, entry) {
     const hoiPhase = game.phase === "hoi" && !game.done;
     grid.el.hidden = hoiPhase;
     dirBox.hidden = !hoiPhase;
-    if (hoiPhase) dirLabel.textContent = game.pointer === 0 ? t("어디를 가리킬까") : t("어디로 고개를 돌릴까");
+    if (hoiPhase) dirLabel.textContent = game.pointer === 0 ? t("어디를 가리키시겠습니까") : t("어디로 고개를 돌리시겠습니까");
     st.me.tag(game.pointer === 0 ? t("가리키기") : game.pointer === 1 ? t("고개 돌리기") : "");
     st.op.tag(game.pointer === 1 ? t("가리키기") : game.pointer === 0 ? t("고개 돌리기") : "");
     score.set(wins[0], wins[1], t("이긴 판"));
