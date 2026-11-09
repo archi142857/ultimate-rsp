@@ -635,7 +635,7 @@ function emailView(main, { link }) {
     const form = h(
       "form",
       { class: "acct-form", novalidate: true },
-      h("p", { class: "o-p" }, t("{email}으로 6자리 코드를 보냈습니다. {n}분 안에 넣어 주십시오.", { email: waiting.email, n: CODE_MIN })),
+      h("p", { class: "o-p" }, t("{email} 주소로 6자리 코드를 보냈습니다. {n}분 안에 넣어 주십시오.", { email: waiting.email, n: CODE_MIN })),
       code.el,
       go,
       err.el,
@@ -699,7 +699,7 @@ function emailView(main, { link }) {
         mail = normEmail(email.value);
         await emailReset(mail);
         if (!alive) return;
-        sent.textContent = t("{email}으로 6자리 코드를 보냈습니다. {n}분 안에 넣어 주십시오.", { email: mail, n: CODE_MIN });
+        sent.textContent = t("{email} 주소로 6자리 코드를 보냈습니다. {n}분 안에 넣어 주십시오.", { email: mail, n: CODE_MIN });
         step2.hidden = false;
         lockAll(step1, false);
         code.input.focus();

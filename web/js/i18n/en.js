@@ -161,7 +161,7 @@ export const EN = {
   "비밀번호는 {n}자 이상이어야 합니다.": "Your password needs at least {n} characters.",
   "비밀번호 확인이 맞지 않습니다.": "The passwords don't match.",
   "메일 확인": "Check your email",
-  "{email}으로 6자리 코드를 보냈습니다. {n}분 안에 넣어 주십시오.": "We sent a 6-digit code to {email}. Enter it within {n} {n|minute|minutes}.",
+  "{email} 주소로 6자리 코드를 보냈습니다. {n}분 안에 넣어 주십시오.": "We sent a 6-digit code to {email}. Enter it within {n} {n|minute|minutes}.",
   "확인 코드 6자리": "6-digit code",
   "확인": "Confirm",
   "코드 다시 보내기": "Resend code",
