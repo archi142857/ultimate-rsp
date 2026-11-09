@@ -312,7 +312,7 @@ export function roomView(main, code) {
       if (!head) return midText(t("다시!"), t("아무도 빠지지 않는다"));
       const n = shown.out.length;
       const sub = room.rules.mode === "loser" ? t("{n}명 빠져나감", { n }) : t("{n}명 빠짐", { n });
-      return midText(head.kind === "win" ? t("{h} 승", { h: head.name }) : head.kind === "lose" ? t("{h} 짐", { h: head.name }) : t("갈렸다"), sub);
+      return midText(head.kind === "win" ? t("{h} 승", { h: head.name }) : head.kind === "lose" ? t("{h} 패", { h: head.name }) : t("승부가 났다"), sub);
     }
     const { me, op } = sidesOf(you);
     const cmp = me === 0 ? shown.cmp : -shown.cmp;
@@ -848,8 +848,8 @@ export function roomView(main, code) {
                   : head.kind === "win"
                     ? t("{h} 승 · {names}", { h: head.name, names })
                     : head.kind === "lose"
-                      ? t("{h} 짐 · {names}", { h: head.name, names })
-                      : t("갈렸다 · {names}", { names });
+                      ? t("{h} 패 · {names}", { h: head.name, names })
+                      : t("승부가 났다 · {names}", { names });
                 return h("li", { value: e.r }, text);
               }
               const d = duelRound(V, e, me);

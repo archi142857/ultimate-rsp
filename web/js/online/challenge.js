@@ -169,7 +169,7 @@ export function challengeView(main, code) {
             "p",
             { class: "o-p o-small" },
             c.reveal === "end"
-              ? t("여럿이 받는 도전장이다({n}/{max}명 답함). 답하면 내 이름이 이 링크를 가진 사람 모두에게 보이고, 결과는 마감되면 열린다.", { n: c.count, max: c.max })
+              ? t("여럿이 받는 도전장이다({n}/{max}명 답함). 답하면 내 이름이 이 링크를 가진 사람 모두에게 보이고, 결과는 마감되면 공개된다.", { n: c.count, max: c.max })
               : t("여럿이 받는 도전장이다({n}/{max}명 답함). 답하면 내 이름과 결과가 이 링크를 가진 사람 모두에게 보인다.", { n: c.count, max: c.max }),
           )
         : null,
@@ -442,7 +442,7 @@ export function challengeView(main, code) {
       });
       no.addEventListener("click", idleClose);
       closeBox.classList.add("asking");
-      closeBox.replaceChildren(h("p", { class: "o-p o-small" }, t("더 받지 않고 지금까지의 결과를 모두에게 연다. 마감할까?")), h("div", { class: "o-row" }, yes, no));
+      closeBox.replaceChildren(h("p", { class: "o-p o-small" }, t("더 받지 않고 지금까지의 결과를 모두에게 공개한다. 마감할까?")), h("div", { class: "o-row" }, yes, no));
       yes.focus();
     };
     function idleClose() {
@@ -477,7 +477,7 @@ export function challengeView(main, code) {
       c.open ? card(h("p", { class: "o-label" }, t("링크")), linkBox(url, share)) : null,
       fresh ? h("p", { class: "o-p" }, t("{n}명까지 답하고, 답마다 따로 겨룬다.", { n: c.max }), " ", t("결과는 이 링크와 온라인 첫 화면 '내 도전장'에서 본다.")) : null,
       answersCard(c, V, { owner: true }),
-      c.open && c.reveal === "end" ? h("p", { class: "o-p o-small" }, t("답한 사람은 마감할 때까지 결과를 모른다. {n}명이 다 답하거나 내가 마감하거나 하루가 지나면 모두에게 열린다.", { n: c.max })) : null,
+      c.open && c.reveal === "end" ? h("p", { class: "o-p o-small" }, t("답한 사람은 마감할 때까지 결과를 모른다. {n}명이 다 답하거나 내가 마감하거나 하루가 지나면 모두에게 공개된다.", { n: c.max })) : null,
       c.open ? h("div", { class: "o-actions o-row-wrap" }, check, closeBox) : null,
     );
     if (fresh) p.start({ play: true });
@@ -515,7 +515,7 @@ export function challengeView(main, code) {
       h(
         "p",
         { class: "o-p" },
-        t("결과는 {name}의 도전장이 마감되면 보인다. {n}명이 다 답하거나 {name:이가} 마감하거나 하루가 지나면 열린다.", { name: c.from, n: c.max }),
+        t("결과는 {name}의 도전장이 마감되면 보인다. {n}명이 다 답하거나, {name:이가} 직접 닫거나, 하루가 지나면 마감된다.", { name: c.from, n: c.max }),
       ),
       hi !== undefined ? card(h("div", { class: "o-row" }, h("span", { class: "ans-art", "aria-hidden": "true" }, handArt(V.hands[hi])), h("p", { class: "o-p o-grow" }, t("내 손: {name}", { name: V.hands[hi].name })))) : null,
       answersCard(c, V, { title: t("답한 사람") }),

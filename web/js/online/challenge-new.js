@@ -81,7 +81,7 @@ function handStep(main, entry) {
     },
   });
   // 여럿이면 결과는 마감 때 연다(reveal "end": 버리는 이름으로 먼저 답해 손을 엿보지 못하게)
-  const maxText = () => (max > 1 ? t("{n}명까지 답하고, 답마다 따로 겨룬다. 결과는 {n}명이 다 답하거나 내가 마감하거나 하루가 지나면 한꺼번에 열린다.", { n: max }) : t("처음 답한 한 사람과 겨룬다."));
+  const maxText = () => (max > 1 ? t("{n}명까지 답하고, 답마다 따로 겨룬다. 결과는 {n}명이 다 답하거나 내가 마감하거나 하루가 지나면 한꺼번에 공개된다.", { n: max }) : t("처음 답한 한 사람과 겨룬다."));
   const maxNote = h("p", { class: "o-p o-small" }, maxText());
 
   function choose(i, from) {
