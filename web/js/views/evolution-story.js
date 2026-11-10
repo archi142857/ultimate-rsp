@@ -550,11 +550,11 @@ function duelChapter({ V, ch, tx, play, narr, finish }) {
     cells.replaceChildren(
       ...Array.from({ length: R }, (_, k) => {
         const r = rows[k];
-        if (!r) return h("div", { class: "e", role: "listitem", "aria-label": t("{n}판", { n: k + 1 }) });
+        if (!r) return h("div", { class: "e", role: "listitem", "aria-label": t("@round:{n}판", { n: k + 1 }) });
         const res = r.c > 0 ? "w" : r.c < 0 ? "l" : "t";
         return h(
           "div",
-          { class: res, role: "listitem", "aria-label": `${t("{n}판", { n: k + 1 })}: ${V.hands[r.op].name} / ${V.hands[r.me].name}, ${res === "w" ? t("이김") : res === "l" ? t("짐") : t("비김")}` },
+          { class: res, role: "listitem", "aria-label": `${t("@round:{n}판", { n: k + 1 })}: ${V.hands[r.op].name} / ${V.hands[r.me].name}, ${res === "w" ? t("이김") : res === "l" ? t("짐") : t("비김")}` },
           handArt(V.hands[r.op]),
           h("i"),
           handArt(V.hands[r.me]),
@@ -652,13 +652,15 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
     const r = leagueFor(V, ch);
     const max = Math.max(1, ...Object.values(r.totals).map(Math.abs));
     const now = Object.fromEntries(ids.map((id) => [id, 0]));
+    // 처음엔 인물 차례로 세우고, 리그가 다 끝난 뒤에 순위대로 다시 세운다
+    // (처음부터 순위 차례면 막대가 자라기 전에 1등이 보여서 건 재미가 없다: 컨셉 11-10)
     const rows = new Map(
-      r.order.map((id) => {
+      ids.map((id) => {
         const fill = h("i");
         const val = h("span", { class: "evo-bar-v" }, "0");
         const row = h("div", { class: "evo-bar", "data-bot": id }, face(id, 26), h("span", {}, botName(id)), h("span", { class: "evo-bar-tr" }, fill), val);
         bars.append(row);
-        return [id, { fill, val }];
+        return [id, { row, fill, val }];
       }),
     );
     const setBar = (id) => {
@@ -684,6 +686,11 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
       if (!quick) await sleep(300);
     }
     if (!live()) return;
+    if (!quick) await sleep(300);
+    if (!live()) return;
+    reorder(bars, r.order.map((id) => rows.get(id).row), quick);
+    if (!quick) await sleep(480);
+    if (!live()) return;
     const top = r.order[0];
     winRow.replaceChildren(face(top, 44, { badge: t("1등") }), bubble(L[top], "left"));
     const place = r.order.indexOf(bet) + 1;
@@ -692,6 +699,17 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
     finish();
   }
   return {};
+}
+
+/** 줄들을 새 차례로 옮긴다. 움직임을 줄이지 않았으면 있던 자리에서 미끄러져 간다(FLIP) */
+function reorder(parent, els, quick) {
+  const before = quick ? null : new Map(els.map((el) => [el, el.getBoundingClientRect().top]));
+  parent.append(...els);
+  if (!before) return;
+  for (const el of els) {
+    const dy = before.get(el) - el.getBoundingClientRect().top;
+    if (Math.abs(dy) > 0.5 && el.animate) el.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: 450, easing: "cubic-bezier(.2,.7,.2,1)" });
+  }
 }
 
 // ── 4장: 리그를 거듭하면 ─────────────────

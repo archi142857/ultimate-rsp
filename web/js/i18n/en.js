@@ -1281,6 +1281,7 @@ export const EN = {
   "장 넘기기": "Chapters",
   "{n}세대": "Gen {n}",
   "{n} / {total}판": "{n} / {total} rounds",
+  "@round:{n}판": "Round {n}",
   "비김 {n}": "{n} {n|draw|draws}",
   "상대": "Opponent",
   "상대 {i}": "Opponent {i}",
