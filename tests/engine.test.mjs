@@ -17,9 +17,18 @@ test("모든 도감 항목은 갈래가 있고 id 가 겹치지 않는다", () =
   for (const e of CATALOG) {
     assert.ok(!ids.has(e.id), `겹친 id ${e.id}`);
     ids.add(e.id);
-    assert.ok(cats.has(e.cat), `${e.id} 의 갈래가 없다`);
+    // 위쪽 탭으로 여는 항목(전략의 진화)은 갈래 없이 둔다
+    if (e.tab) assert.equal(e.cat, undefined, `${e.id} 는 탭이라 갈래가 없다`);
+    else assert.ok(cats.has(e.cat), `${e.id} 의 갈래가 없다`);
     assert.ok(e.name && e.about && e.about.length, `${e.id} 이름·설명`);
   }
+});
+
+test("탭으로 여는 항목은 전략의 진화(league) 하나, 시뮬레이션 갈래는 없다", () => {
+  assert.deepEqual(CATALOG.filter((e) => e.tab).map((e) => e.id), ["league"]);
+  assert.ok(!CATEGORIES.some((c) => c.id === "sim"));
+  assert.equal(findEntry("lattice").cat, "three");
+  assert.equal(findEntry("war").cat, "group");
 });
 
 test("한 판짜리 변종은 모두 엔진으로 읽히고 판정이 앞뒤가 맞다", () => {

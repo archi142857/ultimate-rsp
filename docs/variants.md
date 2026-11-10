@@ -286,6 +286,20 @@
 
 - [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
 
+### 자연 속 가위바위보 (격자 생태계)
+
+도마뱀과 대장균. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/lattice)
+
+옆줄무늬도마뱀 수컷은 목 색에 따라 주황이 파랑을, 파랑이 노랑을, 노랑이 주황을 이깁니다. 대장균도 독을 만드는 균, 독에 약한 균, 독을 견디는 균이 서로 물고 물립니다.
+
+칸마다 생물이 살고 이웃끼리만 겨루면 셋이 소용돌이를 그리며 함께 삽니다. 많이 돌아다닐수록, 그리고 잘 섞일수록 한 종만 남기 쉽습니다.
+
+출처
+
+- [Sinervo & Lively (1996), Nature 380](https://www.nature.com/articles/380240a0)
+- [Kerr, Riley, Feldman & Bohannan (2002), Nature 418](https://www.nature.com/articles/nature00823)
+- [Reichenbach, Mobilia & Frey (2007), Nature 448](https://arxiv.org/abs/0709.0217)
+
 ## 손을 더한 변종
 
 손을 넷, 다섯, 백한 개까지 늘렸습니다. 고르게 늘린 것도 있고, 일부러 한쪽으로 기울인 것도 있습니다.
@@ -751,7 +765,7 @@ Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생깁니다. 둘씩
 
 ## 여럿이 하는 놀이
 
-셋 이상이 한꺼번에 가위바위보를 합니다. 직접 하거나 여러 사람이 하는 모습을 지켜봅니다.
+셋 이상이 한꺼번에 가위바위보를 합니다. 직접 하거나 여럿이 겨루는 모습을 지켜봅니다.
 
 ### 여럿이 가위바위보
 
@@ -856,36 +870,6 @@ Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생깁니다. 둘씩
 - [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
 - [prompie, 편 가르기 구호 이야기](https://academy.prompie.com/communities/posts/%EC%9D%B4%EA%B1%B4-%EC%A7%80%EC%97%AD%EB%A7%88%EB%8B%A4-%EB%8B%A4%EB%A5%B8%EA%B1%B0%EB%9D%BC%EB%8A%94%EB%8D%B0-9hi8giQr/)
 
-## 시뮬레이션
-
-컴퓨터 전략끼리 수천 판을 겨루게 하고, 가위바위보처럼 물고 물리는 생물이 어떻게 함께 사는지 봅니다.
-
-### 전략 리그
-
-컴퓨터끼리. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/league)
-
-컴퓨터 전략끼리 수천 판씩 겨룹니다. 아무렇게나 내는 전략은 누구에게도 크게 지지 않고, 버릇이 있는 전략은 그 버릇을 읽는 전략에게 집니다.
-
-전략끼리도 가위바위보처럼 물고 물리는 사이가 생깁니다.
-
-출처
-
-- [Wang, Xu & Zhou (2014), Social cycling and conditional responses in the Rock-Paper-Scissors game](https://pmc.ncbi.nlm.nih.gov/articles/PMC5376050/)
-
-### 자연 속 가위바위보 (격자 생태계)
-
-도마뱀과 대장균. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/lattice)
-
-옆줄무늬도마뱀 수컷은 목 색에 따라 주황이 파랑을, 파랑이 노랑을, 노랑이 주황을 이깁니다. 대장균도 독을 만드는 균, 독에 약한 균, 독을 견디는 균이 서로 물고 물립니다.
-
-칸마다 생물이 살고 이웃끼리만 겨루면 셋이 소용돌이를 그리며 함께 삽니다. 많이 돌아다닐수록, 그리고 잘 섞일수록 한 종만 남기 쉽습니다.
-
-출처
-
-- [Sinervo & Lively (1996), Nature 380](https://www.nature.com/articles/380240a0)
-- [Kerr, Riley, Feldman & Bohannan (2002), Nature 418](https://www.nature.com/articles/nature00823)
-- [Reichenbach, Mobilia & Frey (2007), Nature 448](https://arxiv.org/abs/0709.0217)
-
 ### 가위바위보 전쟁
 
 부딪히면 바뀜. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/war)
@@ -893,3 +877,20 @@ Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생깁니다. 둘씩
 가위·바위·보가 화면 위를 떠돌다 부딪히면 진 쪽이 이긴 쪽으로 바뀝니다. 한 가지만 남으면 끝납니다.
 
 처음 수가 같아도 매번 다른 손이 이깁니다. 한 가지가 먼저 사라지면 남은 둘 가운데 이기는 쪽이 화면을 다 차지하므로, 우승은 '자기를 이기는 손이 먼저 사라진 손'에게 갑니다.
+
+## 위쪽 탭
+
+도감 목록에는 없고 화면 위쪽 탭에서 엽니다.
+
+### 전략의 진화
+
+컴퓨터끼리. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/league)
+
+컴퓨터 전략 아홉 가지가 리그를 거듭하며 겨룹니다. 점수가 낮은 쪽은 빠지고 높은 쪽은 늘어나서, 세대가 지나면 어떤 전략이 퍼지는지 볼 수 있습니다.
+
+경기 길이, 실수, 점수를 바꾸면 살아남는 전략도 바뀝니다. Nicky Case의 '신뢰의 진화'처럼 장을 넘기며 직접 해 볼 수 있습니다.
+
+출처
+
+- [Wang, Xu & Zhou (2014), Social cycling and conditional responses in the Rock-Paper-Scissors game](https://pmc.ncbi.nlm.nih.gov/articles/PMC5376050/)
+- [Nicky Case (2017), The Evolution of Trust](https://ncase.me/trust/)

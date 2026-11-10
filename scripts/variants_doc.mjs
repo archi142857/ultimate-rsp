@@ -79,6 +79,12 @@ for (const cat of CATEGORIES) {
   for (const e of entries) lines.push(...entryLines(e, true));
 }
 
+const TABS = CATALOG.filter((e) => e.tab);
+if (TABS.length) {
+  lines.push("## 위쪽 탭", "", "도감 목록에는 없고 화면 위쪽 탭에서 엽니다.", "");
+  for (const e of TABS) lines.push(...entryLines(e, true));
+}
+
 if (DRAFTS.length) {
   lines.push("## 화면 준비 중", "", `규칙 코드(\`web/js/games/\`)와 시험은 있고 화면이 아직 없는 ${DRAFTS.length}가지. 화면이 붙으면 위 갈래로 옮겨 간다.`, "");
   for (const e of DRAFTS) lines.push(...entryLines(e, false));

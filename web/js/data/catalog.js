@@ -152,12 +152,7 @@ const CATEGORIES_KO = [
   {
     id: "group",
     title: "여럿이 하는 놀이",
-    blurb: "셋 이상이 한꺼번에 가위바위보를 합니다. 직접 하거나 여러 사람이 하는 모습을 지켜봅니다.",
-  },
-  {
-    id: "sim",
-    title: "시뮬레이션",
-    blurb: "컴퓨터 전략끼리 수천 판을 겨루게 하고, 가위바위보처럼 물고 물리는 생물이 어떻게 함께 사는지 봅니다.",
+    blurb: "셋 이상이 한꺼번에 가위바위보를 합니다. 직접 하거나 여럿이 겨루는 모습을 지켜봅니다.",
   },
 ];
 
@@ -1173,7 +1168,8 @@ const CATALOG_KO = [
   {
     id: "league",
     kind: "sim",
-    cat: "sim",
+    // 도감 목록 대신 위쪽 탭 '전략의 진화'에서 연다(사용자 11-10)
+    tab: true,
     // 전략의 진화(장을 넘기는 이야기). 이름·소개는 web/js/sims/evolution-story.js 의 EVO_CATALOG 와 같다(tests/evolution-view.test.mjs)
     name: "전략의 진화",
     origin: "컴퓨터끼리",
@@ -1189,7 +1185,7 @@ const CATALOG_KO = [
   {
     id: "lattice",
     kind: "sim",
-    cat: "sim",
+    cat: "three",
     name: "자연 속 가위바위보",
     sub: "격자 생태계",
     origin: "도마뱀과 대장균",
@@ -1206,7 +1202,7 @@ const CATALOG_KO = [
   {
     id: "war",
     kind: "sim",
-    cat: "sim",
+    cat: "group",
     name: "가위바위보 전쟁",
     origin: "부딪히면 바뀜",
     about: [

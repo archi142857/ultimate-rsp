@@ -281,10 +281,6 @@ export const EN_CATEGORIES = {
     title: "Group games",
     blurb: "Three or more people play at once. Join in or watch a crowd play.",
   },
-  sim: {
-    title: "Simulations",
-    blurb: "Pit computer strategies against each other for thousands of rounds, and watch how creatures that beat each other in a cycle live together.",
-  },
 };
 
 /** 변종마다: 이름, 부제, 나온 곳, 설명, 다른 이름, 손 모양(how), 판정 동사(verbs: "이긴 손>진 손"), 통문장(phrases) */
