@@ -2471,7 +2471,7 @@ button.shogi-drop {
   }
 }
 
-/* 320px 까지: 첫 줄에 워드마크와 단추 둘, 둘째 줄에 메뉴 넷(도감·시뮬레이션·온라인·정보)이 들어가게 */
+/* 320px 까지: 첫 줄에 워드마크와 단추 둘, 둘째 줄에 메뉴 넷(도감·전략의 진화·온라인·정보)이 들어가게 */
 @media (max-width: 400px) {
   .top {
     column-gap: 10px;
@@ -2658,13 +2658,8 @@ button.shogi-drop {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-.evo-back {
-  color: var(--muted);
-  text-decoration: none;
+.evo-where {
   padding: 6px 0;
-}
-.evo-back:hover {
-  color: var(--ink);
 }
 .evo-grid {
   display: grid;

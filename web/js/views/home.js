@@ -23,7 +23,6 @@ const ART = {
   group: "👥",
   train: "🚂",
   evolution: "🐣",
-  league: "🏆",
   lattice: "🦎",
   war: "⚔️",
   majority: "📊",
@@ -52,7 +51,6 @@ const META = {
   group: "직접 하기",
   train: "지켜보기",
   evolution: "지켜보기",
-  league: "11장 이야기",
   lattice: "도마뱀과 대장균",
   war: "손 3~5가지",
   majority: "많은 손·적은 손",
@@ -82,7 +80,7 @@ export function compiledOf(entry) {
 
 const HERO_RINGS = ["classic", "rpsls", "rps7", "rps9", "rps11", "rps15", "rps25", "rps101"];
 
-export function homeView(main, { focus } = {}) {
+export function homeView(main) {
   setTitle(null);
   const classic = compileVariant(findEntry("classic"));
   const rng = makeRng();
@@ -147,13 +145,8 @@ export function homeView(main, { focus } = {}) {
   );
 
   main.append(hero, ...cats);
-  if (focus) {
-    const el = document.getElementById(`cat-${focus}`);
-    if (el) requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
-  }
 
   return {
-    keepScroll: !!focus,
     onKey: (e) => grid.keyHandler(e),
   };
 }

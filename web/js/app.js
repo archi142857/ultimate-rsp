@@ -14,9 +14,17 @@ const main = document.getElementById("main");
 let current = null;
 let first = true;
 
+// 옛 주소: 시뮬레이션 탭(#/sims)은 없어지고 그 자리에 전략의 진화 탭이 들어섰다(사용자 11-10)
+const MOVED = { "/sims": "/v/league" };
+
 function parse() {
   const raw = location.hash.replace(/^#/, "") || "/";
-  const [path, query = ""] = raw.split("?");
+  let [path, query = ""] = raw.split("?");
+  if (MOVED[path]) {
+    path = MOVED[path];
+    // 주소만 바꾼다(hashchange 가 다시 나지 않고, 뒤로 가기에 옛 주소가 남지 않는다)
+    history.replaceState(history.state, "", `#${path}${query ? `?${query}` : ""}`);
+  }
   const params = Object.fromEntries(new URLSearchParams(query));
   return { path, params };
 }
@@ -34,11 +42,8 @@ function route() {
   const { path, params } = parse();
   let nav = "home";
   try {
-    if (path === "/" || path === "") current = homeView(main, {});
-    else if (path === "/sims") {
-      nav = "sims";
-      current = homeView(main, { focus: "sim" });
-    } else if (path === "/about") {
+    if (path === "/" || path === "") current = homeView(main);
+    else if (path === "/about") {
       nav = "about";
       current = aboutView(main);
     } else if (path.startsWith("/v/")) {
@@ -52,7 +57,8 @@ function route() {
       const entry = id === null ? null : findEntry(id);
       if (!entry) notFound();
       else {
-        nav = entry.cat === "sim" ? "sims" : "home";
+        // 위쪽 탭으로 여는 항목(tab: true)은 그 탭에, 나머지는 도감에 불을 켠다
+        nav = entry.tab ? entry.id : "home";
         current = entryView(main, entry, params);
       }
     } else {
@@ -76,7 +82,7 @@ function route() {
     else a.removeAttribute("aria-current");
   });
   if (!first) {
-    if (!(current && current.keepScroll)) window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
     main.focus({ preventScroll: true });
   }
   first = false;

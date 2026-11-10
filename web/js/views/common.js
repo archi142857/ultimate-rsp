@@ -10,7 +10,7 @@ export function entryHead(entry, { facts = [], title = entry.name, sub = entry.s
   return h(
     "header",
     { class: "entry-head" },
-    h("a", { class: "back", href: entry.cat === "sim" ? "#/sims" : "#/" }, entry.cat === "sim" ? t("시뮬레이션") : t("도감")),
+    h("a", { class: "back", href: "#/" }, t("도감")),
     h("h1", { class: "entry-title" }, title),
     h("p", { class: "entry-sub" }, sub || null, h("span", { class: "origin" }, entry.origin)),
     facts.length

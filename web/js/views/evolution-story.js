@@ -398,12 +398,8 @@ export function evolutionStoryView(main, entry, params) {
     const page = h(
       "article",
       { class: "evo-page", "data-kind": ch.kind, "data-ch": ch.id },
-      h(
-        "div",
-        { class: "evo-top" },
-        h("a", { class: "evo-back", href: "#/sims" }, "← ", t("시뮬레이션")),
-        h("span", { class: "evo-where" }, T.title, " · ", h("b", {}, `${n} / ${LAST}`)),
-      ),
+      // 위쪽 탭에서 여는 화면이라 '뒤로' 링크는 없다(사용자 11-10)
+      h("div", { class: "evo-top" }, h("span", { class: "evo-where" }, T.title, " · ", h("b", {}, `${n} / ${LAST}`))),
       h("div", { class: "evo-grid" }, h("div", { class: "evo-left" }, story, side, narrBox), play),
       nav,
     );

@@ -7,7 +7,8 @@ export const EN = {
   "Ultimate RSP 첫 화면": "Ultimate RSP home",
   "주 메뉴": "Main menu",
   "도감": "Catalog",
-  "시뮬레이션": "Simulations",
+  // 위쪽 탭 이름(화면 이름은 The Evolution of Strategy). 320px 에서도 메뉴 넷이 한 줄에 들어가게 짧게
+  "@tab:전략의 진화": "Evolution",
   "정보": "About",
   "Ultimate RSP. 컴퓨터와 한 기록은 이 브라우저에만 남습니다.": "Ultimate RSP. Games against the computer are saved in this browser only.",
   "만든 사람과 출처": "Credits and sources",
@@ -559,7 +560,6 @@ export const EN = {
   "지켜보기": "Watch it play",
   "많은 손·적은 손": "Most or rarest hand",
   "가위가 유리": "Scissors has the edge",
-  "11장 이야기": "11 chapters",
   "도마뱀과 대장균": "Lizards and E. coli",
   "손 3~5가지": "3 to 5 hands",
   "손을 고르면 컴퓨터도 같이 냅니다.": "Pick a hand and the computer throws at the same time.",
@@ -1228,7 +1228,7 @@ export const EN = {
   "지면 한 단계 내려가니 왕 바로 아래에서 오래 맴도는 사람도 생깁니다.": "A loss drops you a stage, so some players hover just below king for a long time.",
   "진화 가위바위보 지켜보기": "Watch Evolution RPS",
 
-  // ── 시뮬레이션: 전략 리그, 자연 속 가위바위보, 전쟁 ──
+  // ── 지켜보는 가위바위보: 자연 속 가위바위보, 가위바위보 전쟁 ──
   "변종": "Variant",
   "{n}판": "{n}",
   "순위": "Rank",
