@@ -27,8 +27,10 @@ test("모든 도감 항목은 갈래가 있고 id 가 겹치지 않는다", () =
 test("탭으로 여는 항목은 전략의 진화(league) 하나, 시뮬레이션 갈래는 없다", () => {
   assert.deepEqual(CATALOG.filter((e) => e.tab).map((e) => e.id), ["league"]);
   assert.ok(!CATEGORIES.some((c) => c.id === "sim"));
-  assert.equal(findEntry("lattice").cat, "three");
-  assert.equal(findEntry("war").cat, "group");
+  // 자연 속 가위바위보·가위바위보 전쟁은 도감의 '지켜보는 가위바위보'(사용자 11-10 10:39)
+  assert.equal(findEntry("lattice").cat, "watch");
+  assert.equal(findEntry("war").cat, "watch");
+  assert.equal(CATEGORIES.at(-1).id, "watch");
 });
 
 test("한 판짜리 변종은 모두 엔진으로 읽히고 판정이 앞뒤가 맞다", () => {

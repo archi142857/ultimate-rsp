@@ -286,20 +286,6 @@
 
 - [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
 
-### 자연 속 가위바위보 (격자 생태계)
-
-도마뱀과 대장균. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/lattice)
-
-옆줄무늬도마뱀 수컷은 목 색에 따라 주황이 파랑을, 파랑이 노랑을, 노랑이 주황을 이깁니다. 대장균도 독을 만드는 균, 독에 약한 균, 독을 견디는 균이 서로 물고 물립니다.
-
-칸마다 생물이 살고 이웃끼리만 겨루면 셋이 소용돌이를 그리며 함께 삽니다. 많이 돌아다닐수록, 그리고 잘 섞일수록 한 종만 남기 쉽습니다.
-
-출처
-
-- [Sinervo & Lively (1996), Nature 380](https://www.nature.com/articles/380240a0)
-- [Kerr, Riley, Feldman & Bohannan (2002), Nature 418](https://www.nature.com/articles/nature00823)
-- [Reichenbach, Mobilia & Frey (2007), Nature 448](https://arxiv.org/abs/0709.0217)
-
 ## 손을 더한 변종
 
 손을 넷, 다섯, 백한 개까지 늘렸습니다. 고르게 늘린 것도 있고, 일부러 한쪽으로 기울인 것도 있습니다.
@@ -765,7 +751,7 @@ Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생깁니다. 둘씩
 
 ## 여럿이 하는 놀이
 
-셋 이상이 한꺼번에 가위바위보를 합니다. 직접 하거나 여럿이 겨루는 모습을 지켜봅니다.
+셋 이상이 한꺼번에 가위바위보를 합니다. 직접 하거나 여러 사람이 하는 모습을 지켜봅니다.
 
 ### 여럿이 가위바위보
 
@@ -869,6 +855,24 @@ Grime 주사위 다섯은 하나씩 굴리면 고리가 둘 생깁니다. 둘씩
 
 - [Wikipedia (Japanese), じゃんけん](https://ja.wikipedia.org/wiki/%E3%81%98%E3%82%83%E3%82%93%E3%81%91%E3%82%93)
 - [prompie, 편 가르기 구호 이야기](https://academy.prompie.com/communities/posts/%EC%9D%B4%EA%B1%B4-%EC%A7%80%EC%97%AD%EB%A7%88%EB%8B%A4-%EB%8B%A4%EB%A5%B8%EA%B1%B0%EB%9D%BC%EB%8A%94%EB%8D%B0-9hi8giQr/)
+
+## 지켜보는 가위바위보
+
+직접 하지 않고 지켜봅니다. 가위바위보처럼 물고 물리는 생물이 어떻게 함께 사는지, 손들이 부딪치며 어떻게 퍼지는지 봅니다.
+
+### 자연 속 가위바위보 (격자 생태계)
+
+도마뱀과 대장균. [앱에서 열기](https://archi142857.github.io/ultimate-rsp/#/v/lattice)
+
+옆줄무늬도마뱀 수컷은 목 색에 따라 주황이 파랑을, 파랑이 노랑을, 노랑이 주황을 이깁니다. 대장균도 독을 만드는 균, 독에 약한 균, 독을 견디는 균이 서로 물고 물립니다.
+
+칸마다 생물이 살고 이웃끼리만 겨루면 셋이 소용돌이를 그리며 함께 삽니다. 많이 돌아다닐수록, 그리고 잘 섞일수록 한 종만 남기 쉽습니다.
+
+출처
+
+- [Sinervo & Lively (1996), Nature 380](https://www.nature.com/articles/380240a0)
+- [Kerr, Riley, Feldman & Bohannan (2002), Nature 418](https://www.nature.com/articles/nature00823)
+- [Reichenbach, Mobilia & Frey (2007), Nature 448](https://arxiv.org/abs/0709.0217)
 
 ### 가위바위보 전쟁
 
