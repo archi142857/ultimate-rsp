@@ -276,7 +276,7 @@ function evoWorld(live) {
       chart.reset(order, max);
       chart.update(evo.history);
       const k = Math.max(0, Math.min(setup.cull, Math.floor(people.length / 2)));
-      hint.textContent = t("흐려진 {n}명은 빠지고, +1이 붙은 {n}명은 하나씩 더 생깁니다.", { n: num(k) });
+      hint.textContent = t("흐려진 {n}명은 빠지고, +1이 붙은 {n}명과 같은 전략이 한 명씩 들어옵니다.", { n: num(k) });
       emit();
     },
     step: (speed = 1) => step(speed),
@@ -310,7 +310,7 @@ function evoWorld(live) {
 function worldCards(world, buttons) {
   return [
     card(world.ring.el, world.hint, buttons ? h("div", { class: "evo-btns" }, ...buttons) : null, world.status),
-    card(cardTitle(t("세대마다 몇 명")), world.chart.el),
+    card(cardTitle(t("세대마다 사람 수")), world.chart.el),
   ];
 }
 
@@ -644,7 +644,7 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
       const on = ids[i] === id;
       b.setAttribute("aria-pressed", String(on));
       b.querySelector(".evo-badge")?.remove();
-      if (on) b.firstChild.append(sticker(t("건 사람"), "evo-badge"));
+      if (on) b.firstChild.append(sticker(t("내 선택"), "evo-badge"));
     });
     startBtn.disabled = false;
   }
@@ -691,7 +691,7 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
     const top = r.order[0];
     winRow.replaceChildren(face(top, 44, { badge: t("1등") }), bubble(L[top], "left"));
     const place = r.order.indexOf(bet) + 1;
-    betLine.textContent = place === 1 ? t("건 사람이 1등입니다.") : t("건 사람은 {n}등입니다.", { n: place });
+    betLine.textContent = place === 1 ? t("내 선택이 1등!") : t("내 선택은 {n}등", { n: place });
     narr(tx.end);
     finish();
   }

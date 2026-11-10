@@ -8,7 +8,7 @@ const BOT_TEXT = [
   { id: "nash", name: "계산기", desc: "최적 비율대로 냅니다. 길게 보면 누구에게도 지지 않습니다." },
   { id: "human", name: "사람 흉내", desc: "이기면 같은 손을 또 내고, 지면 방금 자기를 이긴 손을 이기는 손으로 바꿉니다." },
   { id: "freq", name: "버릇 읽기", desc: "상대가 요즘 자주 내는 손을 노립니다." },
-  { id: "pattern", name: "수 읽기", desc: "상대가 내 온 순서를 외워 다음 손을 짐작합니다." },
+  { id: "pattern", name: "수 읽기", desc: "상대가 지금까지 낸 순서를 외워 다음 손을 짐작합니다." },
   { id: "cycle", name: "돌림", desc: "고리 차례대로 돌아가며 냅니다." },
   { id: "stubborn", name: "고집", desc: "한 손만 계속 냅니다." },
   { id: "mirror", name: "따라쟁이", desc: "상대가 방금 낸 손을 따라 냅니다." },
