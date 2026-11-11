@@ -8,7 +8,7 @@ import { block } from "../ui/widgets.js";
 
 export function aboutView(main) {
   setTitle(t("정보"));
-  const total = CATALOG.length;
+  const total = CATALOG.filter((e) => !e.tab).length; // 도감 칸 수(전략의 진화는 위쪽 탭이라 뺀다: 컨셉 d4dc202)
   main.append(
     h(
       "div",

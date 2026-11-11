@@ -120,7 +120,8 @@ export function homeView(main) {
       h(
         "p",
         { class: "hero-lead" },
-        t("가위바위보 {n}가지를 모았습니다. 누가 누구를 이기는지 고리 그림으로 보고, 컴퓨터나 친구와 바로 겨룹니다.", { n: CATALOG.length }),
+        // 도감 칸 수(위쪽 탭으로 여는 전략의 진화는 빼고 센다: 컨셉 d4dc202, README 와 같은 52)
+        t("가위바위보 {n}가지를 모았습니다. 누가 누구를 이기는지 고리 그림으로 보고, 컴퓨터나 친구와 바로 겨룹니다.", { n: CATALOG.filter((e) => !e.tab).length }),
       ),
       h(
         "div",
