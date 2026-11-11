@@ -1,5 +1,6 @@
 // 전략의 진화: Nicky Case 의 '신뢰의 진화'(The Evolution of Trust, 2017)처럼 장을 넘기며 직접 해 보는 이야기.
-// 도감의 '전략 리그'(league) 자리에 들어간다(주소 #/v/league 그대로, ?ch=0–10 으로 장을 바로 연다).
+// 위쪽 탭 '전략의 진화'로 연다(주소 #/v/league, ?ch=0–10 으로 장을 바로 연다).
+// 머리 아래 남은 화면이 무대다. 문서는 스크롤하지 않고, 무대를 화면에 맞춰 키우거나 줄여 장마다 모든 것이 한 화면에 보인다(사용자 11-12).
 // 값·씨앗·글은 컨셉의 web/js/sims/evolution-story.js, 꼴은 디자인 '전략의 진화 시안'(① 책장 + ③ 만화).
 // 장마다 할 일(kind): text 글만 · one 한 판 · duel 다섯 상대와 10판씩 · league 리그 한 번(걸기) ·
 // evolve 세대 거듭 · choice 고르면 끝까지 · sandbox 놀이터
@@ -187,7 +188,7 @@ function genChart() {
 function evoWorld(live) {
   const ring = peopleRing();
   const chart = genChart();
-  const hint = h("p", { class: "evo-sm evo-center" });
+  const hint = h("p", { class: "evo-sm evo-center evo-hint" });
   const status = h("p", { class: "sr", "aria-live": "polite" });
   let evo = null;
   let people = [];
@@ -306,32 +307,149 @@ function evoWorld(live) {
   };
 }
 
-/** 고리 카드 + 그래프 카드를 놀이 칸에 넣는다 */
-function worldCards(world, buttons) {
-  return [
-    card(world.ring.el, world.hint, buttons ? h("div", { class: "evo-btns" }, ...buttons) : null, world.status),
-    card(cardTitle(t("세대마다 사람 수")), world.chart.el),
-  ];
+
+/** 고리 카드와 그래프 카드(놀이터는 이 둘을 따로 놓는다) */
+function worldParts(world) {
+  return {
+    ringCard: h("section", { class: "evo-card evo-ringcard" }, world.ring.el, world.hint),
+    chartCard: h("section", { class: "evo-card evo-chartcard" }, cardTitle(t("세대마다 사람 수")), world.chart.el),
+  };
 }
+/** 고리 · 그래프 · 단추 줄. 넓은 화면은 고리 아래 단추, 좁은 화면은 고리와 작은 그래프를 나란히 두고 단추를 그 아래에 */
+function worldBox(world, buttons) {
+  const { ringCard, chartCard } = worldParts(world);
+  return h("div", { class: "evo-world" }, ringCard, chartCard, buttons ? h("div", { class: "evo-btns" }, ...buttons) : null, world.status);
+}
+
+/** 탭 묶음. 칸들을 한 자리에 겹쳐 두어(보이는 칸만 바꾼다) 탭을 바꿔도 높이가 그대로다 */
+let tabSeq = 0;
+function tabsBox(items, first) {
+  const base = `evo-tabs-${++tabSeq}`;
+  const bar = h("div", { class: "evo-tabs", role: "tablist" });
+  const panes = h("div", { class: "evo-panes" });
+  let on = null;
+  const list = items.map((it, k) => {
+    const tab = h("button", { type: "button", role: "tab", class: "evo-tab", id: `${base}-t${k}`, "aria-controls": `${base}-p${k}`, onclick: () => select(it.id, true) }, it.label);
+    const pane = h("div", { role: "tabpanel", class: "evo-pane", id: `${base}-p${k}`, "aria-labelledby": `${base}-t${k}` }, it.el);
+    bar.append(tab);
+    panes.append(pane);
+    return { id: it.id, tab, pane };
+  });
+  bar.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    const vis = list.filter((x) => !x.tab.hidden);
+    const i = vis.findIndex((x) => x.id === on);
+    const nx = vis[(i + (e.key === "ArrowRight" ? 1 : -1) + vis.length) % vis.length];
+    select(nx.id, true);
+    nx.tab.focus();
+    e.preventDefault();
+  });
+  const api = {
+    el: h("div", { class: "evo-tabbox" }, bar, panes),
+    touched: false,
+    get on() {
+      return on;
+    },
+    select,
+    /** 탭 하나를 보이거나 감춘다(감춘 칸은 높이에도 들지 않는다) */
+    show(id, yes) {
+      const x = list.find((y) => y.id === id);
+      if (!x) return;
+      x.tab.hidden = !yes;
+      x.pane.hidden = !yes;
+    },
+  };
+  function select(id, byUser = false) {
+    on = id;
+    for (const x of list) {
+      const yes = x.id === id;
+      x.tab.setAttribute("aria-selected", String(yes));
+      x.tab.tabIndex = yes ? 0 : -1;
+      x.pane.classList.toggle("on", yes);
+    }
+    if (byUser) api.touched = true;
+  }
+  select(first);
+  return api;
+}
+
+/** 장 끝 해설 자리: 이 장에서 나올 수 있는 가장 긴 해설(상대·고른 결과 가운데 가장 긴 것 + 마무리)로 자리를 미리 잡는다 */
+function narrGhost(tx) {
+  const pool = [...Object.values(tx.foes || {}), ...Object.values(tx.choices || {}).map((c) => c.result)];
+  const lines = [];
+  if (pool.length) lines.push(pool.reduce((a, b) => (b.length > a.length ? b : a)));
+  if (tx.end) lines.push(tx.end);
+  return lines.length ? lines : null;
+}
+
+// ── 무대 ─────────────────
+// 장마다 높이가 달라 장을 넘길 때마다 화면 전체 스크롤바가 생겼다 없어졌다 했다(사용자 11-12).
+// '신뢰의 진화'처럼 머리 아래 남은 화면을 고정된 무대로 쓴다.
+// - 배율 s: 넓은 화면은 논리 너비 1100·높이 600, 세로 화면은 너비 380·높이 560 이 들어가게(무대는 남은 화면을 꽉 채운다)
+// - 장 배율 f: 그래도 장이 무대 칸보다 길면 그 장만 더 줄인다. 장 안에서 나중에 나오는 것(해설·결과·정체)은 자리를 미리 잡아 두어 f 가 흔들리지 않는다
+const GEOM = {
+  wide: { w: 1100, h: 600, max: 1.25 },
+  tall: { w: 380, h: 560, max: 1.35 },
+};
+const WIDE_AT = 1.2; // 남은 화면의 가로 ÷ 세로가 이 이상이면 넓은 배치
+const S_MIN = 0.5;
+const F_MIN = 0.6; // 이보다 더 줄여야 하면 더 줄이지 않고 장 칸 안에서 스크롤한다(아주 낮은 창)
 
 // ── 이야기 전체 ─────────────────
 export function evolutionStoryView(main, entry, params) {
   const V = compileVariant(findEntry("classic"));
   const LAST = EVO_CHAPTERS.length - 1;
+  const T = EVO_TEXT[lang() === "en" ? "en" : "ko"];
   const done = new Set(); // 놀이를 끝낸 장(2·3장의 ▶ 를 켠다)
+  const root = document.documentElement;
   let alive = true;
   let token = 0;
-  let cur = null; // { n, api }
-  const book = h("div", { class: "evo-book" });
+  let cur = null; // { n, api, slide, fit, f }
+  let mode = null;
+
+  const where = h("b");
+  const body = h("div", { class: "evo-body" });
+  const navBox = h("div", { class: "evo-navbox" });
+  const page = h("article", { class: "evo-page" }, h("div", { class: "evo-top" }, h("span", { class: "evo-where" }, T.title, " · ", where)), body, navBox);
+  const stage = h("div", { class: "evo-stage" }, page);
+  const book = h("div", { class: "evo-book" }, stage);
   main.append(book);
+  root.classList.add("evo-on");
+  window.scrollTo(0, 0);
+
   const onKey = (e) => {
     if (typing(e) || e.altKey || e.ctrlKey || e.metaKey) return;
     if (cur && cur.api.key && cur.api.key(e)) e.preventDefault();
   };
   document.addEventListener("keydown", onKey);
+  let settle = 0;
+  const onResize = () => {
+    if (!alive) return;
+    book.classList.add("evo-resizing");
+    frame();
+    arrange();
+    fitNow(false);
+    clearTimeout(settle);
+    settle = setTimeout(() => book.classList.remove("evo-resizing"), 200);
+  };
+  window.addEventListener("resize", onResize);
+  // 장 안의 것이 커지거나 작아지면(글꼴이 늦게 오거나 해설이 길어지면) 다시 맞춘다
+  const ro = typeof ResizeObserver === "function" ? new ResizeObserver(() => alive && fitNow(true)) : null;
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => alive && (frame(), arrange(), fitNow(false)));
 
   const first = Number.parseInt(params && params.ch, 10);
-  show(Number.isInteger(first) && first >= 0 && first <= LAST ? first : 0, 0);
+  try {
+    frame();
+    show(Number.isInteger(first) && first >= 0 && first <= LAST ? first : 0, 0);
+  } catch (e) {
+    // 그리다 멈추면 문서 스크롤을 되돌려 놓는다(오류 화면은 app.js 가 그린다)
+    alive = false;
+    document.removeEventListener("keydown", onKey);
+    window.removeEventListener("resize", onResize);
+    if (ro) ro.disconnect();
+    root.classList.remove("evo-on");
+    throw e;
+  }
 
   return {
     destroy() {
@@ -339,13 +457,80 @@ export function evolutionStoryView(main, entry, params) {
       token += 1;
       if (cur && cur.api.destroy) cur.api.destroy();
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onResize);
+      clearTimeout(settle);
+      if (ro) ro.disconnect();
+      root.classList.remove("evo-on");
     },
   };
+
+  /** 무대 크기와 배율, 넓은·세로 배치를 정한다 */
+  function frame() {
+    const head = document.querySelector("body > header");
+    const topY = head ? head.offsetTop + head.offsetHeight : 0;
+    const W = root.clientWidth;
+    const H = Math.max(240, window.innerHeight - topY);
+    const m = W / H >= WIDE_AT ? "wide" : "tall";
+    const g = GEOM[m];
+    const sc = Math.max(S_MIN, Math.min(g.max, W / g.w, H / g.h));
+    book.style.height = `${H}px`;
+    stage.style.width = `${W / sc}px`;
+    stage.style.height = `${H / sc}px`;
+    stage.style.transform = `scale(${sc})`;
+    book.dataset.scale = sc.toFixed(3);
+    mode = m;
+    page.dataset.mode = m;
+  }
+
+  /** 배치(넓은·세로)와 장 칸 너비에 따라 장이 제 것들을 다시 놓는다(장마다 바뀔 때만 옮긴다) */
+  function arrange() {
+    if (cur && cur.api.onMode) cur.api.onMode(mode, body.clientWidth);
+  }
+
+  /** 지금 장을 장 칸에 맞춘다(넘치면 f 배로 줄여 가운데에) */
+  function fitNow(animate) {
+    if (!cur) return;
+    const bw = body.clientWidth;
+    const bh = body.clientHeight;
+    page.style.setProperty("--bw", `${bw}px`);
+    page.style.setProperty("--bh", `${bh}px`);
+    const box = cur.fit;
+    box.style.width = `${bw}px`;
+    const nh = box.offsetHeight;
+    let f = nh > bh + 1 ? bh / nh : 1;
+    const scroll = f < F_MIN;
+    if (scroll) f = F_MIN;
+    f = Math.floor(f * 1000) / 1000;
+    cur.slide.classList.toggle("evo-scroll", scroll);
+    box.classList.toggle("evo-anim", Boolean(animate) && cur.f !== undefined && cur.f !== f);
+    box.style.setProperty("--f", String(f));
+    cur.f = f;
+    cur.slide.dataset.f = String(f);
+  }
 
   function go(n) {
     if (!alive || n < 0 || n > LAST || (cur && cur.n === n)) return;
     show(n, cur && n < cur.n ? -1 : 1);
-    window.scrollTo(0, 0);
+  }
+
+  /** 앞 장은 밀려 나가고 새 장이 들어온다(움직임 줄이기면 바로 바뀐다) */
+  function swap(old, slide, dir) {
+    if (!old) return;
+    old.classList.add("leaving");
+    old.inert = true;
+    old.setAttribute("aria-hidden", "true");
+    if (!dir || reducedMotion() || !slide.animate) {
+      old.remove();
+      return;
+    }
+    const dx = 56 * Math.sign(dir);
+    const easing = "cubic-bezier(.2,.7,.2,1)";
+    const out = old.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: `translateX(${-dx}px)` }], { duration: 240, easing, fill: "forwards" });
+    out.finished.then(
+      () => old.remove(),
+      () => old.remove(),
+    );
+    slide.animate([{ opacity: 0, transform: `translateX(${dx}px)` }, { opacity: 1, transform: "none" }], { duration: 340, easing });
   }
 
   function show(n, dir) {
@@ -353,7 +538,6 @@ export function evolutionStoryView(main, entry, params) {
     const my = ++token;
     const live = () => alive && my === token;
     const ch = EVO_CHAPTERS[n];
-    const T = EVO_TEXT[lang() === "en" ? "en" : "ko"];
     const tx = T[ch.id];
     try {
       history.replaceState(history.state, "", `#/v/${entry.id}?ch=${n}`);
@@ -362,50 +546,49 @@ export function evolutionStoryView(main, entry, params) {
     }
 
     const title = h("h1", { class: "evo-title", tabindex: "-1" }, tx.title);
-    const story = h(
-      "div",
-      { class: "evo-story" },
-      h("header", { class: "evo-head" }, sticker(t("{n}장", { n }), "evo-tag"), title),
-      ...tx.body.map((p) => h("p", { class: "evo-txt" }, p)),
-    );
-    const side = h("div", { class: "evo-side" });
-    const narrBox = h("div", { class: "evo-narr", hidden: true, "aria-live": "polite" });
+    const paras = h("div", { class: "evo-paras" }, ...tx.body.map((p) => h("p", { class: "evo-txt" }, p)));
+    const ghost = narrGhost(tx);
+    // 보이는 해설 상자는 글 길이만큼, 자리는 가장 긴 해설을 담은 보이지 않는 상자가 잡는다
+    const narrNow = h("div", { class: "evo-narr", "aria-live": "polite" });
+    const narrBox = ghost ? h("div", { class: "evo-narr-wrap" }, h("div", { class: "evo-narr evo-narr-ghost", "aria-hidden": "true" }, ghost.map((l) => h("p", {}, l))), narrNow) : null;
+    const text = h("div", { class: "evo-text" }, paras, narrBox);
+    const story = h("div", { class: "evo-story" }, h("header", { class: "evo-head" }, sticker(t("{n}장", { n }), "evo-tag"), title), text);
+    const left = h("div", { class: "evo-left" }, story);
     const play = h("div", { class: "evo-play" });
+    const grid = h("div", { class: "evo-grid" }, left, play);
+    const fit = h("div", { class: "evo-fit" }, grid);
+    const slide = h("div", { class: "evo-slide", "data-kind": ch.kind, "data-ch": ch.id }, fit);
+
     const gated = (ch.kind === "duel" || ch.kind === "league") && !done.has(ch.id);
     const next =
       n < LAST
         ? h("button", { class: "evo-next", type: "button", disabled: gated, onclick: () => go(n + 1) }, t("{n}장", { n: n + 1 }), " ▶")
         : h("button", { class: "evo-next", type: "button", onclick: () => go(0) }, t("처음부터"));
-    const nav = h(
-      "nav",
-      { class: "evo-nav", "aria-label": t("장 넘기기") },
-      n > 0 ? h("button", { class: "evo-prev", type: "button", onclick: () => go(n - 1) }, "← ", t("{n}장", { n: n - 1 })) : h("span"),
+    navBox.replaceChildren(
       h(
-        "div",
-        { class: "evo-dots" },
-        EVO_CHAPTERS.map((c, i) =>
-          h("button", {
-            type: "button",
-            class: i === n ? "on" : i < n ? "past" : "",
-            "aria-label": t("{n}장: {title}", { n: i, title: T[c.id].title }),
-            "aria-current": i === n ? "step" : undefined,
-            onclick: () => go(i),
-          }),
+        "nav",
+        { class: "evo-nav", "aria-label": t("장 넘기기") },
+        n > 0 ? h("button", { class: "evo-prev", type: "button", onclick: () => go(n - 1) }, "← ", t("{n}장", { n: n - 1 })) : h("span"),
+        h(
+          "div",
+          { class: "evo-dots" },
+          EVO_CHAPTERS.map((c, i) =>
+            h("button", {
+              type: "button",
+              class: i === n ? "on" : i < n ? "past" : "",
+              "aria-label": t("{n}장: {title}", { n: i, title: T[c.id].title }),
+              "aria-current": i === n ? "step" : undefined,
+              onclick: () => go(i),
+            }),
+          ),
         ),
+        next,
       ),
-      next,
     );
-    const page = h(
-      "article",
-      { class: "evo-page", "data-kind": ch.kind, "data-ch": ch.id },
-      // 위쪽 탭에서 여는 화면이라 '뒤로' 링크는 없다(사용자 11-10)
-      h("div", { class: "evo-top" }, h("span", { class: "evo-where" }, T.title, " · ", h("b", {}, `${n} / ${LAST}`))),
-      h("div", { class: "evo-grid" }, h("div", { class: "evo-left" }, story, side, narrBox), play),
-      nav,
-    );
-    if (dir && !reducedMotion()) page.classList.add(dir > 0 ? "evo-in-next" : "evo-in-prev");
-    book.replaceChildren(page);
+    where.textContent = `${n} / ${LAST}`;
 
+    const old = cur ? cur.slide : null;
+    body.append(slide);
     const ctx = {
       V,
       ch,
@@ -414,13 +597,17 @@ export function evolutionStoryView(main, entry, params) {
       n,
       entry,
       story,
-      side,
+      paras,
+      left,
       play,
+      grid,
       live,
       narr(...lines) {
+        if (!narrBox) return;
         const list = lines.filter(Boolean);
-        narrBox.replaceChildren(...list.map((l) => h("p", {}, l)));
-        narrBox.hidden = !list.length;
+        narrNow.replaceChildren(...list.map((l) => h("p", {}, l)));
+        narrNow.classList.toggle("on", list.length > 0);
+        text.classList.toggle("narrated", list.length > 0);
       },
       finish() {
         done.add(ch.id);
@@ -428,7 +615,14 @@ export function evolutionStoryView(main, entry, params) {
       },
     };
     const api = (BUILD[ch.kind] || textChapter)(ctx) || {};
-    cur = { n, api };
+    cur = { n, api, slide, fit, f: undefined };
+    arrange();
+    fitNow(false);
+    if (ro) {
+      ro.disconnect();
+      ro.observe(fit);
+    }
+    swap(old, slide, dir);
     if (dir) title.focus({ preventScroll: true });
   }
 }
@@ -436,24 +630,37 @@ export function evolutionStoryView(main, entry, params) {
 const BUILD = { text: textChapter, one: oneChapter, duel: duelChapter, league: leagueChapter, evolve: evolveChapter, choice: choiceChapter, sandbox: sandboxChapter };
 
 // ── 0·10장: 글 ─────────────────
-function textChapter({ ch, tx, story, play, entry }) {
-  if (ch.id === "intro") {
-    play.append(h("div", { class: "evo-cast-row", "aria-hidden": "true" }, EVO_CAST.map((id) => face(id, 46))));
-    return {};
-  }
+function textChapter(ctx) {
+  return ctx.ch.id === "intro" ? introChapter(ctx) : outroChapter(ctx);
+}
+
+function introChapter({ play }) {
+  play.append(h("div", { class: "evo-cast-row", "aria-hidden": "true" }, EVO_CAST.map((id) => face(id, 0))));
+  return {};
+}
+
+function outroChapter({ tx, story, play, grid, entry }) {
   if (tx.credit) story.append(h("p", { class: "evo-credit" }, tx.credit));
   const L = EVO_LINES[lang() === "en" ? "en" : "ko"];
-  play.append(
-    card(
-      cardTitle(t("등장인물")),
-      h(
-        "ul",
-        { class: "evo-cast" },
-        EVO_CAST.map((id) => h("li", { "data-bot": id }, face(id, 56), h("div", {}, h("b", {}, botName(id)), bubble(L[id], "left"), h("p", { class: "evo-sm" }, botInfo(id).desc)))),
-      ),
-    ),
+  // 넓은 화면: 아홉 명을 다 펼친다
+  const list = h(
+    "ul",
+    { class: "evo-cast" },
+    EVO_CAST.map((id) => h("li", { "data-bot": id }, face(id, 0), h("div", {}, h("b", {}, botName(id)), bubble(L[id], "left"), h("p", { class: "evo-sm" }, botInfo(id).desc)))),
   );
-  if (entry.sources && entry.sources.length) play.append(card(cardTitle(t("출처")), sourcesList(entry.sources)));
+  // 세로 화면: 얼굴을 누르면 아래에 그 사람 소개가 나온다(소개 아홉을 한 칸에 겹쳐 두어 높이가 그대로다)
+  const details = EVO_CAST.map((id) => h("div", { class: "evo-pick-d", "data-bot": id }, h("b", {}, botName(id)), bubble(L[id], "up"), h("p", { class: "evo-sm" }, botInfo(id).desc)));
+  const btns = EVO_CAST.map((id) =>
+    h("button", { type: "button", class: "evo-pick-b", "data-bot": id, "aria-pressed": "false", onclick: () => pick(id) }, face(id, 0), h("span", {}, botName(id))),
+  );
+  function pick(id) {
+    btns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.bot === id)));
+    details.forEach((d) => d.classList.toggle("on", d.dataset.bot === id));
+  }
+  pick(EVO_CAST[0]);
+  const picker = h("div", { class: "evo-pick" }, h("div", { class: "evo-pick-faces", role: "group", "aria-label": t("등장인물") }, btns), h("div", { class: "evo-pick-ds" }, details));
+  play.append(card(cardTitle(t("등장인물")), list, picker));
+  if (entry.sources && entry.sources.length) grid.append(h("section", { class: "evo-srcs" }, h("h2", { class: "evo-card-t" }, t("출처")), sourcesList(entry.sources)));
   return {};
 }
 
@@ -464,7 +671,8 @@ function oneChapter({ V, ch, tx, play, narr }) {
   const opHand = h("span", { class: "evo-big" });
   const myHand = h("span", { class: "evo-big" });
   const verdict = h("p", { class: "evo-verdict", "aria-live": "polite" });
-  const again = h("button", { class: "btn evo-wide", type: "button", hidden: true, onclick: () => ready() }, t("한 판 더"));
+  // '한 판 더'는 자리를 잡아 두고 보이기만 바꾼다(나타날 때 장 높이가 바뀌지 않게)
+  const again = h("button", { class: "btn evo-again evo-off", type: "button", onclick: () => ready() }, t("한 판 더"));
   const grid = handGrid(V, { onPick: pick, label: t("낼 손") });
   const vs = h(
     "div",
@@ -473,7 +681,7 @@ function oneChapter({ V, ch, tx, play, narr }) {
     h("div", { class: "evo-score" }, "VS"),
     h("div", { class: "evo-side-col" }, face(null, 56, { me: true }), h("b", {}, t("나")), myHand),
   );
-  play.append(card(vs, verdict, grid.el, again));
+  play.append(card(vs, h("div", { class: "evo-verdict-row" }, verdict, again), grid.el));
   function pick(i) {
     const b = bot.pick({ history: hist });
     hist.push({ me: b, op: i });
@@ -483,7 +691,7 @@ function oneChapter({ V, ch, tx, play, narr }) {
     verdict.textContent = c > 0 ? t("이김") : c < 0 ? t("짐") : t("비김");
     verdict.dataset.r = c > 0 ? "w" : c < 0 ? "l" : "t";
     grid.lock(true);
-    again.hidden = false;
+    again.classList.remove("evo-off");
     narr(tx.end);
     again.focus({ preventScroll: true });
   }
@@ -493,7 +701,7 @@ function oneChapter({ V, ch, tx, play, narr }) {
     verdict.textContent = "";
     delete verdict.dataset.r;
     grid.lock(false);
-    again.hidden = true;
+    again.classList.add("evo-off");
   }
   return { key: (e) => grid.keyHandler(e) };
 }
@@ -529,9 +737,9 @@ function duelChapter({ V, ch, tx, play, narr, finish }) {
   );
   const nextBtn = h("button", { class: "btn btn-ink evo-wide", type: "button", onclick: () => start(fi + 1) });
   const revealBox = h("div", { class: "evo-reveal" });
-  const revealCard = card(revealBox, nextBtn);
-  revealCard.hidden = true;
-  play.append(progress, card(vs, key, cells, grid.el), revealCard);
+  // 열 판을 마치면 손 단추 자리에 상대 정체가 나온다(같은 칸에 겹쳐 두어 높이가 그대로다)
+  const reveal = h("div", { class: "evo-reveal-box evo-off" }, revealBox, nextBtn);
+  play.append(progress, card(vs, key, cells, h("div", { class: "evo-slot" }, grid.el, reveal)));
 
   function draw() {
     progress.replaceChildren(
@@ -567,7 +775,8 @@ function duelChapter({ V, ch, tx, play, narr, finish }) {
     bot = opponentFor(V, ch, i);
     hist = [];
     rows = [];
-    revealCard.hidden = true;
+    reveal.classList.add("evo-off");
+    grid.el.classList.remove("evo-off");
     grid.lock(false);
     draw();
   }
@@ -577,22 +786,22 @@ function duelChapter({ V, ch, tx, play, narr, finish }) {
     hist.push({ me: b, op: my });
     rows.push({ me: my, op: b, c: V.cmp(my, b) });
     draw();
-    if (rows.length === R) reveal();
+    if (rows.length === R) showReveal();
   }
-  function reveal() {
+  function showReveal() {
     const id = ch.foes[fi].id;
     known.add(fi);
     grid.lock(true);
     draw();
-    revealBox.replaceChildren(face(id, 72, { badge: t("정체") }), h("div", {}, h("h3", { class: "evo-reveal-t" }, botName(id)), bubble(L[id], "left")));
+    revealBox.replaceChildren(face(id, 64, { badge: t("정체") }), h("div", {}, h("h3", { class: "evo-reveal-t" }, botName(id)), bubble(L[id], "left")));
     const last = fi === F - 1;
     nextBtn.hidden = last;
     nextBtn.textContent = t("다음 상대 ({i} / {n})", { i: fi + 2, n: F });
-    revealCard.hidden = false;
+    grid.el.classList.add("evo-off");
+    reveal.classList.remove("evo-off");
     narr(tx.foes[id], last ? tx.end : null);
     if (last) finish();
     else nextBtn.focus({ preventScroll: true });
-    revealCard.scrollIntoView({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
   }
   start(0);
   return { key: (e) => grid.keyHandler(e) };
@@ -626,15 +835,31 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
   const net = h("div", { class: "evo-league" }, svg, ...who);
   const hint = h("p", { class: "evo-sm evo-center" }, t("얼굴을 눌러 한 명에게 거십시오."));
   const startBtn = h("button", { class: "btn btn-ink evo-wide", type: "button", disabled: true, onclick: () => run() }, t("리그 시작"));
+  const act = h("div", { class: "evo-lg-act" }, hint, startBtn);
+  // 결과 막대는 처음부터 0 에서 인물 차례로 서 있다가, 리그가 끝나면 순위대로 다시 선다
+  // (처음부터 순위 차례면 막대가 자라기 전에 1등이 보여서 건 재미가 없다: 컨셉 11-10)
   const bars = h("div", { class: "evo-bars" });
+  const rows = new Map(
+    ids.map((id) => {
+      const fill = h("i");
+      const val = h("span", { class: "evo-bar-v" }, "0");
+      const row = h("div", { class: "evo-bar", "data-bot": id }, face(id, 26), h("span", {}, botName(id)), h("span", { class: "evo-bar-tr" }, fill), val);
+      bars.append(row);
+      return [id, { row, fill, val }];
+    }),
+  );
   const winRow = h("div", { class: "evo-win1" });
-  const betLine = h("p", { class: "evo-sm", "aria-live": "polite" });
-  const resCard = card(cardTitle(t("결과"), h("small", { class: "evo-sm" }, ` ${t("한 경기 {n}판", { n: ch.rounds })}`)), bars, winRow, betLine);
-  resCard.hidden = true;
-  play.append(card(net, hint, startBtn), resCard);
+  const betLine = h("p", { class: "evo-sm evo-bet", "aria-live": "polite" });
+  const res = h("div", { class: "evo-lg-res" }, bars, winRow, betLine);
+  // 넓은 화면: 오각형 카드 옆에 결과 카드. 세로 화면: 결과가 오각형 아래 '리그 시작' 자리에 겹쳐 나온다
+  const slot = h("div", { class: "evo-slot evo-lg-slot" }, act);
+  const resCard = card(cardTitle(t("결과"), h("small", { class: "evo-sm" }, ` ${t("한 경기 {n}판", { n: ch.rounds })}`)));
+  play.classList.add("two");
+  play.dataset.state = "ready";
+  play.append(h("section", { class: "evo-card evo-lg-card" }, net, slot), resCard);
 
   function choose(id) {
-    if (startBtn.dataset.ran) return;
+    if (play.dataset.state !== "ready") return;
     bet = id;
     who.forEach((b, i) => {
       const on = ids[i] === id;
@@ -645,24 +870,12 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
     startBtn.disabled = false;
   }
   async function run() {
-    startBtn.dataset.ran = "1";
+    play.dataset.state = "run";
     startBtn.disabled = true;
     who.forEach((b) => (b.disabled = true));
-    hint.hidden = true;
     const r = leagueFor(V, ch);
     const max = Math.max(1, ...Object.values(r.totals).map(Math.abs));
     const now = Object.fromEntries(ids.map((id) => [id, 0]));
-    // 처음엔 인물 차례로 세우고, 리그가 다 끝난 뒤에 순위대로 다시 세운다
-    // (처음부터 순위 차례면 막대가 자라기 전에 1등이 보여서 건 재미가 없다: 컨셉 11-10)
-    const rows = new Map(
-      ids.map((id) => {
-        const fill = h("i");
-        const val = h("span", { class: "evo-bar-v" }, "0");
-        const row = h("div", { class: "evo-bar", "data-bot": id }, face(id, 26), h("span", {}, botName(id)), h("span", { class: "evo-bar-tr" }, fill), val);
-        bars.append(row);
-        return [id, { row, fill, val }];
-      }),
-    );
     const setBar = (id) => {
       const v = now[id];
       const w = (50 * Math.abs(v)) / max;
@@ -671,7 +884,6 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
       fill.style.width = `${w}%`;
       val.textContent = signed(v);
     };
-    resCard.hidden = false;
     const quick = reducedMotion() || fastMode();
     for (const p of r.pairs) {
       if (!live()) return;
@@ -692,22 +904,37 @@ function leagueChapter({ V, ch, tx, play, narr, finish, live }) {
     if (!quick) await sleep(480);
     if (!live()) return;
     const top = r.order[0];
+    rows.get(top).row.querySelector(".evo-face").append(sticker(t("1등"), "evo-badge"));
     winRow.replaceChildren(face(top, 44, { badge: t("1등") }), bubble(L[top], "left"));
     const place = r.order.indexOf(bet) + 1;
     betLine.textContent = place === 1 ? t("내 선택이 1등!") : t("내 선택은 {n}등", { n: place });
+    play.dataset.state = "done";
     narr(tx.end);
     finish();
   }
-  return {};
+  let laid = null;
+  return {
+    onMode(m) {
+      if (m === laid) return;
+      laid = m;
+      if (m === "tall") {
+        slot.append(res);
+        resCard.hidden = true;
+      } else {
+        resCard.append(res);
+        resCard.hidden = false;
+      }
+    },
+  };
 }
 
-/** 줄들을 새 차례로 옮긴다. 움직임을 줄이지 않았으면 있던 자리에서 미끄러져 간다(FLIP) */
+/** 줄들을 새 차례로 옮긴다. 움직임을 줄이지 않았으면 있던 자리에서 미끄러져 간다(FLIP). 무대가 배율로 커져 있어 화면 좌표 대신 offsetTop 으로 잰다 */
 function reorder(parent, els, quick) {
-  const before = quick ? null : new Map(els.map((el) => [el, el.getBoundingClientRect().top]));
+  const before = quick ? null : new Map(els.map((el) => [el, el.offsetTop]));
   parent.append(...els);
   if (!before) return;
   for (const el of els) {
-    const dy = before.get(el) - el.getBoundingClientRect().top;
+    const dy = before.get(el) - el.offsetTop;
     if (Math.abs(dy) > 0.5 && el.animate) el.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: 450, easing: "cubic-bezier(.2,.7,.2,1)" });
   }
 }
@@ -718,13 +945,13 @@ function evolveChapter({ V, ch, tx, play, narr, live }) {
   const setup = evoSetup(ch);
   const stepBtn = h("button", { class: "btn btn-ink", type: "button", onclick: () => world.step(1) }, t("한 세대"));
   const runBtn = h("button", { class: "btn", type: "button", onclick: () => world.run() }, t("끝까지"));
-  const againBtn = h("button", { class: "btn", type: "button", hidden: true, onclick: () => (narr(), world.reset(setup, V)) }, t("처음부터"));
-  play.classList.add("two");
-  play.append(...worldCards(world, [stepBtn, runBtn, againBtn]));
+  // '처음부터'는 끝나야 보이지만 자리는 늘 잡아 둔다
+  const againBtn = h("button", { class: "btn evo-off", type: "button", onclick: () => (narr(), world.reset(setup, V)) }, t("처음부터"));
+  play.append(worldBox(world, [stepBtn, runBtn, againBtn]));
   world.onChange(() => {
     const end = world.finished();
     stepBtn.disabled = runBtn.disabled = end || world.busy;
-    againBtn.hidden = !end;
+    againBtn.classList.toggle("evo-off", !end);
     if (end && world.evo.generation > 0) narr(tx.end);
   });
   world.reset(setup, V);
@@ -732,16 +959,15 @@ function evolveChapter({ V, ch, tx, play, narr, live }) {
 }
 
 // ── 5–8장: 고르면 끝까지 ─────────────────
-function choiceChapter({ V, ch, tx, play, narr, live }) {
+function choiceChapter({ V, ch, tx, story, play, narr, live }) {
   const world = evoWorld(live);
   let picked = null;
   const btns = ch.choices.map((c) =>
     h("button", { class: "evo-choice", type: "button", "aria-pressed": "false", "data-id": c.id, onclick: () => pick(c.id) }, tx.choices[c.id].label),
   );
-  const row = h("div", { class: "evo-choices", role: "group", "aria-label": t("고르기") }, ...btns);
-  play.classList.add("two");
-  const [ringCard, chartCard] = worldCards(world, null);
-  play.append(h("div", { class: "evo-choice-bar" }, row), ringCard, chartCard);
+  // 고르기는 질문 글 바로 아래(해설은 그 아래)
+  story.append(h("div", { class: "evo-choices", role: "group", "aria-label": t("고르기") }, ...btns));
+  play.append(worldBox(world, null));
   world.onChange(() => {
     if (picked && world.finished() && world.evo.generation > 0) narr(tx.choices[picked].result, tx.end);
   });
@@ -760,7 +986,7 @@ function choiceChapter({ V, ch, tx, play, narr, live }) {
 }
 
 // ── 9장: 놀이터 ─────────────────
-function sandboxChapter({ ch, side, play, live }) {
+function sandboxChapter({ ch, tx, play, live }) {
   const base = evoSetup(ch);
   const lim = ch.limits;
   const st = { population: { ...base.population }, rounds: base.rounds, cull: base.cull, noise: base.noise, payoff: { ...base.payoff }, seed: base.seed, maxGen: base.maxGen, variant: base.variant };
@@ -770,12 +996,12 @@ function sandboxChapter({ ch, side, play, live }) {
   const total = () => Object.values(st.population).reduce((a, b) => a + b, 0);
 
   // 사람: 3×3, − n +
-  const sum = h("small", { class: "evo-sm" });
+  const sum = h("p", { class: "evo-sm evo-sum" });
   const cells = EVO_CAST.map((id) => {
     const n = h("b", {}, num(st.population[id]));
     const minus = h("button", { type: "button", class: "evo-step", "aria-label": t("{name} 한 명 빼기", { name: botName(id) }), onclick: () => bump(id, -1) }, MINUS);
     const plus = h("button", { type: "button", class: "evo-step", "aria-label": t("{name} 한 명 더하기", { name: botName(id) }), onclick: () => bump(id, 1) }, "+");
-    return { id, n, minus, plus, el: h("div", { class: "evo-cnt", "data-bot": id }, face(id, 30), h("span", {}, botName(id)), h("div", { class: "evo-cnt-n" }, minus, n, plus)) };
+    return { id, n, minus, plus, el: h("div", { class: "evo-cnt", "data-bot": id }, face(id, 28), h("span", {}, botName(id)), h("div", { class: "evo-cnt-n" }, minus, n, plus)) };
   });
   function bump(id, d) {
     const v = st.population[id] + d;
@@ -783,9 +1009,8 @@ function sandboxChapter({ ch, side, play, live }) {
     st.population[id] = v;
     changed();
   }
-  const peopleCard = card(cardTitle(t("사람"), sum), h("div", { class: "evo-cnts" }, cells.map((c) => c.el)));
 
-  // 규칙: 변종 · 밀대 셋 · 점수 셋
+  // 규칙: 변종 · 밀대 셋
   const vSel = selectBox({ label: t("변종"), value: st.variant, options: variants.map((v) => ({ id: v.id, name: v.name })), onChange: (id) => ((st.variant = id), (V = compileVariant(findEntry(id))), changed()) });
   const slider = (label, key, [lo, hi], step, show) => {
     const out = h("output", {});
@@ -800,6 +1025,7 @@ function sandboxChapter({ ch, side, play, live }) {
     return h("label", { class: "evo-sl" }, h("span", { class: "evo-sl-t" }, h("span", {}, label), out), input, h("span", { class: "evo-sl-ends" }, h("span", {}, show(lo)), h("span", {}, show(hi))));
   };
   const pctOf = (v) => `${Math.round(v * 100)}%`;
+  // 점수: 이김 · 비김 · 짐
   const payBox = (label, key, lo, hi) => {
     const v = h("b", {}, signed(st.payoff[key]));
     const set = (d) => {
@@ -822,26 +1048,40 @@ function sandboxChapter({ ch, side, play, live }) {
       ),
     );
   };
-  const rulesCard = card(
-    cardTitle(t("규칙")),
-    vSel.el,
-    slider(t("한 경기 판 수"), "rounds", lim.rounds, 1, (v) => t("{n}판", { n: num(v) })),
-    slider(t("세대마다 바꿀 사람"), "cull", lim.cull, 1, (v) => t("@people:{n}명", { n: num(v) })),
-    slider(t("실수"), "noise", lim.noise, 0.01, pctOf),
-    h("p", { class: "evo-sl-t" }, h("span", {}, t("점수"))),
-    h("div", { class: "evo-pays" }, payBox(t("이김"), "win", 0, 3), payBox(t("비김"), "tie", -1, 1), payBox(t("짐"), "lose", -3, 0)),
+  // 세로 화면에서는 이야기 글(설명)과 그래프도 탭으로 들어간다. 넓은 화면은 글이 왼쪽 칸에, 그래프가 따로 카드에 있어 두 탭을 감춘다
+  const chartPane = h("div", { class: "evo-chartpane" });
+  const panel = tabsBox(
+    [
+      { id: "about", label: t("설명"), el: h("div", { class: "evo-paras" }, ...tx.body.map((p) => h("p", { class: "evo-txt" }, p))) },
+      { id: "people", label: t("사람"), el: h("div", {}, h("div", { class: "evo-cnts" }, cells.map((c) => c.el)), sum) },
+      {
+        id: "rules",
+        label: t("규칙"),
+        el: h(
+          "div",
+          {},
+          vSel.el,
+          slider(t("한 경기 판 수"), "rounds", lim.rounds, 1, (v) => t("{n}판", { n: num(v) })),
+          slider(t("세대마다 바꿀 사람"), "cull", lim.cull, 1, (v) => t("@people:{n}명", { n: num(v) })),
+          slider(t("실수"), "noise", lim.noise, 0.01, pctOf),
+        ),
+      },
+      { id: "score", label: t("점수"), el: h("div", { class: "evo-pays" }, payBox(t("이김"), "win", 0, 3), payBox(t("비김"), "tie", -1, 1), payBox(t("짐"), "lose", -3, 0)) },
+      { id: "chart", label: t("그래프"), el: chartPane },
+    ],
+    "people",
   );
-  side.append(peopleCard, rulesCard);
+  const panelCard = h("section", { class: "evo-card evo-panel" }, panel.el);
 
-  const seedNote = h("p", { class: "evo-sm evo-center" });
+  const seedNote = h("p", { class: "evo-sm evo-center evo-seed" });
   const stepBtn = h("button", { class: "btn btn-ink", type: "button", onclick: () => world.step(1) }, t("한 세대"));
   const runBtn = h("button", { class: "btn", type: "button", onclick: () => world.run() }, t("끝까지"));
   const resetBtn = h("button", { class: "btn", type: "button", onclick: () => world.reset(setup(), V) }, t("처음부터"));
   const seedBtn = h("button", { class: "btn", type: "button", onclick: () => ((st.seed = randomSeed() % 100000), world.reset(setup(), V)) }, t("씨앗 바꾸기"));
-  play.classList.add("two");
-  const [ringCard, chartCard] = worldCards(world, [stepBtn, runBtn, resetBtn, seedBtn]);
-  ringCard.append(seedNote);
-  play.append(ringCard, chartCard);
+  const btnRow = h("div", { class: "evo-btns evo-btns-4" }, stepBtn, runBtn, resetBtn, seedBtn);
+  const ringCard = h("section", { class: "evo-card evo-ringcard" }, world.ring.el);
+  const chartBody = h("div", { class: "evo-chartbody" }, cardTitle(t("세대마다 사람 수")), world.chart.el);
+  const chartCard = h("section", { class: "evo-card evo-chartcard" });
   world.onChange(() => {
     const end = world.finished();
     stepBtn.disabled = runBtn.disabled = end || world.busy;
@@ -851,7 +1091,7 @@ function sandboxChapter({ ch, side, play, live }) {
   const setup = () => ({ population: { ...st.population }, rounds: st.rounds, cull: st.cull, noise: st.noise, payoff: { ...st.payoff }, seed: st.seed, maxGen: st.maxGen });
   function changed() {
     const n = total();
-    sum.textContent = ` ${t("합 {n}명", { n: num(n) })}`;
+    sum.textContent = t("합 {n}명", { n: num(n) });
     for (const c of cells) {
       c.n.textContent = num(st.population[c.id]);
       c.minus.disabled = st.population[c.id] <= lim.people[0] || n <= lim.total[0];
@@ -860,5 +1100,25 @@ function sandboxChapter({ ch, side, play, live }) {
     world.reset(setup(), V);
   }
   changed();
-  return { destroy: () => world.stop() };
+  let laid = null;
+  return {
+    destroy: () => world.stop(),
+    // 넓은 화면: [고리 · 단추] [탭(사람·규칙·점수)] [그래프 카드]. 칸이 모자라면 그래프도 탭으로.
+    // 세로 화면: [고리 | 단추] 아래에 탭(설명·사람·규칙·점수·그래프)
+    onMode(m, bw) {
+      const v = m === "tall" ? "tall" : bw >= 1320 ? "wide4" : "wide3";
+      if (v === laid) return;
+      laid = v;
+      const chartTab = v !== "wide4";
+      (chartTab ? chartPane : chartCard).append(chartBody);
+      play.dataset.v = v;
+      if (v === "tall") play.replaceChildren(h("div", { class: "evo-sb-top" }, ringCard, h("div", { class: "evo-col" }, btnRow, seedNote)), panelCard, world.status);
+      else play.replaceChildren(...[h("div", { class: "evo-col evo-sb-a" }, ringCard, btnRow, seedNote), panelCard, chartTab ? null : chartCard, world.status].filter(Boolean));
+      panel.show("about", v === "tall");
+      panel.show("chart", chartTab);
+      if (v !== "tall" && panel.on === "about") panel.select("people");
+      if (!chartTab && panel.on === "chart") panel.select("people");
+      if (v === "tall" && !panel.touched) panel.select("about");
+    },
+  };
 }

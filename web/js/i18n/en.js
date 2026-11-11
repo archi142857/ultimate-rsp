@@ -1304,6 +1304,8 @@ export const EN = {
   "고르기": "Choices",
   "등장인물": "The cast",
   "사람": "Players",
+  "설명": "Guide",
+  "그래프": "Chart",
   "합 {n}명": "{n} in total",
   "@people:{n}명": "{n} {n|player|players}",
   "{name} 한 명 빼기": "One fewer {name}",

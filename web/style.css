@@ -2587,6 +2587,21 @@ button.shogi-drop {
 }
 
 /* ── 전략의 진화(장을 넘기는 이야기, 디자인 '전략의 진화 시안': ① 책장 + ③ 만화) ───────────── */
+/* 무대: 머리 아래 남은 화면을 통째로 쓴다. 문서는 스크롤하지 않고, 무대를 화면에 맞춰 키우거나 줄여
+   장마다 모든 것이 한 화면에 보인다(사용자 11-12). 크기는 논리 px(무대 배율이 곱해진다).
+   넓은 배치([data-mode="wide"]): 왼쪽 이야기 + 오른쪽 놀이. 세로 배치([data-mode="tall"]): 한 줄로 쌓는다 */
+html.evo-on,
+html.evo-on body {
+  overflow: hidden;
+}
+html.evo-on .foot {
+  display: none;
+}
+html.evo-on main {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
 .evo-book {
   --c-stubborn: #e34948;
   --c-cycle: #2a78d6;
@@ -2602,8 +2617,9 @@ button.shogi-drop {
   --narr: #fff7d6;
   --narr-ink: #1a1e3a;
   --narr-line: var(--ink);
-  max-width: 1040px;
-  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  height: calc(100vh - 64px); /* 그리기 전 자리. 곧 남은 화면 높이로 맞춘다 */
 }
 :root[data-scheme="dark"] .evo-book {
   --c-stubborn: #ff6b6b;
@@ -2629,27 +2645,73 @@ button.shogi-drop {
 .evo-book [data-bot="pattern"] { --c: var(--c-pattern); }
 .evo-book [data-bot="nash"] { --c: var(--c-nash); }
 
+.evo-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
 .evo-page {
-  display: grid;
-  gap: 4px;
-}
-.evo-in-next {
-  animation: evo-in-next 200ms ease-out;
-}
-.evo-in-prev {
-  animation: evo-in-prev 200ms ease-out;
-}
-@keyframes evo-in-next {
-  from { opacity: 0; transform: translateX(28px); }
-}
-@keyframes evo-in-prev {
-  from { opacity: 0; transform: translateX(-28px); }
-}
-.evo-top {
+  --bw: 1000px; /* 장 칸 너비·높이(무대가 맞출 때 정한다) */
+  --bh: 480px;
+  height: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  padding: 4px 28px 14px;
+}
+.evo-page[data-mode="tall"] {
+  padding: 2px 16px 10px;
+}
+.evo-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.evo-slide {
+  position: absolute;
+  inset: 0;
+}
+.evo-slide.evo-scroll {
+  overflow-y: auto;
+}
+.evo-fit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(var(--f, 1));
+}
+.evo-fit.evo-anim {
+  transition: transform 260ms ease;
+}
+.evo-resizing .evo-fit {
+  transition: none;
+}
+.evo-scroll .evo-fit {
+  top: 0;
+  transform: translate(-50%, 0) scale(var(--f, 1));
+  transform-origin: 50% 0;
+}
+/* 자리는 그대로 두고 감춘다(나중에 나올 것의 자리) */
+.evo-off {
+  visibility: hidden;
+}
+/* 한 칸에 겹쳐 둔다(칸 높이 = 가장 긴 것) */
+.evo-slot {
+  display: grid;
+}
+.evo-slot > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.evo-top {
+  flex: none;
+  display: flex;
   align-items: center;
   gap: 12px;
+  min-height: 28px;
   font-size: 0.8125rem;
   color: var(--muted);
 }
@@ -2658,28 +2720,19 @@ button.shogi-drop {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-.evo-where {
-  padding: 6px 0;
+
+/* 이야기 */
+.evo-story {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
-.evo-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
-}
-/* 좁은 화면: 이야기 → (놀이터 칸) → 놀이 → 해설 상자 */
-.evo-left {
-  display: contents;
-}
-.evo-story { order: 1; }
-.evo-side { order: 2; display: grid; gap: 12px; }
-.evo-side:empty { display: none; }
-.evo-play { order: 3; display: grid; gap: 12px; align-content: start; min-width: 0; }
-.evo-narr { order: 4; }
 .evo-head {
-  margin: 10px 0 6px;
+  margin: 0 0 8px;
 }
 .evo-tag {
   display: inline-block;
+  align-self: flex-start;
   background: var(--hl);
   color: var(--hl-ink);
   border: 2px solid var(--hl-ink);
@@ -2687,22 +2740,23 @@ button.shogi-drop {
   font: 400 13px/1.5 var(--display);
   transform: rotate(-2deg);
   border-radius: 3px;
+  white-space: nowrap;
 }
 .evo-title {
-  font: 400 clamp(1.8125rem, 1.4rem + 1.4vw, 2.25rem) / 1.15 var(--display);
-  margin: 6px 0 4px;
+  font: 400 34px/1.15 var(--display);
+  margin: 8px 0 2px;
   outline: none;
 }
 .evo-txt {
-  font-size: 0.9375rem;
-  line-height: 1.72;
+  font-size: 1rem;
+  line-height: 1.65;
   margin: 0 0 10px;
-  max-width: 62ch;
 }
 .evo-credit {
   font-size: 0.8125rem;
   color: var(--muted);
   line-height: 1.6;
+  margin: 2px 0 0;
 }
 .evo-card {
   background: var(--surface);
@@ -2733,15 +2787,17 @@ button.shogi-drop {
 }
 .evo-btns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+}
+.evo-btns-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .evo-btns .btn {
   border-radius: 12px;
   font-weight: 600;
-}
-.evo-btns .btn[hidden] {
-  display: none;
+  padding: 8px 10px;
+  line-height: 1.2;
 }
 
 /* 얼굴 동그라미(테두리는 인물 색) */
@@ -2820,7 +2876,16 @@ button.shogi-drop {
 .evo-bub-left::after { left: -7px; top: 10px; border-left: 0; border-right-color: var(--ink); }
 .evo-bub-left::before { left: -4.5px; top: 12px; border-width: 5px; border-left: 0; border-right-color: var(--surface); z-index: 1; }
 
-/* 장 끝 해설 상자 */
+/* 장 끝 해설 상자. 가장 긴 해설을 담은 보이지 않는 상자(.evo-narr-ghost)가 자리를 잡고, 보이는 상자는 그 위에 글 길이만큼 */
+.evo-narr-wrap {
+  display: grid;
+  align-items: start;
+  margin: 4px 0 6px;
+}
+.evo-narr-wrap > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
 .evo-narr {
   background: var(--narr);
   color: var(--narr-ink);
@@ -2830,7 +2895,17 @@ button.shogi-drop {
   font-size: 0.875rem;
   line-height: 1.6;
   box-shadow: 3px 3px 0 var(--narr-line);
-  margin: 4px 3px 6px 0;
+  margin-right: 3px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease;
+}
+.evo-narr.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+.evo-narr-ghost {
+  visibility: hidden;
 }
 .evo-narr p {
   margin: 0;
@@ -2840,12 +2915,15 @@ button.shogi-drop {
 }
 
 /* 아래 줄: ← 이전 장 · 점 11개 · 다음 장 ▶ */
+.evo-navbox {
+  flex: none;
+}
 .evo-nav {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 8px;
-  margin-top: 14px;
+  padding-top: 10px;
 }
 .evo-prev {
   justify-self: start;
@@ -2917,18 +2995,25 @@ button.shogi-drop {
   gap: 12px;
   padding: 8px 0;
 }
+.evo-cast-row .evo-face {
+  --s: 56px;
+}
 .evo-cast {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 14px 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 18px;
 }
 .evo-cast li {
   display: flex;
   gap: 12px;
   align-items: flex-start;
+  min-width: 0;
+}
+.evo-cast .evo-face {
+  --s: 48px;
 }
 .evo-cast b {
   display: block;
@@ -2938,6 +3023,63 @@ button.shogi-drop {
 .evo-cast p {
   margin: 6px 0 0;
 }
+.evo-pick-faces {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 6px;
+}
+.evo-pick-b {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 62px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.evo-pick-b .evo-face {
+  --s: 44px;
+}
+.evo-pick-b[aria-pressed="true"] .evo-face {
+  box-shadow: 0 0 0 2.5px var(--c), 0 0 0 6px var(--hl);
+}
+.evo-pick-ds {
+  display: grid;
+  margin-top: 10px;
+}
+.evo-pick-d {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+.evo-pick-d.on {
+  visibility: visible;
+}
+.evo-pick-d b {
+  font: 400 16px/1.2 var(--display);
+}
+.evo-pick-d p {
+  margin: 0;
+}
+.evo-srcs .evo-card-t {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.evo-srcs .sources {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
 
 /* 1·2장: 대전 칸 */
 .evo-opp {
@@ -2945,6 +3087,7 @@ button.shogi-drop {
   align-items: center;
   gap: 7px;
   flex-wrap: wrap;
+  margin-bottom: 10px;
 }
 .evo-vs {
   display: grid;
@@ -2986,15 +3129,31 @@ button.shogi-drop {
   width: 46px;
   height: 46px;
 }
+.evo-verdict-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 0 10px;
+}
 .evo-verdict {
+  grid-column: 2;
   text-align: center;
   font: 400 22px/1.2 var(--display);
   min-height: 1.2em;
-  margin: 0 0 10px;
+  margin: 0;
 }
 .evo-verdict[data-r="w"] { color: var(--win); }
 .evo-verdict[data-r="l"] { color: var(--lose); }
 .evo-verdict[data-r="t"] { color: var(--muted); }
+.evo-again {
+  grid-column: 3;
+  justify-self: end;
+  border-radius: 12px;
+  min-height: 40px;
+  padding: 6px 14px;
+}
 .evo-key {
   display: flex;
   justify-content: space-between;
@@ -3046,11 +3205,15 @@ button.shogi-drop {
 .evo-hist i {
   margin: 0;
 }
+.evo-reveal-box {
+  display: grid;
+  gap: 10px;
+  align-content: center;
+}
 .evo-reveal {
   display: flex;
   gap: 14px;
   align-items: center;
-  margin-bottom: 12px;
 }
 .evo-reveal-t {
   font: 400 20px/1.2 var(--display);
@@ -3061,7 +3224,6 @@ button.shogi-drop {
 .evo-league {
   position: relative;
   width: 100%;
-  max-width: 420px;
   margin: 0 auto;
   aspect-ratio: 310 / 250;
 }
@@ -3106,6 +3268,16 @@ button.shogi-drop {
 .evo-who[aria-pressed="true"] .evo-face {
   box-shadow: 0 0 0 2.5px var(--c), 0 0 0 6px var(--hl);
 }
+.evo-lg-act {
+  align-self: center;
+}
+.evo-lg-act .evo-center {
+  margin: 4px 0 8px;
+}
+.evo-play[data-state="run"] .evo-lg-act,
+.evo-play[data-state="done"] .evo-lg-act {
+  visibility: hidden;
+}
 .evo-bars {
   display: grid;
   gap: 8px;
@@ -3116,9 +3288,16 @@ button.shogi-drop {
   align-items: center;
   gap: 8px;
   font-size: 0.8125rem;
+  position: relative;
 }
 .evo-bar .evo-face {
   box-shadow: 0 0 0 2px var(--c);
+}
+.evo-bar .evo-badge {
+  font-size: 9px;
+  padding: 2px 3px;
+  right: -12px;
+  top: -9px;
 }
 .evo-bar-tr {
   height: 12px;
@@ -3154,10 +3333,12 @@ button.shogi-drop {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 14px 0 4px;
+  min-height: 52px;
+  margin: 12px 0 2px;
 }
-.evo-win1:empty {
-  display: none;
+.evo-bet {
+  min-height: 1.5em;
+  margin: 4px 0 0;
 }
 
 /* 4–9장: 25명 고리 */
@@ -3166,9 +3347,9 @@ button.shogi-drop {
   --t: 400ms;
   position: relative;
   width: 100%;
-  max-width: 420px;
   aspect-ratio: 1;
   margin: 0 auto;
+  container-type: inline-size;
 }
 .evo-seat {
   position: absolute;
@@ -3209,15 +3390,15 @@ button.shogi-drop {
 }
 .evo-gen-n {
   display: block;
-  font: 400 clamp(26px, 9cqw, 36px) / 1 var(--display);
+  font: 400 clamp(20px, 9cqw, 36px) / 1 var(--display);
   font-weight: 400;
-}
-.evo-ring {
-  container-type: inline-size;
 }
 .evo-gen small {
   font-size: 0.75rem;
   color: var(--muted);
+}
+.evo-hint {
+  margin-bottom: 0;
 }
 
 /* 세대 그래프(쌓인 넓이) */
@@ -3260,11 +3441,29 @@ button.shogi-drop {
   box-shadow: 0 0 0 1.5px var(--c);
 }
 
+/* 4–8장: 고리 · 그래프 · 단추 */
+.evo-world {
+  display: grid;
+  gap: 12px;
+  grid-template-areas: "ring chart" "btns chart";
+  align-items: start;
+}
+.evo-world > .evo-ringcard {
+  grid-area: ring;
+}
+.evo-world > .evo-chartcard {
+  grid-area: chart;
+}
+.evo-world > .evo-btns {
+  grid-area: btns;
+}
+
 /* 5–8장: 고르기 */
 .evo-choices {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin: 2px 0 8px;
 }
 .evo-choice {
   flex: 1 1 0;
@@ -3273,7 +3472,7 @@ button.shogi-drop {
   background: var(--surface);
   color: var(--ink);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -3286,7 +3485,49 @@ button.shogi-drop {
   color: var(--paper);
 }
 
-/* 9장: 놀이터 */
+/* 9장: 놀이터(탭: 설명·사람·규칙·점수) */
+.evo-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  margin: -4px -4px 10px;
+  padding: 0 4px;
+}
+.evo-tab {
+  flex: 1 1 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: 600 0.8125rem/1.2 var(--sans);
+  padding: 8px 4px 9px;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.evo-tab[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+.evo-tab[hidden] {
+  display: none;
+}
+.evo-panes {
+  display: grid;
+}
+.evo-pane {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  min-width: 0;
+}
+.evo-pane.on {
+  visibility: visible;
+}
+.evo-pane .evo-txt {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  margin-bottom: 6px;
+}
 .evo-cnts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3296,13 +3537,19 @@ button.shogi-drop {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 8px 4px 6px;
+  padding: 6px 4px 5px;
   font-size: 0.75rem;
   text-align: center;
   min-width: 0;
+}
+.evo-cnt > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .evo-cnt .evo-face {
   box-shadow: 0 0 0 2px var(--c);
@@ -3317,6 +3564,10 @@ button.shogi-drop {
 .evo-cnt-n b {
   min-width: 1.4em;
   text-align: center;
+}
+.evo-sum {
+  margin: 8px 0 0;
+  text-align: right;
 }
 .evo-step {
   width: 26px;
@@ -3335,7 +3586,7 @@ button.shogi-drop {
 }
 .evo-sl {
   display: block;
-  margin: 12px 0;
+  margin: 10px 0 0;
 }
 .evo-sl-t {
   display: flex;
@@ -3348,6 +3599,7 @@ button.shogi-drop {
 }
 .evo-sl input {
   width: 100%;
+  margin: 0;
   accent-color: var(--ink);
 }
 .evo-sl-ends {
@@ -3368,43 +3620,15 @@ button.shogi-drop {
   gap: 4px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 6px 4px;
+  padding: 8px 4px;
   font-size: 0.75rem;
 }
 .evo-pay > b {
   font: 400 18px/1 var(--display);
 }
-
-/* 넓은 화면(900px 이상): 왼쪽 400px 은 이야기(붙어 있음), 오른쪽은 놀이 칸 */
-@media (min-width: 900px) {
-  .evo-grid {
-    grid-template-columns: 380px minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
-  }
-  .evo-left {
-    display: grid;
-    gap: 12px;
-    position: sticky;
-    top: 12px;
-  }
-  .evo-page[data-kind="sandbox"] .evo-left {
-    position: static;
-  }
-  .evo-page[data-kind="text"] .evo-grid {
-    grid-template-columns: minmax(0, 720px);
-    justify-content: center;
-  }
-  .evo-page[data-kind="text"] .evo-left {
-    position: static;
-  }
-  .evo-txt {
-    font-size: 1rem;
-  }
-}
 .evo-card .field {
   grid-template-columns: minmax(0, 1fr);
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 .evo-card .field label {
   font-size: 0.8125rem;
@@ -3413,24 +3637,390 @@ button.shogi-drop {
 .evo-card .select select {
   width: 100%;
 }
-@media (min-width: 1100px) {
-  .evo-play.two {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    align-items: start;
-  }
-  .evo-play.two .evo-choice-bar {
-    grid-column: 1 / -1;
-  }
+.evo-seed {
+  margin: 6px 0 0;
+}
+.evo-col {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+/* ── 넓은 배치: 왼쪽 이야기(320) + 오른쪽 놀이(가운데 맞춤). 그림 크기는 장 칸 높이(--bh)·너비(--bw)로 정한다 ── */
+/* --gw: 장 칸에서 실제로 쓰는 너비(아주 넓으면 1440 에서 멈춘다). 그림 크기 계산은 이 너비로 한다 */
+[data-mode="wide"] .evo-slide {
+  --gw: min(var(--bw), 1440px);
+}
+[data-mode="wide"] .evo-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+[data-mode="wide"] .evo-text {
+  display: contents;
+}
+[data-mode="wide"] .evo-narr-wrap {
+  order: 4;
+}
+[data-mode="wide"] .evo-choices {
+  order: 3;
+}
+[data-mode="wide"] .evo-play {
+  justify-self: center;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+[data-mode="wide"] .evo-play.two {
+  grid-auto-flow: column;
+  align-items: center;
+}
+/* 0장: 글 한 칸 */
+[data-mode="wide"] [data-ch="intro"] .evo-grid {
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+  gap: 8px;
+}
+[data-mode="wide"] [data-ch="intro"] .evo-play {
+  justify-self: stretch;
+}
+/* 10장: 왼쪽 글·출처, 오른쪽 등장인물 */
+[data-mode="wide"] [data-ch="outro"] .evo-grid {
+  grid-template-columns: 380px minmax(0, 1fr);
+  grid-template-areas: "left play" "srcs play";
+  align-items: start;
+  row-gap: 18px;
+}
+[data-mode="wide"] [data-ch="outro"] .evo-left { grid-area: left; }
+[data-mode="wide"] [data-ch="outro"] .evo-play { grid-area: play; justify-self: stretch; align-self: center; }
+[data-mode="wide"] [data-ch="outro"] .evo-srcs { grid-area: srcs; }
+[data-mode="wide"] .evo-pick {
+  display: none;
+}
+/* 1·2장 */
+[data-mode="wide"] [data-kind="one"] .evo-play > .evo-card {
+  width: 500px;
+}
+[data-mode="wide"] [data-kind="duel"] .evo-play {
+  width: 560px;
+}
+/* 3장 */
+[data-mode="wide"] [data-kind="league"] .evo-play {
+  --net: min(480px, calc((var(--bh) - 136px) * 1.24), calc(var(--gw) - 720px));
+}
+[data-mode="wide"] .evo-lg-card {
+  width: calc(var(--net) + 30px);
+  display: grid;
+  gap: 8px;
+}
+[data-mode="wide"] [data-kind="league"] .evo-play > .evo-card:last-child {
+  width: 320px;
+}
+/* 4–8장 */
+[data-mode="wide"] .evo-world {
+  --ring: min(460px, calc(var(--bh) - 150px), calc(var(--gw) - 710px));
+  grid-template-columns: calc(var(--ring) + 30px) 300px;
+}
+[data-mode="wide"] .evo-ring {
+  width: var(--ring);
+}
+/* 9장: [고리 · 단추] [탭] [그래프 카드]. 장 칸이 모자라면(wide3) 그래프는 탭으로 들어간다 */
+[data-mode="wide"] .evo-play[data-v="wide3"] {
+  --ring: min(440px, calc(var(--bh) - 210px), calc(var(--gw) - 740px));
+  grid-template-columns: auto 330px;
+  align-items: center;
+}
+[data-mode="wide"] .evo-play[data-v="wide4"] {
+  --ring: min(440px, calc(var(--bh) - 210px), calc(var(--gw) - 1030px));
+  grid-template-columns: auto 320px 290px;
+  align-items: center;
+}
+[data-mode="wide"] [data-kind="sandbox"] .evo-chartpane .evo-area {
+  height: 110px;
+}
+[data-mode="wide"] [data-kind="sandbox"] .evo-ringcard {
+  width: calc(var(--ring) + 30px);
+}
+[data-mode="wide"] [data-kind="sandbox"] .evo-area {
+  height: 92px;
+}
+[data-mode="wide"] [data-kind="sandbox"] .evo-legend {
+  gap: 3px 10px;
+}
+[data-mode="wide"] [data-kind="sandbox"] .evo-hint {
+  display: none;
+}
+
+/* ── 세로 배치: 한 줄로 쌓는다. 해설은 이야기 글 자리에 겹쳐 나온다 ── */
+[data-mode="tall"] .evo-top {
+  display: none;
+}
+[data-mode="tall"] .evo-nav {
+  padding-top: 6px;
+}
+[data-mode="tall"] .evo-next {
+  padding: 10px 12px;
+}
+[data-mode="tall"] .evo-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+[data-mode="tall"] .evo-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 8px;
+}
+[data-mode="tall"] .evo-title {
+  font-size: 25px;
+  margin: 0;
+}
+[data-mode="tall"] .evo-txt {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  margin-bottom: 8px;
+}
+[data-mode="tall"] .evo-text {
+  display: grid;
+}
+[data-mode="tall"] .evo-text > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+[data-mode="tall"] .evo-text.narrated > .evo-paras {
+  visibility: hidden;
+}
+[data-mode="tall"] .evo-narr-wrap {
+  align-self: start;
+  margin: 0;
+}
+[data-mode="tall"] .evo-narr {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  padding: 8px 10px;
+}
+[data-mode="tall"] .evo-play {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+[data-mode="tall"] .evo-card {
+  border-radius: 14px;
+  padding: 10px;
+}
+[data-mode="tall"] .evo-cast-row {
+  gap: 6px;
+  padding: 2px 0;
+}
+[data-mode="tall"] .evo-cast-row {
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+[data-mode="tall"] .evo-cast-row .evo-face {
+  --s: 32px;
+}
+[data-mode="tall"] .evo-cast {
+  display: none;
+}
+[data-mode="tall"] [data-ch="outro"] .evo-play .evo-card-t {
+  display: none;
+}
+[data-mode="tall"] [data-ch="outro"] .evo-play .evo-card {
+  border: 0;
+  background: none;
+  padding: 0;
+}
+[data-mode="tall"] .evo-pick-b {
+  width: 58px;
+}
+[data-mode="tall"] .evo-pick-b .evo-face {
+  --s: 40px;
+}
+[data-mode="tall"] .evo-credit {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+[data-mode="tall"] .evo-srcs .evo-card-t {
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+[data-mode="tall"] .evo-srcs .sources {
+  padding-left: 16px;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+[data-mode="tall"] .evo-opp {
+  margin-bottom: 6px;
+}
+[data-mode="tall"] .evo-vs .evo-face {
+  --s: 46px !important;
+}
+[data-mode="tall"] .evo-score {
+  font-size: 26px;
+}
+[data-mode="tall"] .evo-hist > div {
+  min-height: 48px;
+}
+[data-mode="tall"] .evo-hist .art-svg img {
+  width: 17px;
+  height: 17px;
+}
+[data-mode="tall"] .evo-league {
+  width: min(100%, 260px);
+}
+[data-mode="tall"] .evo-who .evo-face {
+  --s: 44px !important;
+}
+[data-mode="tall"] .evo-lg-card {
+  display: grid;
+  gap: 4px;
+}
+[data-mode="tall"] .evo-bars {
+  gap: 5px;
+}
+[data-mode="tall"] .evo-bar .evo-face {
+  --s: 22px !important;
+}
+[data-mode="tall"] .evo-bar {
+  grid-template-columns: 22px minmax(4.5em, auto) 1fr 3em;
+}
+[data-mode="tall"] .evo-win1 {
+  display: none;
+}
+[data-mode="tall"] .evo-play[data-state="ready"] .evo-lg-res {
+  visibility: hidden;
+}
+/* 고리와 작은 그래프를 나란히, 단추는 그 아래 */
+[data-mode="tall"] .evo-world {
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  grid-template-areas: "ring chart" "btns btns";
+  gap: 8px;
+}
+[data-mode="tall"] .evo-world .evo-card {
+  padding: 8px;
+}
+/* 세로 배치가 넓은 화면(태블릿 세로)에서도 고리가 장 칸 높이를 넘지 않게 */
+[data-mode="tall"] .evo-world .evo-ring {
+  width: min(100%, calc(var(--bh) - 300px));
+}
+[data-mode="tall"] .evo-hint {
+  display: none;
+}
+[data-mode="tall"] .evo-chartcard .evo-card-t {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+[data-mode="tall"] .evo-area {
+  height: 70px;
+}
+[data-mode="tall"] .evo-axis {
+  margin: 2px 0 6px;
+}
+[data-mode="tall"] .evo-legend {
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.6875rem;
+}
+[data-mode="tall"] .evo-legend li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+}
+[data-mode="tall"] .evo-legend li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-mode="tall"] .evo-btns .btn {
+  min-height: 40px;
+}
+[data-mode="tall"] .evo-choices {
+  margin: 8px 0 0;
+}
+[data-mode="tall"] .evo-choice {
+  padding: 8px 10px;
+}
+[data-mode="tall"] [data-kind="sandbox"] .evo-story .evo-paras {
+  display: none;
+}
+/* 놀이터(세로): [고리 | 단추 넷] 아래에 탭 */
+[data-mode="tall"] .evo-sb-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  gap: 8px;
+  align-items: center;
+}
+[data-mode="tall"] .evo-sb-top .evo-card {
+  padding: 8px;
+}
+[data-mode="tall"] .evo-sb-top .evo-ring {
+  width: min(100%, calc(var(--bh) - 330px));
+}
+[data-mode="tall"] .evo-btns-4 {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+[data-mode="tall"] .evo-btns-4 .btn {
+  padding: 6px 4px;
+  font-size: 0.8125rem;
+  min-height: 38px;
+}
+[data-mode="tall"] .evo-chartpane .evo-card-t {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+[data-mode="tall"] .evo-chartpane .evo-legend {
+  flex-direction: row;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+/* 놀이터(세로) 사람 칸: [얼굴 이름] 아래 [− n +] */
+[data-mode="tall"] .evo-cnt {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  justify-items: start;
+  gap: 4px 5px;
+  padding: 5px 6px;
+  font-size: 0.6875rem;
+}
+[data-mode="tall"] .evo-cnt .evo-face {
+  --s: 20px !important;
+}
+[data-mode="tall"] .evo-cnt-n {
+  grid-column: 1 / -1;
+  justify-self: center;
+  gap: 4px;
+}
+[data-mode="tall"] .evo-cnt .evo-step {
+  width: 24px;
+  height: 24px;
+}
+[data-mode="tall"] .evo-sl {
+  margin-top: 8px;
+}
+[data-mode="tall"] .evo-sl-ends {
+  display: none;
+}
+[data-mode="tall"] .evo-pane .evo-txt {
+  font-size: 0.8125rem;
+}
+[data-mode="tall"] .evo-seed {
+  margin: 0;
 }
 @media (prefers-reduced-motion: reduce) {
-  .evo-in-next,
-  .evo-in-prev,
   .evo-seat.born {
     animation: none;
   }
   .evo-seat,
   .evo-bar-tr i,
-  .evo-net line {
+  .evo-net line,
+  .evo-narr,
+  .evo-fit.evo-anim {
     transition: none;
   }
 }
