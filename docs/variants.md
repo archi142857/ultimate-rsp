@@ -1,6 +1,6 @@
 # 변종 목록
 
-앱에 실린 가위바위보 53가지의 규칙과 출처. `web/js/data/catalog.js` 에서 `node scripts/variants_doc.mjs > docs/variants.md` 로 만든다. 이 파일은 손으로 고치지 않는다.
+도감에 실린 가위바위보 52가지와 위쪽 탭 '전략의 진화'의 규칙과 출처. `web/js/data/catalog.js` 에서 `node scripts/variants_doc.mjs > docs/variants.md` 로 만든다. 이 파일은 손으로 고치지 않는다.
 
 판정 문장과 손 설명은 이 앱이 새로 쓴 것이다. RPS-7 부터 RPS-101 까지의 손 구성과 고리 순서는 David C. Lovelace 의 것을 따랐고, 손끼리 이기는 까닭을 적은 문장은 따라 쓰지 않았다.
 

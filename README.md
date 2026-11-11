@@ -10,7 +10,7 @@
   <img src="docs/screenshots/home.png" alt="첫 화면: '궁극의 가위바위보' 제목과 바로 한 판 버튼, 손 15개가 서로 이기고 지는 사이를 선으로 이은 고리 그림" width="100%">
 </p>
 
-가위바위보와 그 변종 53가지를 모아 둔 웹 앱입니다. 일본의 옛 손 놀이인 무시켄과 키츠네켄, 손이 101개인 RPS-101, 묵찌빠와 하나빼기 같은 놀이까지 규칙을 읽고 바로 컴퓨터와 겨뤄 볼 수 있습니다. '전략의 진화'에서는 컴퓨터 전략 아홉 가지가 리그를 거듭할 때 어떤 전략이 퍼지는지 장을 넘기며 봅니다. 가위바위보처럼 서로 물고 물리는 생물이 어떻게 함께 사는지도 볼 수 있습니다.
+가위바위보와 그 변종 52가지를 모아 둔 웹 앱입니다. 일본의 옛 손 놀이인 무시켄과 키츠네켄, 손이 101개인 RPS-101, 묵찌빠와 하나빼기 같은 놀이까지 규칙을 읽고 바로 컴퓨터와 겨뤄 볼 수 있습니다. '전략의 진화'에서는 컴퓨터 전략 아홉 가지가 리그를 거듭할 때 어떤 전략이 퍼지는지 장을 넘기며 봅니다. 가위바위보처럼 서로 물고 물리는 생물이 어떻게 함께 사는지도 볼 수 있습니다.
 
 ## 쓰는 법
 
@@ -62,6 +62,10 @@
 | 앙갚음 | 상대가 방금 낸 손을 이기는 손을 낸다 |
 
 ### 전략의 진화
+
+<p align="center">
+  <img src="docs/screenshots/evolution.png" alt="전략의 진화 4장: 왼쪽에 이야기와 해설 상자, 가운데에 7세대 만에 따라쟁이 25명으로 채워진 고리, 오른쪽에 세대마다 전략별 사람 수를 쌓은 그래프" width="100%">
+</p>
 
 위쪽 탭에서 엽니다. Nicky Case 의 '신뢰의 진화'(The Evolution of Trust, 2017)처럼 11장을 넘기며 직접 해 보는 이야기입니다.
 
@@ -135,8 +139,10 @@ web/                          웹 앱 (GitHub Pages)
   js/ui/                      DOM 도구, 색, 고리 그림, 손 그림(art), 저장, 공통 위젯
   js/views/                   화면
   js/online/                  온라인 대전 화면 (도전장, 방, 랜덤 매칭)
+  js/sound/                   소리 엔진과 효과음
+  sound/                      효과음 녹음 (CC0 녹음을 다듬은 것, 출처는 sound/LICENSE)
 server/                       온라인 대전 서버 (Cloudflare Workers + Durable Objects)
-tests/                        node --test (판정, 최적 비율, 놀이 규칙, 시뮬레이션, 손 그림, 영어판, 온라인)
+tests/                        node --test (판정, 최적 비율, 놀이 규칙, 시뮬레이션, 손 그림, 영어판, 온라인, 소리)
 scripts/
   stamp.py                    배포할 때 스크립트·스타일 주소에 판(?v=)을 붙인다
   variants_doc.mjs            catalog.js → docs/variants.md
@@ -168,6 +174,7 @@ docs/
 | --- | --- |
 | 코드: `web/`, `scripts/`, `tests/` | MIT (`LICENSE`) |
 | 글꼴: Black Han Sans, IBM Plex Sans KR. 저장소에 없고 jsDelivr의 Fontsource에서 불러옵니다 | SIL Open Font License 1.1 |
+| 효과음 녹음: `web/sound/*.wav`. CC0 1.0 으로 공개된 녹음을 잘라 다듬은 것입니다. 나머지 소리는 코드로 만듭니다 | CC0 1.0. 출처는 `web/sound/LICENSE` |
 | 손 그림: `web/art/*.svg`. [Microsoft Fluent UI Emoji](https://github.com/microsoft/fluentui-emoji)를 64×64 에 감싼 것입니다. 아직 그림이 없는 손은 보는 기기의 이모지 글꼴로 그립니다 | MIT (© Microsoft Corporation). 고지문은 `web/art/LICENSE-fluentui-emoji.txt` |
 | 놀이 규칙 | 놀이를 만든 사람과 전해 온 문화의 것입니다. RPS-7–101의 손 구성과 고리 순서는 David C. Lovelace([umop.com](https://www.umop.com/rps.htm))가 만들었습니다. 판정 문장과 설명은 이 앱에서 새로 썼습니다. 출처는 [docs/variants.md](docs/variants.md)에 있습니다 |
 | 이름 `Ultimate RSP`, 아이콘(`web/icons/`), 화면 캡처(`docs/screenshots/`) | 라이선스를 주지 않습니다(MIT 대상이 아닙니다) |

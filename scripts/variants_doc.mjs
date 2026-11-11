@@ -48,7 +48,9 @@ function matrixLines(e) {
 
 const lines = [];
 lines.push("# 변종 목록", "");
-lines.push(`앱에 실린 가위바위보 ${CATALOG.length}가지${DRAFTS.length ? `와 화면을 만들고 있는 ${DRAFTS.length}가지` : ""}의 규칙과 출처. \`web/js/data/catalog.js\` 에서 \`node scripts/variants_doc.mjs > docs/variants.md\` 로 만든다. 이 파일은 손으로 고치지 않는다.`, "");
+const LISTED = CATALOG.filter((e) => !e.tab);
+const TAB_NAMES = CATALOG.filter((e) => e.tab).map((e) => `'${e.name}'`);
+lines.push(`도감에 실린 가위바위보 ${LISTED.length}가지${TAB_NAMES.length ? `와 위쪽 탭 ${TAB_NAMES.join("·")}` : ""}${DRAFTS.length ? `, 화면을 만들고 있는 ${DRAFTS.length}가지` : ""}의 규칙과 출처. \`web/js/data/catalog.js\` 에서 \`node scripts/variants_doc.mjs > docs/variants.md\` 로 만든다. 이 파일은 손으로 고치지 않는다.`, "");
 lines.push("판정 문장과 손 설명은 이 앱이 새로 쓴 것이다. RPS-7 부터 RPS-101 까지의 손 구성과 고리 순서는 David C. Lovelace 의 것을 따랐고, 손끼리 이기는 까닭을 적은 문장은 따라 쓰지 않았다.", "");
 
 function entryLines(e, live) {
