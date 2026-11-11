@@ -67,7 +67,7 @@
   <img src="docs/screenshots/evolution.png" alt="전략의 진화 4장: 왼쪽에 이야기와 해설 상자, 가운데에 7세대 만에 따라쟁이 25명으로 채워진 고리, 오른쪽에 세대마다 전략별 사람 수를 쌓은 그래프" width="100%">
 </p>
 
-위쪽 탭에서 엽니다. Nicky Case 의 '신뢰의 진화'(The Evolution of Trust, 2017)처럼 11장을 넘기며 직접 해 보는 이야기입니다.
+위쪽 탭에서 엽니다. Nicky Case의 '신뢰의 진화'(The Evolution of Trust, 2017)처럼 11장을 넘기며 직접 해 보는 이야기입니다.
 
 - 모르는 상대와 한 판, 정체를 모르는 컴퓨터 다섯과 10판씩 해 보고 버릇을 읽습니다.
 - 다섯이 리그를 한 번 하기 전에 누가 1등일지 겁니다.
@@ -149,9 +149,9 @@ scripts/
   art_list.mjs                web/art/ → js/data/art-files.js (그림 목록과 규격 검사)
 docs/
   variants.md                 변종마다 규칙과 출처
-  screenshots/                이 README 의 화면 캡처
-.github/workflows/pages.yml   테스트하고 GitHub Pages 로 올린다
-.github/workflows/server.yml  서버를 Cloudflare 에 올린다
+  screenshots/                이 README의 화면 캡처
+.github/workflows/pages.yml   테스트하고 GitHub Pages로 올린다
+.github/workflows/server.yml  서버를 Cloudflare에 올린다
 ```
 
 </details>
@@ -174,8 +174,8 @@ docs/
 | --- | --- |
 | 코드: `web/`, `scripts/`, `tests/` | MIT (`LICENSE`) |
 | 글꼴: Black Han Sans, IBM Plex Sans KR. 저장소에 없고 jsDelivr의 Fontsource에서 불러옵니다 | SIL Open Font License 1.1 |
-| 효과음 녹음: `web/sound/*.wav`. CC0 1.0 으로 공개된 녹음을 잘라 다듬은 것입니다. 나머지 소리는 코드로 만듭니다 | CC0 1.0. 출처는 `web/sound/LICENSE` |
-| 손 그림: `web/art/*.svg`. [Microsoft Fluent UI Emoji](https://github.com/microsoft/fluentui-emoji)를 64×64 에 감싼 것입니다. 아직 그림이 없는 손은 보는 기기의 이모지 글꼴로 그립니다 | MIT (© Microsoft Corporation). 고지문은 `web/art/LICENSE-fluentui-emoji.txt` |
+| 효과음 녹음: `web/sound/*.wav`. CC0 1.0으로 공개된 녹음을 잘라 다듬은 것입니다. 나머지 소리는 코드로 만듭니다 | CC0 1.0. 출처는 `web/sound/LICENSE` |
+| 손 그림: `web/art/*.svg`. [Microsoft Fluent UI Emoji](https://github.com/microsoft/fluentui-emoji)를 64×64에 감싼 것입니다. 아직 그림이 없는 손은 보는 기기의 이모지 글꼴로 그립니다 | MIT (© Microsoft Corporation). 고지문은 `web/art/LICENSE-fluentui-emoji.txt` |
 | 놀이 규칙 | 놀이를 만든 사람과 전해 온 문화의 것입니다. RPS-7–101의 손 구성과 고리 순서는 David C. Lovelace([umop.com](https://www.umop.com/rps.htm))가 만들었습니다. 판정 문장과 설명은 이 앱에서 새로 썼습니다. 출처는 [docs/variants.md](docs/variants.md)에 있습니다 |
 | 이름 `Ultimate RSP`, 아이콘(`web/icons/`), 화면 캡처(`docs/screenshots/`) | 라이선스를 주지 않습니다(MIT 대상이 아닙니다) |
 

@@ -39,7 +39,7 @@ export function aboutView(main) {
         h("p", {}, t("코드는 MIT 라이선스입니다. 글꼴은 Black Han Sans(© The Black Han Sans Project Authors)와 IBM Plex Sans KR(© IBM Corp.)이고, 둘 다 SIL Open Font License 1.1을 따릅니다. 글꼴 파일은 jsDelivr에서 Fontsource 것을 불러옵니다.")),
         h("p", {}, t("손 그림은 Microsoft의 "), h("a", { href: "https://github.com/microsoft/fluentui-emoji", rel: "noopener" }, "Fluent UI Emoji"), t("(© Microsoft Corporation, MIT 라이선스)를 고쳐 썼습니다. 그림을 불러오지 못하면 기기의 이모지로 보입니다.")),
         // 효과음(소리 11-12): 녹음 목록은 web/sound/LICENSE
-        h("p", {}, t("효과음 가운데 물건 소리는 "), h("a", { href: "https://creativecommons.org/publicdomain/zero/1.0/", rel: "noopener" }, "CC0"), t("로 공개된 녹음(Kenney, sinny, Luckius)을 다듬어 썼습니다. 나머지 소리는 이 앱이 그 자리에서 만듭니다.")),
+        h("p", {}, t("효과음 가운데 가위·종이 같은 물건 소리는 "), h("a", { href: "https://creativecommons.org/publicdomain/zero/1.0/", rel: "noopener" }, "CC0"), t("로 공개된 녹음(Kenney, sinny, Luckius)을 다듬어 썼습니다. 나머지 소리는 이 앱이 직접 만듭니다.")),
       ),
       block(
         t("만든 사람"),
