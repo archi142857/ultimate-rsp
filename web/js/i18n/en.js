@@ -633,6 +633,8 @@ export const EN = {
   "코드는 MIT 라이선스입니다. 글꼴은 Black Han Sans(© The Black Han Sans Project Authors)와 IBM Plex Sans KR(© IBM Corp.)이고, 둘 다 SIL Open Font License 1.1을 따릅니다. 글꼴 파일은 jsDelivr에서 Fontsource 것을 불러옵니다.": "The code is MIT licensed. The fonts are Black Han Sans (© The Black Han Sans Project Authors) and IBM Plex Sans KR (© IBM Corp.), both under the SIL Open Font License 1.1, loaded from Fontsource on jsDelivr.",
   "손 그림은 Microsoft의 ": "The hand pictures are adapted from Microsoft's ",
   "(© Microsoft Corporation, MIT 라이선스)를 고쳐 썼습니다. 그림을 불러오지 못하면 기기의 이모지로 보입니다.": " (© Microsoft Corporation, MIT license). If a picture doesn't load, your device's emoji shows instead.",
+  "효과음 가운데 물건 소리는 ": "Some sound effects are recordings released under ",
+  "로 공개된 녹음(Kenney, sinny, Luckius)을 다듬어 썼습니다. 나머지 소리는 이 앱이 그 자리에서 만듭니다.": " (by Kenney, sinny and Luckius), trimmed for this app. The app makes the other sounds itself.",
   "만든 사람": "Made by",
   "서울대학교 동물생명공학전공 25학번 이영표. 버그 제보와 새 변종 제안은 ": "Youngpyo Lee, Animal Biotechnology, Seoul National University (entered 2025). Send bug reports and ideas for new variants through ",
   "GitHub 이슈": "GitHub issues",
