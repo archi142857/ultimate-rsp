@@ -11,6 +11,7 @@ import { createRing } from "../ui/ring.js";
 import { handGrid, selectBox, segmented, stage, chant, fastToggle, RESULT_WORD, mixBar, block, recordLine, rpsChant, countChant } from "../ui/widgets.js";
 import { addRecord, record, setting, setSetting } from "../ui/store.js";
 import { entryHead, entryBody, scoreboard, histItem } from "./common.js";
+import { sfx } from "../sound/index.js";
 
 const CLASSIC_IDS = ["scissors", "rock", "paper"];
 
@@ -115,6 +116,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     st.me.set(V, i);
     st.op.set(V, j);
     st.say(RESULT_WORD[r.cmp], r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
+    if (r.cmp === 0) sfx("draw");
     st.sub(r.cmp === 0 ? `${V.sentence(i, j)}. ${t("다시 내기")}` : r.sentence);
     st.me.mark(r.cmp > 0 ? "won" : r.cmp < 0 ? "lost" : null);
     st.op.mark(r.cmp < 0 ? "won" : r.cmp > 0 ? "lost" : null);
@@ -125,6 +127,7 @@ export function buildMatrixPage(main, entry, V, { extraControls = null, recordId
     rec.textContent = recordLine(addRecord(recordId, r.cmp));
     if (match.done) {
       const won = match.winner === 0;
+      if (fmt.target > 1) sfx(won ? "matchwin" : "matchlose");
       clear(doneBar).append(
         h("strong", {}, won ? t("{f} 승리", { f: fmt.name }) : t("{f} 패배", { f: fmt.name })),
         h("button", { class: "btn btn-ink", type: "button", onclick: newMatch }, t("새 경기")),

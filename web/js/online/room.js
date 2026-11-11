@@ -27,6 +27,7 @@ import { serverNow } from "./net.js";
 import { rulesEditor, rulesRows, gameName, isGroup, groupRuleNote } from "./rules.js";
 import { sidesOf, seatName, seatBot, secondsLeft, canSit, finalFor, duelRound, groupRound, groupHead, headcount, ringOrder, readyInfo, mmss, ranking } from "./room-model.js";
 import { closeText, wsErrorText, noticeFor } from "./messages.js";
+import { sfx, roundTone } from "../sound/index.js";
 
 // 공개 연출: 한 마디 세는 시간, 결과를 적어도 보여 주는 시간. 셋을 세고(≈1.1초) 결과를 보여도 REVEAL_MS(2.5초) 안에 끝난다
 const COUNT_MS = 360;
@@ -340,6 +341,7 @@ export function roomView(main, code) {
     if (!quick) {
       for (const w of countWords()) {
         ring.center(midText(w, "", "count"));
+        sfx("count", 3);
         await painted();
         await sleep(COUNT_MS);
         if (!isLive()) return;
@@ -350,6 +352,7 @@ export function roomView(main, code) {
     ring.el.classList.add("revealing");
     ring.set({ people, arrows: shownArrows(order, shown) });
     ring.center(shownText(shown));
+    sfx("reveal", roundTone({ shown, you, group: isGroup(room.rules), mode: room.rules.mode }));
     if (onShow) onShow();
     const rest = quick ? (fastMode() ? 1200 : hold) - (Date.now() - t0) : Math.max(hold - (Date.now() - t0), SHOW_MS);
     if (rest > 0) await sleep(rest);
@@ -718,6 +721,7 @@ export function roomView(main, code) {
       await revealOn(ring, last, { isLive: () => live });
       if (!live) return;
       intro = false;
+      sfx("match" + finalTitle()[1]);
       update();
     }
     function update() {

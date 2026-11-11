@@ -5,6 +5,7 @@ import { t, isEn } from "../i18n.js";
 import { handArt, setArt } from "./art.js";
 import { handVars } from "./colors.js";
 import { setting, setSetting } from "./store.js";
+import { sfx } from "../sound/index.js";
 
 let uid = 0;
 const nextId = (p) => `${p}-${++uid}`;
@@ -80,7 +81,7 @@ export function handGrid(V, { onPick, label = t("낼 손"), names = null, keys =
         vars: handVars(V, hd.i),
         "data-i": hd.i,
         "aria-keyshortcuts": key || undefined,
-        onclick: () => !b.disabled && onPick(hd.i),
+        onclick: () => !b.disabled && (sfx("throw", hd), onPick(hd.i)),
       },
       handArt(hd, "hand-emoji"),
       h("span", { class: "hand-name" }, names ? names[hd.i] : hd.name),
@@ -186,6 +187,7 @@ export function stage({ meLabel = t("나"), opLabel = t("컴퓨터") } = {}) {
     say(text, tone = "") {
       msg.textContent = text;
       msg.className = "stage-msg" + (tone ? ` tone-${tone}` : "");
+      if (tone === "win" || tone === "lose") sfx(tone);
     },
     sub(text) {
       sub.textContent = text || "";
@@ -212,10 +214,12 @@ export async function chant(st, words, step = 190) {
   if (fastMode() || reducedMotion()) return;
   for (const w of words) {
     st.say(w, "chant");
+    sfx("count", words.length);
     // 화면에 한 번은 그려진 뒤부터 센다(바쁜 폰에서 첫 마디가 건너뛰어지지 않게)
     await painted();
     await sleep(step);
   }
+  sfx("reveal");
 }
 
 /** 다음 화면이 그려질 때까지(숨은 탭이면 0.1초 뒤 그냥 넘어간다) */

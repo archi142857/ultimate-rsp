@@ -11,6 +11,7 @@ import { handGrid, segmented, RESULT_WORD } from "../ui/widgets.js";
 import { createBot } from "../core/bots.js";
 import { makeRng } from "../core/rng.js";
 import { addRecord } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 const ART = {
   mukjjippa: "👊",
@@ -96,6 +97,7 @@ export function homeView(main) {
       const j = bot.pick({ history: history.map((r) => ({ me: r.op, op: r.me })) });
       history.push({ me: i, op: j });
       const c = classic.cmp(i, j);
+      sfx("result", c);
       addRecord("classic", c);
       clear(out).append(
         h("strong", {}, RESULT_WORD[c]),

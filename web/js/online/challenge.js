@@ -28,6 +28,7 @@ import { fetchChallenge, fetchMyChallenge, answerChallenge, closeChallenge } fro
 import { myChallenge, rememberChallenge, noteChallenge, isFresh, takeFresh } from "./mine.js";
 import { errorText, noticeFor } from "./messages.js";
 import { shareLink } from "./config.js";
+import { sfx } from "../sound/index.js";
 
 // 만든 사람이 다른 앱에서 링크를 보내고 돌아오면 결과를 한 번 본다. 너무 자주 묻지 않게 간격을 둔다(폴링은 하지 않는다)
 const RECHECK_MS = 15000;
@@ -330,6 +331,7 @@ export function challengeView(main, code) {
       }
       word.textContent = RESULT_WORD[cmp];
       word.className = "o-h1" + (cmp > 0 ? " tone-win" : cmp < 0 ? " tone-lose" : "");
+      sfx("result", cmp);
       // 도감 규칙이 그 뒤에 바뀌었으면 지금 규칙의 문장이 서버 판정과 어긋날 수 있다. 그때는 문장을 빼고 판정만
       sentence.textContent = cmp !== 0 && V.cmp(myI, opI) === cmp ? V.sentence(myI, opI) : cmp === 0 ? t("둘 다 같은 손") : "";
       ring.bout(myI, opI, t("나"), opName);

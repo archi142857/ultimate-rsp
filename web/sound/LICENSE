@@ -1,0 +1,24 @@
+Ultimate RSP 효과음 녹음의 출처 / Sources of the recorded sound effects
+
+이 폴더의 소리 파일은 모두 CC0 1.0(퍼블릭 도메인 기증)으로 공개된 녹음을 잘라 다듬은 것이다.
+다듬은 것: 한 채널로 합침, 쓸 곳만 자름, 표본 속도를 24 또는 32 kHz 로 낮춤, 크기를 맞춤, 끝을 부드럽게 줄임.
+CC0 는 출처 표시를 요구하지 않지만 어디서 왔는지 적어 둔다. 새 파일을 넣을 때는 CC0 만 넣고 여기에 한 줄을 더한다.
+
+Every audio file in this folder is a trimmed excerpt of a recording released under CC0 1.0 (public domain dedication).
+Edits: mixed down to mono, cut, resampled to 24 or 32 kHz, normalised, faded out.
+CC0 does not require attribution; the sources are listed anyway.
+
+CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/
+
+파일 (file) | 쓰는 곳 (use) | 원본 (original) | 만든 사람, 묶음, 주소 (author, pack, link)
+snip.wav | 가위 내기 | garden_shears_01.mp3, 0.00–0.37 s | sinny, "various scissors", https://opengameart.org/content/various-scissors
+knock-1.wav | 그 밖의 손 내기 | die-throw-1.ogg, 0.13–0.22 s | Kenney (kenney.nl), "Casino Audio", https://opengameart.org/content/54-casino-sound-effects-cards-dice-chips
+knock-2.wav | 바위 내기 | die-throw-2.ogg, 0.05–0.17 s | Kenney (kenney.nl), "Casino Audio", https://opengameart.org/content/54-casino-sound-effects-cards-dice-chips
+knock-3.wav | 그 밖의 손 내기 | die-throw-2.ogg, 0.20–0.30 s | Kenney (kenney.nl), "Casino Audio", https://opengameart.org/content/54-casino-sound-effects-cards-dice-chips
+clack.wav | 바위 내기 | chips-collide-2.ogg, 0.12 s | Kenney (kenney.nl), "Casino Audio", https://opengameart.org/content/54-casino-sound-effects-cards-dice-chips
+flip.wav | 보 내기 | bookFlip2.ogg, 0.38 s | Kenney (kenney.nl), "RPG Audio", https://opengameart.org/content/50-rpg-sound-effects
+thud.wav | 공개, 경기 승리 | bookPlace1.ogg, 0.22 s | Kenney (kenney.nl), "RPG Audio", https://opengameart.org/content/50-rpg-sound-effects
+crumple.wav | 패배, 경기 패배 | Paper Crushed - 2.wav, 0.70 s | Luckius, "Various Paper Sound Effects", https://opengameart.org/content/various-paper-sound-effects
+
+나무토막, 마림바, 손뼉, 단추 소리는 녹음이 아니라 web/js/sound/engine.js 가 그 자리에서 만든다.
+The wood block, marimba, clap and button sounds are not recordings; web/js/sound/engine.js synthesises them.
