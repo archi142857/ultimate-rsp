@@ -183,6 +183,43 @@ select {
     justify-content: space-between;
   }
 }
+/* 높이가 낮은 화면(폰 가로 등): 머리글을 얇게. 폭이 넉넉하면 한 줄로(디자인 11-12) */
+@media (max-height: 450px) {
+  .top {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    row-gap: 2px;
+  }
+  .brand {
+    font-size: 1.05rem;
+    gap: 8px;
+  }
+  .brand svg {
+    width: 24px;
+    height: 24px;
+  }
+  .nav a,
+  .theme-btn {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+@media (max-height: 450px) and (min-width: 640px) and (max-width: 719px) {
+  .nav {
+    order: 0;
+    flex: 0 1 auto;
+    margin: 0 0 0 auto;
+    justify-content: flex-end;
+  }
+  .nav + .tools {
+    order: 0;
+    margin-left: -12px;
+  }
+  .nav a {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+}
 .nav a,
 .theme-btn {
   text-decoration: none;
@@ -2650,6 +2687,41 @@ html.evo-on main {
   left: 0;
   top: 0;
   transform-origin: 0 0;
+}
+/* 무대 단추 글은 낱말 가운데서 끊지 않는다('One generation'이 'generatio / n'으로 끊기던 것: 디자인 11-12) */
+.evo-book button {
+  overflow-wrap: normal;
+}
+/* 폰 가로에서 한 번 뜨는 띠 */
+.evo-rotate {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 24px);
+  padding: 5px 6px 5px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+}
+.evo-rotate-x {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
 }
 .evo-page {
   --bw: 1000px; /* 장 칸 너비·높이(무대가 맞출 때 정한다) */

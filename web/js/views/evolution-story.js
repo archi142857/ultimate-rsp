@@ -13,6 +13,7 @@ import { randomSeed } from "../core/rng.js";
 import { CATALOG, findEntry } from "../data/catalog.js";
 import { handArt } from "../ui/art.js";
 import { handGrid, selectBox, sourcesList, fastMode } from "../ui/widgets.js";
+import { setting, setSetting } from "../ui/store.js";
 import { createEvolution } from "../sims/evolution.js";
 import { EVO_CHAPTERS, EVO_CAST, EVO_TEXT, EVO_LINES, evoSetup, leagueFor, opponentFor } from "../sims/evolution-story.js";
 
@@ -393,6 +394,7 @@ const GEOM = {
 };
 const WIDE_AT = 1.2; // 남은 화면의 가로 ÷ 세로가 이 이상이면 넓은 배치
 const S_MIN = 0.5;
+const ROTATE_AT = 0.7; // 손으로 쥔 기기가 가로인데 무대가 이보다 작으면 '세로로 돌리면' 띠를 한 번 띄운다(디자인 11-12)
 const F_MIN = 0.6; // 이보다 더 줄여야 하면 더 줄이지 않고 장 칸 안에서 스크롤한다(아주 낮은 창)
 
 // ── 이야기 전체 ─────────────────
@@ -412,7 +414,14 @@ export function evolutionStoryView(main, entry, params) {
   const navBox = h("div", { class: "evo-navbox" });
   const page = h("article", { class: "evo-page" }, h("div", { class: "evo-top" }, h("span", { class: "evo-where" }, T.title, " · ", where)), body, navBox);
   const stage = h("div", { class: "evo-stage" }, page);
-  const book = h("div", { class: "evo-book" }, stage);
+  // 폰 가로처럼 무대가 많이 작아질 때만 뜨는 띠(무대 밖이라 배율을 타지 않는다). 닫으면 다시 안 뜬다
+  const rotate = h(
+    "div",
+    { class: "evo-rotate", hidden: true },
+    h("span", {}, t("세로로 돌리면 더 크게 보입니다.")),
+    h("button", { type: "button", class: "evo-rotate-x", "aria-label": t("알림 닫기"), onclick: () => (setSetting("evo.rotateHint", false), (rotate.hidden = true)) }, "×"),
+  );
+  const book = h("div", { class: "evo-book" }, stage, rotate);
   main.append(book);
   root.classList.add("evo-on");
   window.scrollTo(0, 0);
@@ -479,7 +488,7 @@ export function evolutionStoryView(main, entry, params) {
     const head = document.querySelector("body > header");
     const topY = head ? head.offsetTop + head.offsetHeight : 0;
     const W = root.clientWidth;
-    const H = Math.max(240, window.innerHeight - topY);
+    const H = Math.max(120, window.innerHeight - topY);
     const m = W / H >= WIDE_AT ? "wide" : "tall";
     const g = GEOM[m];
     const sc = Math.max(S_MIN, Math.min(g.max, W / g.w, H / g.h));
@@ -490,6 +499,8 @@ export function evolutionStoryView(main, entry, params) {
     book.dataset.scale = sc.toFixed(3);
     mode = m;
     page.dataset.mode = m;
+    const handheld = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+    rotate.hidden = !(sc < ROTATE_AT && handheld && W > H && setting("evo.rotateHint", true));
   }
 
   /** 배치(넓은·세로)와 장 칸 너비에 따라 장이 제 것들을 다시 놓는다(장마다 바뀔 때만 옮긴다) */
