@@ -418,8 +418,18 @@ export function evolutionStoryView(main, entry, params) {
   window.scrollTo(0, 0);
 
   const onKey = (e) => {
-    if (typing(e) || e.altKey || e.ctrlKey || e.metaKey) return;
-    if (cur && cur.api.key && cur.api.key(e)) e.preventDefault();
+    if (typing(e) || e.altKey || e.ctrlKey || e.metaKey || e.defaultPrevented || !cur) return;
+    if (cur.api.key && cur.api.key(e)) {
+      e.preventDefault();
+      return;
+    }
+    // ← → 로 장을 넘긴다('신뢰의 진화'처럼, 검수 11-10). 탭 묶음 안의 화살표는 탭을 옮기고, 끝내야 열리는 장은 ▶ 와 같이 막는다
+    if ((e.key !== "ArrowRight" && e.key !== "ArrowLeft") || e.shiftKey || e.repeat) return;
+    if (e.target && e.target.closest && e.target.closest('[role="tablist"]')) return;
+    if (e.key === "ArrowRight" && cur.n < LAST && !cur.next.disabled) go(cur.n + 1);
+    else if (e.key === "ArrowLeft" && cur.n > 0) go(cur.n - 1);
+    else return;
+    e.preventDefault();
   };
   document.addEventListener("keydown", onKey);
   let settle = 0;
@@ -615,7 +625,7 @@ export function evolutionStoryView(main, entry, params) {
       },
     };
     const api = (BUILD[ch.kind] || textChapter)(ctx) || {};
-    cur = { n, api, slide, fit, f: undefined };
+    cur = { n, api, slide, fit, next, f: undefined };
     arrange();
     fitNow(false);
     if (ro) {
