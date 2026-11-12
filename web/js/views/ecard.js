@@ -10,6 +10,7 @@ import { stage, chant, fastToggle, block, recordLine, countChant } from "../ui/w
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 // 카드 그림(사용자 11-06: 보이는 이모지는 Fluent 그림으로). 그림이 없으면 이모지로 돌아간다
 const CARD_ART = {
@@ -96,6 +97,7 @@ export function ecardView(main, entry) {
     st.op.art(CARD_ART[oc], N()[oc]);
     if (r.cmp === 0) {
       st.say(t("시민끼리 비김. 계속"));
+      sfx("draw");
       st.sub(t("남은 카드로 다시 내기"));
       steps.set(1);
     } else {
@@ -112,6 +114,7 @@ export function ecardView(main, entry) {
       const won = g.winner === 0;
       const tie = g.winner === -1;
       st.say(tie ? t("무승부") : won ? t("승리!") : t("패배"), tie ? "" : won ? "win" : "lose");
+      sfx(tie ? "match" : won ? "matchwin" : "matchlose");
       rec.textContent = recordLine(addRecord("ecard", tie ? 0 : won ? 1 : -1));
       clear(doneBar).append(
         h("strong", {}, t("{a} 대 {b}", { a: g.score[0], b: g.score[1] })),

@@ -4,6 +4,8 @@
 //   sfx("reveal")     손을 공개할 때. sfx("reveal", "win") 처럼 그 판 결과를 같이 주면 뒤이어 결과 가락을 낸다
 //   sfx("win") · sfx("lose") · sfx("draw") · sfx("result", cmp)   판 결과(cmp 는 1, 0, −1)
 //   sfx("matchwin") · sfx("matchlose") · sfx("match")            경기 끝(match 는 승패가 없을 때)
+//   sfx("go")         지금 눌러야 할 때(먼저 누르기 놀이). 방금 건 승패 가락 대신 이 소리가 난다
+//   sfx("right") · sfx("wrong")   빠르게 잇달아 답하는 놀이에서 맞음과 틀림
 //   단추와 링크를 누르는 소리(tap)는 여기서 알아서 낸다. 제 소리를 낸 단추는 겹쳐 내지 않는다.
 // 소리는 화면에 이미 보이는 것을 한 번 더 알릴 뿐이다(소리로만 전하는 것은 없다).
 // 가볍게 둔다: 소리를 만드는 engine.js 와 녹음은 소리를 켠 사람에게만 뒤늦게 받는다.
@@ -30,6 +32,8 @@ function read() {
 
 let state = read();
 const listeners = new Set();
+const firsts = new Set(); // 첫 소리를 기다리는 것들
+let sounded = false; // 이 쪽에서 소리가 한 번이라도 났는가
 let ctx = null; // AudioContext
 let engine = null; // engine.js 의 createEngine(ctx)
 let loading = null; // import("./engine.js")
@@ -73,6 +77,19 @@ export function onSoundChange(fn) {
   return () => listeners.delete(fn);
 }
 
+/** 배경음악이 들어 있는가. 아직 없다(소리 단추는 이 값이 참이 될 때까지 배경음악 줄을 숨긴다) */
+export const HAS_MUSIC = false;
+
+/**
+ * 이 쪽에서 첫 소리가 날 때 fn() 을 한 번 부른다(처음 온 사람에게 '효과음 켜짐'을 알릴 때 쓴다).
+ * 이미 소리가 났으면 곧바로 부른다. 돌려주는 함수를 부르면 그만 기다린다
+ */
+export function onFirstSound(fn) {
+  if (sounded) Promise.resolve().then(fn);
+  else firsts.add(fn);
+  return () => firsts.delete(fn);
+}
+
 function apply(next, byHand) {
   const changed = Object.keys(KEYS).some((key) => next[key] !== state[key]);
   state = next;
@@ -93,7 +110,11 @@ export function sfx(name, detail) {
 
 function play(name, detail) {
   try {
-    engine.play(name, detail);
+    if (!engine.play(name, detail) || sounded) return;
+    sounded = true;
+    const waiting = [...firsts];
+    firsts.clear();
+    for (const fn of waiting) fn();
   } catch (e) {
     console.error(e);
   }

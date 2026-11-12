@@ -14,6 +14,7 @@ import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList, pressPad } from "./flow.js";
 import { speedSeg, secs, HOLD_MS, padResult, clearPad } from "./hammer.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 /** 셋째 손이 다를 때(간사이 규칙) '돈!'을 잘못 누를 수 있게 단추를 켜 두는 시간 */
 const FALSE_MS = 900;
@@ -112,6 +113,7 @@ export function donpappaView(main, entry) {
       grid.setNames(V.hands.map((x) => calls()[x.id]));
       steps.set(1);
     }
+    if (r.cmp === 0) sfx("draw");
     st.sub(prompt());
     roleTag();
     grid.lock(false);
@@ -138,6 +140,7 @@ export function donpappaView(main, entry) {
       clearPad(pad);
       pad.el.hidden = false;
       st.say(same ? t("같음!") : t("다름"), same ? "win" : "");
+      if (same) sfx("go");
       st.sub(same ? t("먼저 누르기") : t("누르면 패배"));
       if (same) comp = reactionMs(rng, level);
       let cue = 0;
@@ -169,6 +172,7 @@ export function donpappaView(main, entry) {
       line = meWon ? t("둘 다 {c}. 내가 먼저 '돈!' (나 {a}, 컴퓨터 {b})", said) : t("둘 다 {c}. 컴퓨터가 먼저 '돈!' (나 {a}, 컴퓨터 {b})", said);
     } else if (r.result === "missed") {
       say(t("아무도 안 외침"));
+      sfx("draw");
       line = t("둘 다 {c}. 아무도 '돈!'을 외치지 않아 다시", { c: callOf(i) });
     } else if (r.result === "false") {
       say(t("손이 다른데 외쳐서 패배"), "lose");
@@ -182,6 +186,7 @@ export function donpappaView(main, entry) {
     roleTag();
     if (g.done) {
       const won = g.winner === 0;
+      sfx(won ? "matchwin" : "matchlose");
       wins[g.winner] += 1;
       score.set(wins[0], wins[1], t("이긴 판"));
       rec.textContent = recordLine(addRecord("donpappa", won ? 1 : -1));

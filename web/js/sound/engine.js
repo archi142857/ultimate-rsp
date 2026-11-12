@@ -20,7 +20,7 @@ export const SAMPLES = {
 };
 
 /** 화면이 부르는 소리 이름. result(판 결과 값)와 match(승패 없는 경기 끝)는 아래 play 가 다른 이름으로 바꾼다 */
-export const SOUNDS = ["tap", "throw", "count", "reveal", "win", "lose", "draw", "matchwin", "matchlose"];
+export const SOUNDS = ["tap", "throw", "count", "reveal", "win", "lose", "draw", "matchwin", "matchlose", "go", "right", "wrong"];
 
 const KINDS = {
   scissors: ["hand-scissors", "scissors"],
@@ -294,12 +294,26 @@ export const RECIPES = {
     wood.mallet(k, o, at + 0.66, "A2", 0.22, 1.1);
     return wood.mallet(k, o, at + 0.66, "A3", 0.29, 1.1);
   },
+  // 지금 누를 때(먼저 누르기 놀이): 나무토막이 빠르게 두 번 올라간다. 공개 소리와 같이 나면(after) 뒤의 것만 낸다
+  go(k, o, at, after = false) {
+    if (!after) wood.block(k, o, at, 990, 0.24);
+    wood.clap(k, o, at + 0.09, 0.1, 0.1);
+    return wood.block(k, o, at + 0.09, 1319, 0.26);
+  },
+  // 맞음(빠르게 잇달아 답하는 놀이): 높은 나무토막 한 번
+  right: (k, o, at) => wood.block(k, o, at, 1175, 0.17, 0.09),
+  // 틀림: 낮은 마림바 두 음이 반음으로 부딪힌다
+  wrong(k, o, at) {
+    wood.mallet(k, o, at, "E4", 0.2, 0.26);
+    return wood.mallet(k, o, at, "F4", 0.2, 0.26);
+  },
 };
 
 const JINGLES = ["win", "lose", "draw", "matchwin", "matchlose"];
 const AFTER_REVEAL = 0.3; // 공개 소리 뒤 결과 가락까지
 const AFTER_THROW = 0.18; // (세지 않을 때) 손 내는 소리 뒤 결과 가락까지
 const WITH_THROW = 0.15; // 손 내는 소리와 이만큼 안에 겹치는 세는 소리는 내지 않는다
+const AFTER_PICK = 0.07; // 손 내는 소리 뒤 맞음·틀림 소리까지
 
 /**
  * 소리를 걸 때 지금보다 얼마나 뒤로 거는가(초). 오디오 시계는 장치가 한 번에 받아 가는 만큼(baseLatency)씩 뛴다.
@@ -309,8 +323,9 @@ export const leadOf = (ctx) => Math.min(0.03, Math.max(0.01, (ctx.baseLatency ||
 
 /**
  * 한 AudioContext 에 소리 길을 놓는다: 소리들 → 음량 → 누르개(겹쳐도 찢어지지 않게) → 스피커.
- * play(name, detail) 로 소리를 낸다. 겹치는 차례는 여기서 정리한다:
- *   결과 가락은 공개 소리(나 손 내는 소리)가 지나간 뒤에 나오고, 새 가락이나 새 손이 오면 앞 가락은 거둔다.
+ * play(name, detail) 로 소리를 낸다. 소리를 걸었으면 true 를 돌려준다. 겹치는 차례는 여기서 정리한다:
+ *   결과 가락은 공개 소리(나 손 내는 소리)가 지나간 뒤에 나온다.
+ *   새 손, 새로 세기 시작, 공개, 새 가락이 오면 앞 가락은 거둔다. 다만 경기 끝 가락이 울리는 동안 판 가락은 내지 않는다.
  */
 export function createEngine(ctx, { volume = 0.8 } = {}) {
   const k = kitOf(ctx);
@@ -330,7 +345,7 @@ export function createEngine(ctx, { volume = 0.8 } = {}) {
     return g;
   };
   const fx = bus(); // 누르는 소리, 세는 소리, 공개
-  let jingle = null; // 결과 가락 { bus, name, asked }
+  let jingle = null; // 결과 가락 { bus, name, asked, end }
   const mark = { tap: -9, throw: -9, reveal: -9, count: -9, i: 0 };
   const lead = leadOf(ctx);
   // 데워 두기: 브라우저는 오실레이터·필터·녹음을 처음 쓸 때 준비에 몇 ms 를 쓴다.
@@ -353,37 +368,51 @@ export function createEngine(ctx, { volume = 0.8 } = {}) {
     if (name === "result") name = detail > 0 ? "win" : detail < 0 ? "lose" : detail === 0 ? "draw" : "";
     if (name === "match") name = "draw";
     if (name === "tap") {
-      if (at - mark.tap < 0.05) return;
+      if (at - mark.tap < 0.05) return false;
       mark.tap = at;
       RECIPES.tap(k, fx, at);
     } else if (name === "throw") {
       cut();
       // 녹음을 아직 못 받아 소리가 안 났으면 낸 것으로 치지 않는다(세는 소리가 첫 마디부터 난다)
-      if (RECIPES["throw_" + handKind(detail)](k, fx, at) > at) mark.throw = at;
+      if (!(RECIPES["throw_" + handKind(detail)](k, fx, at) > at)) return false;
+      mark.throw = at;
     } else if (name === "count") {
       const n = detail > 0 ? Math.round(detail) : 3;
       // 잇달아 오는 마디를 차례로 센다. 한참 쉬었거나 다 셌으면 처음부터
       if (at - mark.count > 0.9 || mark.i >= n) mark.i = 0;
+      if (mark.i === 0) cut(); // 새 판이 시작됐다
       // 손을 내자마자 세기 시작하면 손 내는 소리가 그 마디를 대신한다(두 소리가 겹쳐 뭉개지지 않게)
-      if (at - mark.throw >= WITH_THROW) RECIPES.count(k, fx, at, mark.i, n);
+      const sounds = at - mark.throw >= WITH_THROW;
+      if (sounds) RECIPES.count(k, fx, at, mark.i, n);
       mark.i += 1;
       mark.count = at;
+      return sounds;
     } else if (name === "reveal") {
+      cut();
       mark.reveal = at;
       mark.i = 0;
       RECIPES.reveal(k, fx, at);
       if (JINGLES.includes(detail)) play(detail);
+    } else if (name === "go") {
+      // 방금 건 승패 가락 대신 이 소리를 낸다('막기!' 같은 글은 결과가 아니라 누르라는 신호다)
+      cut();
+      RECIPES.go(k, fx, at, at - mark.reveal < 0.06);
+    } else if (name === "right" || name === "wrong") {
+      RECIPES[name](k, fx, at - mark.throw < AFTER_PICK ? mark.throw + AFTER_PICK : at);
     } else if (JINGLES.includes(name)) {
-      if (jingle && at - jingle.asked < 0.08) {
-        // 같은 순간에 같은 가락은 한 번만. 경기 끝 가락이 걸렸으면 그 판의 가락은 넣지 않는다
-        if (jingle.name === name || jingle.name.startsWith("match")) return;
+      if (jingle) {
+        // 같은 순간에 같은 가락은 한 번만
+        if (jingle.name === name && at - jingle.asked < 0.08) return false;
+        // 경기 끝 가락이 울리는 동안에는 판 가락을 내지 않는다
+        if (!name.startsWith("match") && jingle.name.startsWith("match") && at < jingle.end) return false;
       }
       cut();
       const start = Math.max(at, at - mark.reveal < AFTER_REVEAL ? mark.reveal + AFTER_REVEAL : 0, at - mark.throw < AFTER_THROW ? mark.throw + AFTER_THROW : 0);
       const b = bus();
-      RECIPES[name](k, b, start);
-      jingle = { bus: b, name, asked: at };
-    }
+      const end = RECIPES[name](k, b, start);
+      jingle = { bus: b, name, asked: at, end };
+    } else return false;
+    return true;
   }
 
   return {

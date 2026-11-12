@@ -13,6 +13,7 @@ import { entryHead, entryBody } from "./common.js";
 import { flowLayout, stepList, logList, pressPad } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
 import { HOLD_MS, padResult, clearPad } from "./hammer.js";
+import { sfx } from "../sound/index.js";
 
 const ESCAPE_MS = 1200;
 
@@ -125,6 +126,7 @@ export function teamTagView(main, entry) {
       // 우리 편이 졌다: 술래보다 먼저 눌러야 달아난다
       steps.set(1);
       st.say(t("달아나기!"), "lose");
+      sfx("go");
       st.sub(t("술래보다 먼저 누르기"));
       clearPad(run);
       run.el.classList.add("hot");
@@ -148,6 +150,7 @@ export function teamTagView(main, entry) {
     const ours = c > 0;
     if (c === 0) {
       say(t("비김. 다시"));
+      sfx("draw");
       st.sub(t("둘 다 {h}", { h: lower(V.hands[i].name) }));
       log.add(t("{r}판: 둘 다 {h}. 다시", { r: r.round, h: lower(V.hands[i].name) }));
     } else {
@@ -193,6 +196,7 @@ export function teamTagView(main, entry) {
     const won = game.winner === mine;
     const tie = game.winner === -1;
     st.say(tie ? t("비김") : won ? t("우리 편 승리") : t("우리 편 패배"), tie ? "" : won ? "win" : "lose");
+    sfx(tie ? "match" : won ? "matchwin" : "matchlose");
     st.sub(t("{a} 대 {b}", { a: game.teams[mine].length, b: game.teams[1 - mine].length }));
     rec.textContent = recordLine(addRecord("teamtag", tie ? 0 : won ? 1 : -1));
     clear(doneBar).append(

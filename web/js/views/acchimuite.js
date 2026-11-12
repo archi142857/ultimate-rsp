@@ -11,6 +11,7 @@ import { handGrid, stage, chant, fastToggle, block, recordLine, rpsChant } from 
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 export function acchimuiteView(main, entry) {
   const V = compileVariant(findEntry("classic"));
@@ -80,6 +81,7 @@ export function acchimuiteView(main, entry) {
     st.op.set(V, j);
     if (r.cmp === 0) {
       st.say(t("무승부"));
+      sfx("draw");
       st.sub(t("다시 가위바위보"));
       log.add(t("가위바위보: 둘 다 {h}", { h: lower(V.hands[i].name) }));
     } else {
@@ -108,6 +110,7 @@ export function acchimuiteView(main, entry) {
       const meWon = game.winner === 0;
       grid.lock(true); // 끝난 뒤에는 손 단추를 잠근다(눌러도 아무 일 없는데 손 내는 소리만 났다: 소리 11-12)
       st.say(meWon ? t("승리!") : t("패배"), meWon ? "win" : "lose");
+      sfx(meWon ? "matchwin" : "matchlose");
       st.sub(pointer === 0 ? t("{d:을를} 가리켰고 컴퓨터가 그쪽을 봄", { d: lower(meD.name) }) : t("컴퓨터가 {d:을를} 가리켰고 나도 그쪽을 봄", { d: lower(opD.name) }));
       log.add(meWon ? t("호이! 둘 다 {d}. 내가 승리", { d: lower(meD.name) }) : t("호이! 둘 다 {d}. 컴퓨터가 승리", { d: lower(meD.name) }), meWon ? "w" : "l");
       wins[game.winner] += 1;
@@ -119,6 +122,7 @@ export function acchimuiteView(main, entry) {
       doneBar.hidden = false;
     } else {
       st.say(t("빗나감"));
+      sfx("draw");
       st.sub(t("다시 가위바위보부터"));
       log.add(t("호이! 나 {a}, 컴퓨터 {b}. 빗나감", { a: lower(meD.name), b: lower(opD.name) }));
     }

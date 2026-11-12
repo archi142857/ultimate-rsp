@@ -11,6 +11,7 @@ import { handGrid, stage, chant, fastToggle, block, segmented, selectBox, mixBar
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 const solved = new Map();
 function solutionFor(V, goal) {
@@ -154,12 +155,14 @@ export function glicoView(main, entry) {
     st.op.set(V, j);
     if (r.cmp === 0) {
       st.say(t("무승부"));
+      sfx("draw");
       st.sub(t("아무도 못 오름"));
       clear(kana);
       log.add(t("둘 다 {h}. 그대로", { h: lower(V.hands[i].name) }));
     } else {
       const meMoved = r.by === 0;
       st.say(meMoved ? t("{n}칸 오름", { n: r.moved }) : t("컴퓨터 {n}칸", { n: r.moved }), meMoved ? "win" : "lose");
+      if (game.done) sfx(game.winner === 0 ? "matchwin" : "matchlose");
       st.me.mark(meMoved ? "won" : "lost");
       st.op.mark(meMoved ? "lost" : "won");
       st.sub(V.sentence(i, j));

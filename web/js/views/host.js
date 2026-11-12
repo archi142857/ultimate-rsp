@@ -11,6 +11,7 @@ import { handGrid, chant, fastToggle, block, segmented, recordLine, stage, rpsCh
 import { entryHead, entryBody } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 const ROUNDS = 10;
 
@@ -100,12 +101,14 @@ export function hostView(main, entry) {
     const hostName = lower(V.hands[host].name);
     if (r.voided) {
       st.say(t("없던 판"));
+      if (my !== null) sfx("draw");
       st.sub(t("남은 사람이 모두 짐. 다시"));
       log.add(t("진행자 {h}: 남은 사람이 모두 져서 없던 판", { h: hostName }));
     } else {
       const mine = meIn ? r.result[0] : null;
       if (mine) {
         st.say(mine === "win" ? t("승리! +10점") : mine === "draw" ? t("무승부. +5점") : t("패배. 탈락"), mine === "lose" ? "lose" : mine === "win" ? "win" : "");
+        if (mine === "draw") sfx("draw");
         st.me.mark(mine === "win" ? "won" : mine === "lose" ? "lost" : null);
       } else st.say(t("진행자 {h}", { h: V.hands[host].name }));
       const outNames = r.out.map(name);
@@ -153,6 +156,7 @@ export function hostView(main, entry) {
     const alone = ws.length === 1;
     const who = listWords(ws.map(name));
     st.say(meWon ? (alone ? t("나 우승") : t("공동 우승")) : alone ? t("{who} 우승", { who }) : t("{who} 공동 우승", { who }), meWon ? "win" : "lose");
+    sfx(meWon ? "matchwin" : "matchlose");
     st.sub(alone && game.alive.length === 1 ? t("혼자 남음") : t("{n}판 끝. 점수가 가장 높은 사람이 승리", { n: game.rounds }));
     rec.textContent = recordLine(addRecord("host", meWon ? 1 : -1));
     clear(doneBar).append(

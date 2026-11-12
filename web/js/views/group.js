@@ -11,6 +11,7 @@ import { handGrid, chant, fastToggle, block, segmented, recordLine, stage, rpsCh
 import { entryHead, entryBody } from "./common.js";
 import { flowLayout, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx, roundTone } from "../sound/index.js";
 
 /** preset: { rules: ["majority", "minority"] } 많은 손·적은 손 고르기, { tie3: "scissors" } 셋 다 나오면 가위 승 */
 export function groupView(main, entry, params, preset = {}) {
@@ -158,6 +159,7 @@ export function groupView(main, entry, params, preset = {}) {
       else if (kinds.length === 3) log.add(out ? t("{n}명: 세 가지가 다 나와 {h} 손 승리. {names} 탈락", lv) : t("{n}명: 세 가지가 다 나와 {h} 손 승리. {names} 통과", lv));
       else log.add(out ? t("{n}명: {h} 손 승리. {names} 탈락", lv) : t("{n}명: {h} 손 승리. {names} 통과", lv));
     }
+    sfx(roundTone({ shown: { hands: [throws[0]], out: r.out }, you: 0, group: true, mode }));
     if (game.done) finish();
     draw();
   }
@@ -190,6 +192,7 @@ export function groupView(main, entry, params, preset = {}) {
     const good = mode === "survive" ? meLast : !meLast;
     const who = name(game.last);
     st.say(mode === "survive" ? (meLast ? t("나 우승") : t("{who} 우승", { who })) : meLast ? t("나 술래") : t("{who} 술래", { who }), good ? "win" : "lose");
+    sfx(good ? "matchwin" : "matchlose");
     rec.textContent = recordLine(addRecord(entry.id, good ? 1 : -1));
     clear(doneBar).append(
       h("strong", {}, mode === "survive" ? (meLast ? t("끝까지 살아남음") : t("{who} 우승", { who })) : meLast ? t("내가 술래") : t("술래를 피함")),

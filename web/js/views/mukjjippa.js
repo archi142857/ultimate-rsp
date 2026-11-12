@@ -12,6 +12,7 @@ import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
 import { recordLine } from "../ui/widgets.js";
+import { sfx } from "../sound/index.js";
 
 const BOT_CHOICES = [
   { id: "random", get name() { return t("주사위"); } },
@@ -105,6 +106,7 @@ export function mukjjippaView(main, entry) {
     let line;
     if (r.note === "again") {
       st.say(t("무승부"));
+      sfx("draw");
       line = t("가위바위보: 둘 다 {h}. 다시", { h: lower(V.hands[i].name) });
     } else if (r.note === "start") {
       st.say(game.attacker === 0 ? t("내가 공격") : t("컴퓨터 공격"), game.attacker === 0 ? "win" : "lose");
@@ -124,6 +126,7 @@ export function mukjjippaView(main, entry) {
     log.add(line, r.note === "hit" ? (game.winner === 0 ? "w" : "l") : "");
     st.sub(game.done ? "" : roleText());
     if (game.done) {
+      sfx(game.winner === 0 ? "matchwin" : "matchlose");
       wins[game.winner] += 1;
       rec.textContent = recordLine(addRecord("mukjjippa", game.winner === 0 ? 1 : -1));
       clear(doneBar).append(

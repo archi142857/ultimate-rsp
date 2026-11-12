@@ -8,6 +8,7 @@ import { fastMode, block, segmented, recordLine } from "../ui/widgets.js";
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 const SEQS = allSequences(3);
 
@@ -117,6 +118,7 @@ export function penneyView(main, entry) {
     coins.slice(-3).forEach((el) => el.classList.add(g.winner === 0 ? "hit-me" : "hit-op"));
     wins[g.winner] += 1;
     const won = g.winner === 0;
+    sfx(won ? "win" : "lose");
     const seq = g.picks[g.winner];
     msg.textContent = won
       ? t("{n}번 만에 내 순서 {s:이가} 나옴", { n: g.flips.length, s: seqWords(seq) })

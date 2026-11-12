@@ -8,6 +8,7 @@ import { stage, chant, fastToggle, block, segmented, recordLine, countChant } fr
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 const TARGET = 3;
 
@@ -130,6 +131,7 @@ export function morraView(main, entry) {
       st.op.text(String(c.fingers), t("{g}!", { g: c.guess }));
       const who = r.point === 0 ? t("내가 맞힘") : r.point === 1 ? t("컴퓨터가 맞힘") : r.hit[0] ? t("둘 다 맞힘") : t("아무도 못 맞힘");
       st.say(t("합 {s}", { s: r.sum }), r.point === 0 ? "win" : r.point === 1 ? "lose" : "");
+      if (r.point === null) sfx("draw");
       st.sub(who);
       if (r.point !== null) (r.point === 0 ? st.me : st.op).mark("won");
       line = t("{a} + {b} = {s}. 나 {x}, 컴퓨터 {y}. {who}", { a: fingers, b: c.fingers, s: r.sum, x: guess, y: c.guess, who });
@@ -149,6 +151,7 @@ export function morraView(main, entry) {
     if (game.done) {
       const won = game.winner === 0;
       st.say(won ? t("승리!") : t("패배"), won ? "win" : "lose");
+      sfx(won ? "matchwin" : "matchlose");
       rec.textContent = recordLine(addRecord(key(), won ? 1 : -1));
       clear(doneBar).append(
         h("strong", {}, won ? t("내가 먼저 {n}점", { n: TARGET }) : t("컴퓨터가 먼저 {n}점", { n: TARGET })),

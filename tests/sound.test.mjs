@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sfx, soundState, setSound, onSoundChange, roundTone } from "../web/js/sound/index.js";
+import { sfx, soundState, setSound, onSoundChange, onFirstSound, HAS_MUSIC, roundTone } from "../web/js/sound/index.js";
 import { SAMPLES, SOUNDS, RECIPES, handKind, countHz, hz, gainOf, leadOf, parseWav, preload, kitOf, createEngine } from "../web/js/sound/engine.js";
 import { CATALOG, findEntry } from "../web/js/data/catalog.js";
 import { POOL } from "../web/js/data/custom.js";
@@ -128,6 +128,16 @@ test("앞문: 설정을 바꾸면 알리고, 음량은 0~1 로 자른다", () =>
   // 돌려받은 값을 고쳐도 안쪽 설정은 그대로
   soundState().sfx = true;
   assert.equal(soundState().sfx, false);
+});
+
+test("앞문: 소리 단추가 쓰는 값(배경음악이 있는지, 첫 소리 알림)", () => {
+  assert.equal(HAS_MUSIC, false, "배경음악을 넣으면 참으로 바꾼다");
+  let called = 0;
+  const off = onFirstSound(() => (called += 1));
+  assert.equal(typeof off, "function");
+  sfx("tap"); // 꺼져 있으니 소리가 나지 않고, 알림도 없다
+  assert.equal(called, 0);
+  off();
 });
 
 test("앞문은 가볍다: 엔진은 뒤늦게만 부른다", () => {
@@ -471,10 +481,21 @@ test("엔진: 새 가락이나 새 손이 오면 앞 가락을 거둔다", () =>
   ctx.currentTime = 2.3;
   engine.play("win");
   assert.equal(cut(), 2, "새 가락이 오면 앞 가락은 거둔다");
-  // 단추와 세는 소리는 가락을 거두지 않는다
+  // 단추 소리는 가락을 거두지 않는다
   engine.play("tap");
-  engine.play("count", 3);
   assert.equal(cut(), 2);
+  // 새로 세기 시작하면(새 판) 거둔다. 이어서 세는 마디는 그대로 둔다
+  ctx.currentTime = 2.6;
+  engine.play("count", 3);
+  assert.equal(cut(), 3, "세기 시작하면 앞 판의 가락은 거둔다");
+  engine.play("lose");
+  ctx.currentTime = 2.8;
+  engine.play("count", 3);
+  assert.equal(cut(), 3, "둘째 마디는 가락을 거두지 않는다");
+  // 공개도 거둔다
+  ctx.currentTime = 3;
+  engine.play("reveal");
+  assert.equal(cut(), 4);
 });
 
 test("엔진: 같은 순간의 경기 끝 가락은 판 가락을 대신한다", () => {
@@ -498,6 +519,92 @@ test("엔진: 같은 순간의 경기 끝 가락은 판 가락을 대신한다",
   const n = ctx.made.length;
   engine.play("lose");
   assert.equal(ctx.made.length, n);
+});
+
+test("엔진: 경기 끝 가락이 울리는 동안에는 판 가락을 내지 않는다", () => {
+  const ctx = fakeContext();
+  const engine = createEngine(ctx);
+  ctx.currentTime = 1;
+  assert.equal(engine.play("matchwin"), true);
+  let from = ctx.made.length;
+  // 놀이가 끝난 뒤 화면이 승패 글을 한 번 더 쓸 때(글리코의 '꼭대기!')
+  ctx.currentTime = 1.6;
+  assert.equal(engine.play("win"), false);
+  assert.equal(engine.play("lose"), false);
+  assert.equal(engine.play("draw"), false);
+  assert.equal(started(ctx, from).length, 0);
+  assert.equal(busesOf(ctx).filter(faded).length, 0, "경기 끝 가락은 그대로 울린다");
+  // 다른 경기 끝 가락은 바꿔 낸다
+  assert.equal(engine.play("matchlose"), true);
+  assert.equal(busesOf(ctx).filter(faded).length, 1);
+  // 새 손을 내면 거두고, 그 뒤의 판 가락은 난다
+  ctx.currentTime = 2;
+  engine.play("throw", "rock");
+  assert.equal(busesOf(ctx).filter(faded).length, 2);
+  assert.equal(engine.play("win"), true);
+  // 다 울린 뒤에는 판 가락이 난다
+  const quiet = fakeContext();
+  const e2 = createEngine(quiet);
+  e2.play("matchlose");
+  quiet.currentTime = 4;
+  from = quiet.made.length;
+  assert.equal(e2.play("draw"), true);
+  assert.ok(started(quiet, from).length > 0);
+});
+
+test("엔진: 누르라는 신호(go)는 방금 건 승패 가락을 대신한다", () => {
+  const ctx = fakeContext();
+  const engine = createEngine(ctx);
+  const blocks = (from) => ctx.made.slice(from).filter((n) => n.kind === "osc" && [990, 1319].includes(n.frequency.events[0][1])).map((n) => n.frequency.events[0][1]);
+  // 외치기가 끝나 공개 소리가 난 바로 그때: 화면이 '막기!'(lose)를 쓰고 go 를 부른다
+  ctx.currentTime = 1;
+  engine.play("reveal");
+  engine.play("lose");
+  let from = ctx.made.length;
+  assert.equal(engine.play("go"), true);
+  assert.equal(busesOf(ctx).filter(faded).length, 1, "승패 가락은 거둔다");
+  assert.deepEqual(blocks(from), [1319], "공개 소리가 앞 소리를 대신한다");
+  assert.ok(near(firstStart(ctx, from), 1.01 + 0.09));
+  // 공개 소리 없이 부르면 두 번 다 낸다
+  ctx.currentTime = 5;
+  from = ctx.made.length;
+  engine.play("go");
+  assert.deepEqual(blocks(from).sort(), [1319, 990].sort());
+});
+
+test("엔진: 맞음·틀림은 손 내는 소리 바로 뒤에 붙는다", () => {
+  const ctx = fakeContext();
+  const engine = createEngine(ctx);
+  ctx.currentTime = 1;
+  engine.play("throw", "paper");
+  let from = ctx.made.length;
+  assert.equal(engine.play("right"), true);
+  assert.ok(near(firstStart(ctx, from), 1.01 + 0.07));
+  ctx.currentTime = 3;
+  from = ctx.made.length;
+  assert.equal(engine.play("wrong"), true);
+  assert.ok(near(firstStart(ctx, from), 3.01));
+  // 맞음·틀림은 가락이 아니다: 울리던 가락을 거두지 않는다
+  engine.play("win");
+  engine.play("right");
+  assert.equal(busesOf(ctx).filter(faded).length, 0);
+});
+
+test("엔진: 소리를 걸었는지 돌려준다", () => {
+  const ctx = fakeContext();
+  const engine = createEngine(ctx);
+  assert.equal(engine.play("tap"), true);
+  assert.equal(engine.play("tap"), false, "몰린 단추 소리");
+  assert.equal(engine.play("없는 소리"), false);
+  assert.equal(engine.play("result"), false, "값이 없는 판 결과");
+  assert.equal(engine.play("result", 1), true);
+  assert.equal(engine.play("win"), false, "같은 순간의 같은 가락");
+  ctx.currentTime = 5;
+  assert.equal(engine.play("throw", "rock"), true);
+  assert.equal(engine.play("count", 3), false, "손 내는 소리가 대신한 마디");
+  ctx.currentTime = 5.2;
+  assert.equal(engine.play("count", 3), true);
+  assert.equal(engine.play("reveal", "draw"), true);
 });
 
 test("엔진: 단추 소리는 한꺼번에 몰려도 한 번만", () => {

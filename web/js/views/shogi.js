@@ -11,6 +11,7 @@ import { block, segmented, recordLine } from "../ui/widgets.js";
 import { entryHead, entryBody } from "./common.js";
 import { flowLayout, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 // 왕 그림은 왕자(🤴 prince). 황제와 노예의 황제가 왕관(king)이라 겹치지 않게(컨셉 11-08)
 const KING = { id: "king", art: "prince", emoji: "🤴", name: "" };
@@ -230,6 +231,7 @@ export function shogiView(main, entry) {
               ? t("컴퓨터는 둘 수 있는 수 없음")
               : t("둘 수 있는 수 없음");
     say(why);
+    sfx(tie ? "match" : won ? "matchwin" : "matchlose");
     rec.textContent = recordLine(addRecord(key(), tie ? 0 : won ? 1 : -1));
     clear(doneBar).append(h("strong", {}, tie ? t("무승부") : won ? t("승리!") : t("패배")), h("button", { class: "btn btn-ink", type: "button", onclick: newGame }, t("한 판 더")));
     doneBar.hidden = false;

@@ -12,6 +12,7 @@ import { handVars } from "../ui/colors.js";
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 export function minusOneView(main, entry) {
   const V = compileVariant(findEntry("classic"));
@@ -158,6 +159,7 @@ export function minusOneView(main, entry) {
   async function keep(side) {
     if (busy || game.phase !== "one") return;
     busy = true;
+    sfx("throw", V.hands[game.pairs[0][side]]);
     const theirs = game.pairs[1];
     let kb;
     if (botKind === "random") kb = rng.int(2);
@@ -173,6 +175,7 @@ export function minusOneView(main, entry) {
     st.op.set(V, r.b);
     if (r.cmp === 0) {
       st.say(t("무승부"));
+      sfx("draw");
       st.sub(t("처음부터 다시 두 손 내기"));
       log.add(t("나 {a}, 컴퓨터 {b}. 비겨서 다시", { a: lower(V.hands[r.a].name), b: lower(V.hands[r.b].name) }));
       resetPicks();

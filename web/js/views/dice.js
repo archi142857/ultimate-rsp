@@ -8,6 +8,7 @@ import { fastMode, block, segmented, recordLine } from "../ui/widgets.js";
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 const ROLLS = 10;
 
@@ -164,6 +165,7 @@ export function diceView(main, entry) {
     }
     const won = g.winner === 0;
     const tie = g.winner === -1;
+    sfx("result", tie ? 0 : won ? 1 : -1);
     if (!tie) wins[g.winner] += 1;
     msg.textContent = t("{a} 대 {b}, 비김 {d}번", { a: g.wins[0], b: g.wins[1], d: g.ties });
     log.add(t("{x} 대 {y}: {a} 대 {b}", { x: g.dice[0], y: g.dice[1], a: g.wins[0], b: g.wins[1] }), tie ? "" : won ? "w" : "l");

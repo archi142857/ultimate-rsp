@@ -8,6 +8,7 @@ import { chant, fastToggle, block, recordLine, countChant, stage } from "../ui/w
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 const FIELDS = 3;
 const TROOPS = 10;
@@ -93,12 +94,14 @@ export function blottoView(main, entry) {
     lastRound = r;
     const [a, b] = r.won;
     st.say(r.cmp > 0 ? t("이 판은 내가 가져감") : r.cmp < 0 ? t("이 판은 컴퓨터가 가져감") : t("무승부"), r.cmp > 0 ? "win" : r.cmp < 0 ? "lose" : "");
+    if (r.cmp === 0) sfx("draw");
     st.sub(t("싸움터 {a}곳 대 {b}곳", { a, b }));
     log.add(t("나 {x}, 컴퓨터 {y}: {a}곳 대 {b}곳", { x: r.a.join("·"), y: r.b.join("·"), a, b }), r.cmp > 0 ? "w" : r.cmp < 0 ? "l" : "");
     score.set(game.score[0], game.score[1], t("먼저 {n}판", { n: TARGET }));
     steps.set(game.done ? 2 : 1);
     if (game.done) {
       const won = game.winner === 0;
+      sfx(won ? "matchwin" : "matchlose");
       rec.textContent = recordLine(addRecord("blotto", won ? 1 : -1));
       clear(doneBar).append(
         h("strong", {}, won ? t("내가 먼저 {n}판 승리", { n: TARGET }) : t("컴퓨터가 먼저 {n}판 승리", { n: TARGET })),

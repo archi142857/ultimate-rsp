@@ -11,6 +11,7 @@ import { handGrid, block } from "../ui/widgets.js";
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout } from "./flow.js";
 import { load, save } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 export function commandView(main, entry) {
   const V = compileVariant(findEntry("classic"));
@@ -81,6 +82,7 @@ export function commandView(main, entry) {
     const miss = p.order.id === "draw" ? t("틀림. {h:과와} 비기려면 {a}", v) : p.order.id === "win" ? t("틀림. {h}에게 이기려면 {a}", v) : t("틀림. {h}에게 지려면 {a}", v);
     feedback.textContent = ok ? t("맞음. {n}초", { n: (ms / 1000).toFixed(2) }) : miss;
     feedback.style.color = ok ? "var(--win)" : "var(--lose)";
+    sfx(ok ? "right" : "wrong");
     show();
   }
 
@@ -96,6 +98,7 @@ export function commandView(main, entry) {
       const xs = game.log.filter((x) => x.order.id === id);
       return xs.length ? `${ORDERS.find((o) => o.id === id).name} ${xs.filter((x) => x.ok).length}/${xs.length}` : null;
     });
+    sfx(game.score > best ? "matchwin" : "match");
     if (game.score > best) {
       best = game.score;
       save("commandBest", best);

@@ -13,6 +13,7 @@ import { flowLayout, stepList, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
 import { handArt } from "../ui/art.js";
 import { PROPS } from "../data/props.js";
+import { sfx } from "../sound/index.js";
 
 // 주자 그림(컨셉 0e3a2df: Fluent Person running, 왼쪽을 본다. 우리 편은 CSS 로 뒤집는다)
 const RUNNER = PROPS.runner;
@@ -141,6 +142,7 @@ export function relayView(main, entry) {
     st.op.set(V, j);
     if (r.cmp === 0) {
       st.say(t("비김. 다시"));
+      sfx("draw");
       grid.lock(false);
       busy = false;
       return;
@@ -157,6 +159,7 @@ export function relayView(main, entry) {
     drawTrack();
     if (g.done) {
       const won = g.winner === 0;
+      sfx(won ? "matchwin" : "matchlose");
       steps.set(2);
       grid.el.hidden = true;
       rec.textContent = recordLine(addRecord(key(), won ? 1 : -1));

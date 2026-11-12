@@ -12,6 +12,7 @@ import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, stepList, logList, pressPad } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
 import { PROPS } from "../data/props.js";
+import { sfx } from "../sound/index.js";
 
 const TARGET = 3;
 // 결과를 읽을 틈. 바로 손 단추가 나오면 누르던 손가락이 다음 판을 시작해 결과가 사라졌다(11-09 사용자).
@@ -105,6 +106,7 @@ export function hammerView(main, entry) {
     st.op.set(V, j);
     if (r.cmp === 0) {
       st.say(t("비김. 다시"));
+      sfx("draw");
       grid.lock(false);
       busy = false;
       return;
@@ -120,6 +122,7 @@ export function hammerView(main, entry) {
     pad.el.classList.toggle("hot", iHit);
     pad.el.hidden = false;
     st.say(iHit ? t("치기!") : t("막기!"), iHit ? "win" : "lose");
+    sfx("go");
     st.sub(iHit ? t("컴퓨터가 헬멧을 쓰기 전에") : t("뿅망치가 닿기 전에"));
     st.me.art(iHit ? HAMMER : HELMET, iHit ? t("치기") : t("막기"));
     st.op.art(iHit ? HELMET : HAMMER, iHit ? t("막기") : t("치기"));
@@ -153,6 +156,7 @@ export function hammerView(main, entry) {
       tone = iHit ? "" : "win";
     } else say = iHit ? t("헛침") : t("컴퓨터가 헛침");
     st.say(say, tone);
+    if (!tone) sfx("draw");
     padResult(pad, say, tone);
     const said = { res: say, a: shown(mine), b: shown(comp) };
     log.add(iHit ? t("내가 쳤다: {res} (나 {a}, 컴퓨터 {b})", said) : t("컴퓨터가 쳤다: {res} (나 {a}, 컴퓨터 {b})", said), r.result === "hit" ? (iHit ? "w" : "l") : "");
@@ -160,6 +164,7 @@ export function hammerView(main, entry) {
     if (g.done) {
       const won = g.winner === 0;
       st.say(won ? t("승리!") : t("패배"), won ? "win" : "lose");
+      sfx(won ? "matchwin" : "matchlose");
       rec.textContent = recordLine(addRecord("hammer", won ? 1 : -1));
       clear(doneBar).append(
         h("strong", {}, won ? t("내가 먼저 {n}점", { n: TARGET }) : t("컴퓨터가 먼저 {n}점", { n: TARGET })),

@@ -10,6 +10,7 @@ import { createTeamSplit, splitChance, expectedSplitTries } from "../games/teams
 import { chant, fastToggle, block, segmented, stage, countChant } from "../ui/widgets.js";
 import { entryHead, entryBody } from "./common.js";
 import { flowLayout, logList } from "./flow.js";
+import { sfx } from "../sound/index.js";
 
 const SIZES = [4, 6, 8, 10, 12];
 
@@ -95,6 +96,7 @@ export function teamSplitView(main, entry) {
   async function throwIt(side) {
     if (busy || game.done) return;
     busy = true;
+    sfx("throw", SIDES[side]);
     pad.classList.add("locked");
     picks = null;
     draw();
@@ -104,6 +106,7 @@ export function teamSplitView(main, entry) {
     picks = all;
     const [a, b] = r.counts;
     st.say(r.even ? t("갈림!") : t("다시!"), r.even ? "win" : "");
+    if (!r.even) sfx("draw");
     st.sub(t("{x} {a}명, {y} {b}명", { x: SIDES[0].name, a, y: SIDES[1].name, b }));
     log.add(t("{n}번째: {x} {a}명, {y} {b}명", { n: r.try, x: SIDES[0].name, a, y: SIDES[1].name, b }) + (r.even ? "" : " " + t("다시")), r.even ? "w" : "");
     if (game.done) {

@@ -11,6 +11,7 @@ import { handGrid, stage, chant, fastToggle, block, selectBox, mixBar, recordLin
 import { entryHead, entryBody, scoreboard } from "./common.js";
 import { flowLayout, logList } from "./flow.js";
 import { addRecord, record } from "../ui/store.js";
+import { sfx } from "../sound/index.js";
 
 export function limitedView(main, entry) {
   const V = compileVariant(findEntry("classic"));
@@ -107,6 +108,7 @@ export function limitedView(main, entry) {
     st.op.set(V, j);
     if (r.cmp === 0) {
       st.say(t("무승부"));
+      sfx("draw");
       st.sub(t("별은 그대로, 카드만 한 장씩 줄어듦"));
       log.add(t("둘 다 {h}. 별 그대로", { h: lower(V.hands[i].name) }));
     } else {
@@ -119,6 +121,7 @@ export function limitedView(main, entry) {
     }
     if (game.done) {
       const w = game.winner;
+      sfx(w === 0 ? "matchwin" : w === 1 ? "matchlose" : "match");
       if (w === -1) wins[2] += 1;
       else wins[w] += 1;
       rec.textContent = recordLine(addRecord("limited", w === 0 ? 1 : w === 1 ? -1 : 0));
