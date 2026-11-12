@@ -32,6 +32,7 @@ import { sfx, roundTone } from "../sound/index.js";
 // 공개 연출: 한 마디 세는 시간, 결과를 적어도 보여 주는 시간, 다음 판 번호를 띄우는 시간.
 // 11-12 사용자: 컴퓨터와 하면 휙휙 지나가서 무엇이 진행되는지 안 보인다 → 셋을 세고(≈1.3초) 결과를 2.4초 보인 뒤 '2판'을 0.8초 띄운다.
 // 서버는 공개 뒤 REVEAL_MS(2.5초)만큼 다음 판 마감을 늘려 두므로, 그보다 긴 만큼(≈2초) 다음 판 시계가 덜 남은 채로 보인다
+// (백엔드에 서버·protocol.js 의 REVEAL_MS 를 4500 으로 늘려 달라고 함. 늘려도 위 빠르기는 그대로)
 const COUNT_MS = 420;
 const SHOW_MS = 2400;
 const NEXT_MS = 800;
@@ -402,7 +403,8 @@ export function roomView(main, code) {
     ring.center(shownText(shown));
     sfx("reveal", roundTone({ shown, you, group: isGroup(room.rules), mode: room.rules.mode }));
     if (onShow) onShow();
-    const rest = quick ? (fastMode() ? 1200 : hold) - (Date.now() - t0) : Math.max(hold - (Date.now() - t0), SHOW_MS);
+    // 세며 보일 때는 결과를 SHOW_MS 만큼(서버 REVEAL_MS 가 바뀌어도 빠르기는 그대로: 세기 + 보이기 + 다음 판 번호 ≈ 4.5초)
+    const rest = quick ? (fastMode() ? 1200 : hold) - (Date.now() - t0) : SHOW_MS;
     if (rest > 0) await sleep(rest);
     if (isLive()) ring.el.classList.remove("revealing");
   }
@@ -682,7 +684,9 @@ export function roomView(main, code) {
         dial.set(null, 0);
         ring.center(midText(r ? t("{r}판", { r: r.r }) : "", r && r.paused ? t("@timer:멈춤") : t("시간 제한 없음")));
       } else {
-        dial.set(sec, sec / total, sec <= 5 && mineNow() === null && !!grid);
+        // 빨리 하기면 공개가 짧아 마감까지 정한 시간보다 더 남는다: 정한 시간(예: 20초)부터 보인다
+        const left = Math.min(sec, total);
+        dial.set(left, left / total, left <= 5 && mineNow() === null && !!grid);
         if (!ring.el.querySelector(".dial")) ring.center(dial.el);
       }
       // 아래 줄: 몇 명이 냈나 · 시간이 지나면 대신 낸다
