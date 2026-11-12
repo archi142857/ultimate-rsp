@@ -418,7 +418,7 @@ export function evolutionStoryView(main, entry, params) {
   const rotate = h(
     "div",
     { class: "evo-rotate", hidden: true },
-    h("span", {}, t("세로로 돌리면 더 크게 보입니다.")),
+    h("span", {}, t("휴대폰을 세로로 돌리면 더 크게 보입니다.")),
     h("button", { type: "button", class: "evo-rotate-x", "aria-label": t("알림 닫기"), onclick: () => (setSetting("evo.rotateHint", false), (rotate.hidden = true)) }, "×"),
   );
   const book = h("div", { class: "evo-book" }, stage, rotate);

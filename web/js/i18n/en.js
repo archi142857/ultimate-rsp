@@ -1307,7 +1307,7 @@ export const EN = {
   "등장인물": "The cast",
   "사람": "Players",
   "설명": "Guide",
-  "세로로 돌리면 더 크게 보입니다.": "Turn your phone upright for a bigger view.",
+  "휴대폰을 세로로 돌리면 더 크게 보입니다.": "Turn your phone upright for a bigger view.",
   "그래프": "Chart",
   "합 {n}명": "{n} in total",
   "@people:{n}명": "{n} {n|player|players}",
