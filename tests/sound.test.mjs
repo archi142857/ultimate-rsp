@@ -103,12 +103,13 @@ const busesOf = (ctx, from = 0) => ctx.made.slice(from).filter((n) => n.kind ===
 const faded = (bus) => bus.gain.events.some((e) => e[0] === "target" && e[1] === 0);
 
 // ── 앞문 ────────────────────────────────────
-test("앞문: 처음에는 꺼져 있고, 꺼진 채로 불러도 아무 일이 없다", () => {
-  assert.deepEqual(soundState(), { sfx: false, music: false, volume: 0.8 });
+test("앞문: 처음에는 둘 다 켜져 있고(B9), 첫 손짓 전에는 불러도 아무 일이 없다", () => {
+  assert.deepEqual(soundState(), { sfx: true, music: true, volume: 0.8 });
   for (const name of [...SOUNDS, "result", "match", "없는 소리"]) assert.equal(sfx(name, 1), undefined);
 });
 
 test("앞문: 설정을 바꾸면 알리고, 음량은 0~1 로 자른다", () => {
+  setSound({ sfx: false, music: false, volume: 0.8 }); // 꺼진 데서 시작
   const seen = [];
   const off = onSoundChange((s) => seen.push(s));
   setSound({ sfx: true });

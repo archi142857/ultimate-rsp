@@ -9,6 +9,7 @@ import { aboutView } from "./views/about.js";
 import { entryView } from "./views/entry.js";
 import { onlineView, parseOnline } from "./online/index.js";
 import { handleLoginReturn } from "./online/account-view.js";
+import { mountSoundButton } from "./ui/sound-btn.js";
 
 const main = document.getElementById("main");
 let current = null;
@@ -170,10 +171,14 @@ function applyLangChrome() {
   }
 }
 
+// ── 소리: 누르면 펼치는 칸(효과음·배경음악·음량) ─────────────────
+const soundBtn = mountSoundButton(document.getElementById("sound-btn"));
+
 document.getElementById("lang-btn").addEventListener("click", () => {
   setLang(lang() === "ko" ? "en" : "ko");
   applyLangChrome();
   applyScheme();
+  soundBtn.draw();
   route();
 });
 

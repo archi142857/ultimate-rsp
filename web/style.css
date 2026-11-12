@@ -238,6 +238,151 @@ select {
   color: var(--ink);
   background: var(--scrim);
 }
+
+/* ── 소리 단추와 펼치는 칸(디자인 11-12 최종 ③: 누르면 펼치는 칸) ── */
+.tools {
+  position: relative;
+}
+.theme-btn.on {
+  color: var(--ink);
+  background: var(--scrim);
+}
+.sound-panel,
+.sound-note {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+}
+.sound-panel {
+  width: 268px;
+  max-width: calc(100vw - 2 * var(--gutter));
+  display: grid;
+  gap: 2px;
+  padding: 8px 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 10px 28px rgba(26, 30, 58, 0.16);
+}
+.sound-panel[hidden],
+.sound-note[hidden] {
+  display: none;
+}
+.sound-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  font-size: 0.9375rem;
+}
+.sound-row-label {
+  flex: 1;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.sound-sw-state {
+  color: var(--muted);
+  font-size: var(--step--1);
+}
+/* 스위치: 켜면 진한 바탕에 동그라미가 오른쪽 */
+.sound-sw {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--line-2);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.sound-sw[aria-checked="true"] {
+  background: var(--ink);
+}
+.sound-sw-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s;
+}
+.sound-sw[aria-checked="true"] .sound-sw-knob {
+  transform: translateX(18px);
+}
+.sound-vol-row .sound-row-label {
+  flex: none;
+}
+.sound-vol {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--ink);
+}
+.sound-vol-out {
+  width: 3.2em;
+  text-align: right;
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+}
+/* 소리가 다 꺼지면 음량은 흐리게(움직일 수는 있다) */
+.sound-vol-row.dim {
+  opacity: 0.5;
+}
+/* 처음 안내: '소리 켜짐 · 끄기' */
+.sound-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 7px 7px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(26, 30, 58, 0.2);
+}
+/* 단추가 셋(EN·밝기·소리)이 되어 넘치는 폭: 머리글 첫 줄을 지킨다(디자인 소리 단추 최종) */
+@media (max-width: 340px) {
+  .brand {
+    font-size: 1.15rem;
+    gap: 8px;
+  }
+  .tools {
+    gap: 0;
+  }
+}
+@media (max-height: 450px) and (min-width: 640px) and (max-width: 719px) {
+  .top .theme-btn {
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+  .top .nav a:lang(en) {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+@media (min-width: 720px) and (max-width: 759px) {
+  .nav a {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+.sound-note-off {
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 20%, transparent);
+  color: var(--paper);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
 .nav a[aria-current="page"] {
   color: var(--ink);
   background: var(--sunk);

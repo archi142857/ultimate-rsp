@@ -23,6 +23,15 @@ export const EN = {
   "어둡게": "Dark",
   "화면 밝기: {s}. 눌러서 바꾸기": "Theme: {s}. Select to change",
   "화면 밝기: {s}": "Theme: {s}",
+  "소리": "Sound",
+  "소리: {s}": "Sound: {s}",
+  "켬": "On",
+  "끔": "Off",
+  "효과음": "Sound effects",
+  "배경음악": "Music",
+  "음량": "Volume",
+  "소리 켜짐": "Sound is on",
+  "끄기": "Turn off",
   "온라인": "Online",
 
   // ── 온라인 대전(online/) ──

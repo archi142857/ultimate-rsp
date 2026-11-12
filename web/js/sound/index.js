@@ -13,9 +13,9 @@
 
 import { setting, setSetting } from "../ui/store.js";
 
-// 처음 온 사람의 값. 소리 단추가 화면에 놓일 때까지 효과음은 꺼 둔다(끌 길이 없는데 소리가 나면 안 된다).
-// 그동안은 주소에 ?sound=1 을 붙여 켜고 ?sound=0 으로 끈다(한 번 붙이면 이 브라우저에 남는다).
-const DEFAULTS = { sfx: false, music: false, volume: 0.8 };
+// 처음 온 사람의 값(B9, 사용자 11-12 09:31): 효과음·배경음악 둘 다 켬. 머리글 소리 단추(ui/sound-btn.js)로 끈다.
+// 주소에 ?sound=1 을 붙여 켜고 ?sound=0 으로 끄는 길도 그대로 둔다(한 번 붙이면 이 브라우저에 남는다).
+const DEFAULTS = { sfx: true, music: true, volume: 0.8 };
 const KEYS = { sfx: "sound.sfx", music: "sound.music", volume: "sound.vol" };
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
