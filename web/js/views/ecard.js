@@ -26,7 +26,7 @@ export function ecardView(main, entry) {
 
   const score = scoreboard();
   const st = stage();
-  const sideLine = h("p", { class: "note", style: { margin: "0 0 14px" }, "aria-live": "polite" });
+  const sideLine = h("p", { class: "note note-top", "aria-live": "polite" });
   const steps = stepList([t("카드를 한 장씩 같이 냄"), t("시민끼리 만나면 남은 카드로 계속 냄"), t("황제나 노예가 나오면 그 판 끝")]);
   const hand = h("div", { class: "ecards", role: "group", "aria-label": t("내 카드") });
   const opHand = h("div", { class: "ecards op", "aria-label": t("컴퓨터 카드") });

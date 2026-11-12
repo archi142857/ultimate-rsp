@@ -31,7 +31,7 @@ export function groupView(main, entry, params, preset = {}) {
   const circle = h("div", { class: "circle", "aria-label": t("모인 사람") });
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record(entry.id)));
-  const chanceLine = h("p", { class: "note", style: { margin: "0 0 14px" } });
+  const chanceLine = h("p", { class: "note note-top" });
   const doneBar = h("div", { class: "done-bar", hidden: true });
   const finishBtn = h("button", { class: "btn", type: "button", hidden: true, onclick: () => autoFinish() }, t("남은 사람끼리 마저 하기"));
   const grid = handGrid(V, { onPick: (i) => round(i) });

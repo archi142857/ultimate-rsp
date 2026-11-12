@@ -28,7 +28,7 @@ export function teamTagView(main, entry) {
 
   const st = stage({ meLabel: t("우리 편"), opLabel: t("상대 편") });
   const board = h("div", { class: "teams", "aria-live": "polite" });
-  const status = h("p", { class: "note", style: { margin: "0 0 14px" } });
+  const status = h("p", { class: "note note-top" });
   const steps = stepList([t("편마다 손 하나를 몰래 정함"), t("다 같이 냄. 이긴 편이 쫓음"), t("잡히면 상대 편이 됨. 한 편에 아무도 남지 않으면 끝")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("teamtag")));

@@ -35,7 +35,7 @@ export function diceView(main, entry) {
   const steps = stepList([t("주사위를 하나씩 고름"), t("{n}번 같이 굴림", { n: ROLLS }), t("높은 수가 더 많이 나온 쪽이 이김")]);
   const picks = h("div", { class: "dice-picks" });
   const vs = h("div", { class: "seq-vs", "aria-live": "polite" });
-  const msg = h("p", { class: "note", style: { margin: "0 0 14px" } });
+  const msg = h("p", { class: "note note-top" });
   const rolls = h("ol", { class: "rolls", "aria-label": t("굴린 결과") });
   const log = logList();
   const rec = h("p", { class: "rec" });

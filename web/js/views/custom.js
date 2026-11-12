@@ -12,7 +12,7 @@ export function customView(main, entry, params) {
   let k = clampInt(params.k, 1, maxWins(n), maxWins(n));
   let seed = clampInt(params.seed, 1, 2 ** 31, (randomSeed() % 100000) + 1);
   let page = null;
-  const host = h("div");
+  const host = h("div", { class: "custom-page" });
   main.append(host);
 
   function render() {

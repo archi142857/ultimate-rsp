@@ -25,7 +25,7 @@ export function teamSplitView(main, entry) {
 
   const st = stage();
   st.el.classList.add("stage-solo");
-  const status = h("p", { class: "note", style: { margin: "0 0 14px" } });
+  const status = h("p", { class: "note note-top" });
   const board = h("div", { class: "teams", "aria-live": "polite" });
   const log = logList();
   const doneBar = h("div", { class: "done-bar", hidden: true });

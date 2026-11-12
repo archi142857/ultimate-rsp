@@ -16,7 +16,7 @@ import { topBar, bigTitle, copyText } from "./common.js";
 import { forgetRank } from "./rank.js";
 import { noticeSlot } from "./notice.js";
 import { avatar } from "./avatar.js";
-import { peopleRing, timerDial, midText, nodeSize } from "./people-ring.js";
+import { peopleRing, timerDial, midText, nodeSize, SIDE_H } from "./people-ring.js";
 import { emoteRow, emoteLabel, isEmote } from "./emotes.js";
 import { variantOf } from "./games.js";
 import { playerId, meFields, myFace } from "./identity.js";
@@ -35,6 +35,30 @@ import { sfx, roundTone } from "../sound/index.js";
 const COUNT_MS = 420;
 const SHOW_MS = 2400;
 const NEXT_MS = 800;
+
+// 한 화면에 담기(11-12 사용자: 게임 화면도 스크롤 없이). 놀이·끝 칸에서는 사이트 아래 줄을 숨기고(html.room-fit),
+// 칸 아래(놀이: 방 나가기 줄, 끝: 단추 줄)가 창 안에 들게 고리 높이를 줄인다. 둘이서는 고리를 세울 높이(FIT_MIN.duo)가
+// 안 되면 나와 상대를 나란히 놓는다(people-ring SIDE_H). 여럿이는 FIT_MIN.group 아래로는 줄이지 않는다.
+// 가장 낮은 높이: 위 사람의 이름 줄이 가운데(놀이: 남은 시간 원 98px, 끝: 마지막 판 결과 글)에 닿지 않는 높이
+// 끝 칸은 그래도 모자라면 고리를 숨긴다(점수판·순위 칸이 같은 것을 보인다)
+const FIT_MIN = { play: { duo: 316, group: 290 }, end: { duo: 272, group: 260 } };
+const FIT_GAP = 12;
+const RING_GAP = 16; // 숨긴 고리를 다시 보이면 붙는 아래 여백 + 칸 사이
+
+/** 고리 높이를 창 높이에 맞춘다. until: 이 요소의 아래가 창 안에 들게 */
+function fitRing(ring, until, { n, max, phase }) {
+  if (!until || !until.isConnected || !innerHeight) return;
+  const over = until.getBoundingClientRect().bottom + scrollY - (innerHeight - FIT_GAP);
+  const room = Math.floor((ring.el.hidden ? -RING_GAP : ring.height) - over);
+  const min = FIT_MIN[phase][n === 2 ? "duo" : "group"];
+  let show = true;
+  if (room >= min) ring.shape({ height: Math.min(max, room), side: false });
+  else if (n === 2 && (room >= SIDE_H || phase === "play")) ring.shape({ height: max, side: true });
+  // 끝 칸: 숨겨서 단추 줄이 창 안에 들 때만 숨긴다(순위가 길어 어차피 넘치면 그대로 둔다)
+  else if (phase === "end" && room >= -RING_GAP) show = false;
+  else ring.shape({ height: min, side: n === 2 });
+  if (ring.el.hidden === show) ring.el.hidden = !show;
+}
 
 export function roomView(main, code) {
   setTitle(t("방 {code}", { code }));
@@ -61,6 +85,17 @@ export function roomView(main, code) {
   const fill = (...kids) => append(clear(body), kids);
   main.append(root);
   notices.set("wait", { title: t("방에 들어가는 중…"), spin: true });
+
+  // 칸 크기·창 높이가 바뀌면 고리를 다시 맞춘다(그리는 일은 다음 그림 때로 미뤄 ResizeObserver 고리를 피한다)
+  let fitFrame = 0;
+  const refit = () => {
+    cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(() => panel && panel.fit && panel.fit());
+  };
+  const fitObs = typeof ResizeObserver === "function" ? new ResizeObserver(refit) : null;
+  if (fitObs) fitObs.observe(root);
+  window.addEventListener("resize", refit);
+  const html = document.documentElement;
 
   // ── 연결 ─────────────────
   const sock = openSocket(`/api/rooms/${code}/ws`, { v: PROTOCOL, pid: playerId(), ...meFields() }, { onMessage, onStatus });
@@ -118,6 +153,7 @@ export function roomView(main, code) {
     clearInterval(ticker);
     if (panel && panel.destroy) panel.destroy();
     panel = null;
+    html.classList.remove("room-fit");
     notices.clear("wait", "drop", "limit");
     root.classList.remove("offline");
     const reload = { label: t("새로고침"), run: () => location.reload() };
@@ -166,6 +202,7 @@ export function roomView(main, code) {
       V = isGroup(r) ? variantOf(r.base || "classic") : variantOf(r.game, r.custom);
     }
     root.dataset.phase = room.phase;
+    html.classList.toggle("room-fit", room.phase === "play" || room.phase === "end");
     const pk = [room.phase, vKey, you, room.host === you, isGroup(r) ? "g" : "d"].join("|");
     if (pk !== panelKey || !panel) {
       // 경기가 끝났어도 놀이 칸이 마지막 판을 공개하는 중이면 그것을 마저 보이고 끝 칸으로 넘어간다
@@ -179,6 +216,7 @@ export function roomView(main, code) {
       panelKey = pk;
       panel = !V ? messagePanel(t("이 방의 게임은 이 화면에서 아직 열 수 없습니다. 새로고침해 주십시오.")) : room.phase === "play" ? playPanel() : room.phase === "end" ? endPanel({ fromPlay }) : lobbyPanel();
       fill(panel.el);
+      refit();
     }
     panel.update(ev);
     if (ev) tell(ev);
@@ -679,8 +717,8 @@ export function roomView(main, code) {
       reclaim,
       grid ? grid.el : null,
       emotes ? emotes.el : null,
-      hist.el,
-      h("div", { class: "o-actions o-center-row" }, leave),
+      // 지난 판과 방 나가기를 한 줄에(한 화면에 담기). 지난 판을 펼쳐 길어지는 것은 고리 맞춤에 넣지 않는다
+      h("div", { class: "room-foot" }, hist.el, leave),
     );
     return {
       el,
@@ -689,6 +727,7 @@ export function roomView(main, code) {
         hist.update();
       },
       tick,
+      fit: () => fitRing(ring, leave, { n: room.seats.length, max: ringHeight(room.seats.length, "play"), phase: "play" }),
       // 마지막 판을 공개하는 중이거나 아직 공개하지 않았으면 끝 칸으로 넘어가지 않고 기다린다
       holdEnd: () => live && (revealing || lastR(room) > seenR),
       bubble: (s, e) => ring.bubble(s, e),
@@ -731,6 +770,7 @@ export function roomView(main, code) {
     let intro = !!lastEntry && lastEntry.r > seenR; // 방금 끝난 판을 먼저 공개한다
     if (lastEntry) seenR = Math.max(seenR, lastEntry.r);
     let live = true;
+    const actions = h("div", { class: "o-actions o-bottom" + (again ? " two" : "") }, again, ready, sit, leave);
     const el = h(
       "div",
       { class: "room-end" },
@@ -742,7 +782,7 @@ export function roomView(main, code) {
       rankCard,
       info,
       emotes ? emotes.el : null,
-      h("div", { class: "o-actions o-bottom" + (again ? " two" : "") }, again, ready, sit, leave),
+      actions,
       rulesCard,
       hist.el,
     );
@@ -798,7 +838,8 @@ export function roomView(main, code) {
           );
         }),
       );
-      rankCard.hidden = false;
+      // 둘이서는 점수판·고리가 같은 것(누가 몇 승)을 보여 순위 칸을 두지 않는다(한 화면에 담기)
+      rankCard.hidden = !group;
       if (editor) editor.set(room.rules);
       const ri = readyInfo(room);
       const mine = you !== null ? room.seats[you] : null;
@@ -859,6 +900,8 @@ export function roomView(main, code) {
     return {
       el,
       update,
+      // 단추 줄(한 번 더·나가기)까지 창 안에. 규칙 바꾸기·지난 판은 아래로 넘쳐도 된다
+      fit: () => fitRing(ring, actions, { n: room.seats.length, max: ringHeight(room.seats.length, "end"), phase: "end" }),
       bubble: (s, e) => ring.bubble(s, e),
       tick() {
         if (!intro && room.seats.some((s) => s.kind === "human" && !s.on && s.until)) ring.set({ people: seatPeople("end").people });
@@ -943,6 +986,10 @@ export function roomView(main, code) {
       clearInterval(ticker);
       notices.destroy();
       if (panel && panel.destroy) panel.destroy();
+      if (fitObs) fitObs.disconnect();
+      cancelAnimationFrame(fitFrame);
+      window.removeEventListener("resize", refit);
+      html.classList.remove("room-fit");
       // 화면을 옮기면 자리를 60초 지켜 준다(나가기 단추는 바로 비운다)
       if (!left) sock.close(1000);
     },

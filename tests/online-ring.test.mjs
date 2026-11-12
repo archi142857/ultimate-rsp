@@ -12,7 +12,7 @@ globalThis.localStorage = {
 const { NICK_ART, NICK_WORDS } = await import("../web/js/i18n/nicknames.js");
 const { ART_FILES } = await import("../web/js/data/art-files.js");
 const { animalOf, initialOf, faceOf } = await import("../web/js/online/avatar.js");
-const { ringLayout, nodeSize } = await import("../web/js/online/people-ring.js");
+const { ringLayout, sideLayout, SIDE_H, nodeSize } = await import("../web/js/online/people-ring.js");
 const { topNotice, NOTICE_RANK } = await import("../web/js/online/notice.js");
 const { noticeFor } = await import("../web/js/online/messages.js");
 const { ringOrder, readyInfo, ranking, mmss } = await import("../web/js/online/room-model.js");
@@ -57,6 +57,21 @@ test("고리: 0번(나)은 맨 아래, 다음 사람은 시계 방향, 이름 �
   assert.deepEqual([2, 4, 5, 6, 7, 8, 9, 10].map(nodeSize), [56, 56, 48, 48, 42, 42, 38, 38]);
   assert.deepEqual(ringOrder(4, 2), [2, 3, 0, 1]);
   assert.deepEqual(ringOrder(3, null), [0, 1, 2]);
+});
+
+test("나란히(둘이서, 낮은 화면): 나는 왼쪽·상대는 오른쪽, 위에 낸 손 자리, 가운데 시계와 안 겹친다", () => {
+  for (const W of [288, 328, 360]) {
+    const L = sideLayout(W, SIDE_H, 56);
+    const [[mx, my], [ox, oy]] = L.pos;
+    assert.ok(mx < W / 2 && ox > W / 2 && my === oy && L.cy === my, `W ${W}`);
+    // 이름 줄(104px)이 칸 안에
+    assert.ok(mx - L.labelW / 2 >= 0 && ox + L.labelW / 2 <= W, `이름 줄 W ${W}`);
+    // 동그라미 위에 낸 손(52px, 6px 띄움)이 들어가고, 아래에 이름 두 줄(40px)
+    assert.ok(my - 28 - 6 - 52 >= 0, `손 자리 W ${W}`);
+    assert.ok(my + 28 + 40 <= SIDE_H, `이름 자리 W ${W}`);
+    // 가운데 시계(98px)와 동그라미 사이가 띈다
+    assert.ok(W / 2 - 49 - (mx + 28) >= 8, `시계 W ${W}`);
+  }
 });
 
 test("알림: 끊김 > 한도 > 잇는 중 > 새 판 > 짧은 알림, 오류 코드는 알맞은 종류로", () => {

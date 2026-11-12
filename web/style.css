@@ -697,6 +697,257 @@ main:focus-visible {
   max-width: 44ch;
 }
 
+/* ── 놀이 화면을 한 화면에(11-12 사용자: 게임 화면도 스크롤 없이) ──
+   넓은 화면: 머리(제목·사실)를 왼쪽 칸 위로 올려 놀이 칸이 화면 맨 위에서 시작하게 한다.
+   main 을 두 칸 격자로 쓰고 .entry-grid 는 상자를 없애(contents) 옆 칸·놀이 칸을 main 칸에 바로 놓는다.
+   소개·출처(entry-body)는 그 아래 두 칸에 걸친다. 머리 바로 다음이 entry-grid 인 화면만(직접 만들기는 아래 따로).
+   눕힌 휴대폰(폭 640 이상, 높이 500 이하)도 두 칸으로 */
+@media (min-width: 901px), (min-width: 640px) and (max-height: 500px) {
+  main:has(> .entry-head + .entry-grid) {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(20px, 4vw, 48px);
+    align-items: start;
+  }
+  main:has(> .entry-head + .flow-grid) {
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  }
+  main:has(> .entry-head + .entry-grid) > * {
+    grid-column: 1 / -1;
+  }
+  main:has(> .entry-head + .entry-grid) > .entry-head {
+    grid-column: 1;
+    grid-row: 1;
+    padding-bottom: 20px;
+  }
+  main:has(> .entry-head + .entry-grid) > .entry-grid {
+    display: contents;
+  }
+  main:has(> .entry-head + .entry-grid) > .entry-grid > :first-child {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  main:has(> .entry-head + .entry-grid) > .entry-grid > .panel {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin-top: 8px;
+  }
+  /* 고리는 머리·설명 줄과 함께 왼쪽 칸에 들게 화면 높이로도 묶는다 */
+  main:has(> .entry-head + .entry-grid) .ring-panel .ring-box {
+    width: min(100%, 440px, max(240px, calc(100svh - 330px)));
+  }
+  /* 직접 만들기: 머리와 규칙 만들기 칸이 왼쪽 위, 고리는 그 아래, 놀이 칸은 오른쪽 */
+  .custom-page {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: auto auto 1fr;
+    column-gap: clamp(20px, 4vw, 48px);
+    align-items: start;
+  }
+  .custom-page > * {
+    grid-column: 1 / -1;
+  }
+  .custom-page > .entry-head {
+    grid-column: 1;
+    grid-row: 1;
+    padding-bottom: 16px;
+  }
+  .custom-page > .panel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .custom-page > .entry-grid {
+    display: contents;
+  }
+  .custom-page > .entry-grid > :first-child {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .custom-page > .entry-grid > .panel {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    margin-top: 8px;
+  }
+}
+/* 낮은 화면(노트북 1366×768 은 창 안 높이 650 안팎): 머리와 놀이 칸을 촘촘하게 */
+@media (max-height: 860px) {
+  main[data-page="play"] {
+    padding-top: 4px;
+  }
+  main[data-page="play"] .entry-head {
+    padding-top: 4px;
+  }
+  main[data-page="play"] .back {
+    margin-bottom: 4px;
+  }
+  main[data-page="play"] .entry-title {
+    font-size: clamp(2rem, min(6vw, 7vh), 3.8rem);
+    margin-bottom: 6px;
+  }
+  main[data-page="play"] .entry-sub {
+    font-size: var(--step-0);
+  }
+  main[data-page="play"] .facts {
+    margin-top: 10px;
+    gap: 4px 20px;
+  }
+  main[data-page="play"] .facts dd {
+    font-size: var(--step-0);
+  }
+  main[data-page="play"] .panel {
+    padding: 16px;
+  }
+  main[data-page="play"] .controls {
+    column-gap: 14px;
+    margin-bottom: 10px;
+  }
+  main[data-page="play"] .controls + .rec {
+    margin-top: 0;
+  }
+  main[data-page="play"] .note-top {
+    margin-bottom: 8px;
+    padding: 7px 12px;
+  }
+  main[data-page="play"] .score {
+    margin: 0 0 6px;
+  }
+  main[data-page="play"] .score-num {
+    font-size: var(--step-4);
+  }
+  /* 무대: 손 동그라미 56px */
+  main[data-page="play"] .stage {
+    min-height: 128px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  main[data-page="play"] .stage-side {
+    gap: 2px;
+  }
+  main[data-page="play"] .stage-hand {
+    width: 56px;
+    height: 56px;
+    font-size: 1.9rem;
+  }
+  main[data-page="play"] .stage-hand-name {
+    min-height: 1.4em;
+  }
+  main[data-page="play"] .stage-msg {
+    font-size: var(--step-2);
+  }
+  main[data-page="play"] .stage-msg.tone-chant {
+    font-size: var(--step-3);
+  }
+  main[data-page="play"] .hist,
+  main[data-page="play"] .log {
+    margin-top: 10px;
+  }
+  main[data-page="play"] .rec {
+    margin-top: 8px;
+  }
+  main[data-page="play"] .done-bar {
+    margin-top: 10px;
+    padding: 8px 12px;
+  }
+  /* 여럿이 모인 사람·편(편 안의 사람 칸은 그대로) */
+  main[data-page="play"] .panel > .circle {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+  main[data-page="play"] .panel > .circle,
+  main[data-page="play"] .teams {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  main[data-page="play"] .panel > .circle .person {
+    padding: 6px 4px;
+  }
+  main[data-page="play"] .panel > .circle .person .face {
+    font-size: 1.5rem;
+  }
+  main[data-page="play"] .team {
+    padding: 8px;
+  }
+  main[data-page="play"] .stats {
+    margin: 8px 0;
+  }
+  /* 손 단추: 작게, 한 줄에 더 많이(손 일곱 개까지 한 줄) */
+  main[data-page="play"] .hands {
+    grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+  }
+  main[data-page="play"] .hands-many {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  }
+  main[data-page="play"] .hands-lots {
+    grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+  }
+  main[data-page="play"] .hands-huge {
+    grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+    max-height: min(25rem, 42svh);
+  }
+  main[data-page="play"] .hand {
+    padding: 8px 4px 7px;
+  }
+  main[data-page="play"] .hand-emoji {
+    font-size: 1.75rem;
+  }
+  main[data-page="play"] .hands-many .hand-emoji {
+    font-size: 1.5rem;
+  }
+  main[data-page="play"] .hands-many .hand-name {
+    font-size: 0.75rem;
+  }
+  main[data-page="play"] .hands-many .hand-key {
+    top: 3px;
+    left: 5px;
+    font-size: 0.625rem;
+  }
+  main[data-page="play"] .hands-lots .hand-emoji {
+    font-size: 1.3rem;
+  }
+  main[data-page="play"] .hands-huge .hand-emoji {
+    font-size: 1.35rem;
+  }
+  /* 장기판: 판 위아래 손·글 줄과 함께 창 높이에 들게 */
+  main[data-page="play"] .shogi-board {
+    max-width: clamp(200px, calc((100svh - 417px) * 0.75 + 20px), 360px);
+  }
+}
+/* 좁고 낮은 화면(휴대폰): 무대를 다시 세 칸으로(나 · 글 · 상대, 손 동그라미를 작게),
+   컴퓨터 전략 고르기가 있는 고르기 줄은 외치기 건너뛰기를 그 옆에(판 수는 다음 줄) */
+@media (max-width: 560px) and (max-height: 860px) {
+  main[data-page="play"] .stage:not(.stage-solo) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 4px;
+  }
+  main[data-page="play"] .stage:not(.stage-solo) .stage-mid {
+    grid-column: auto;
+    order: 0;
+  }
+  main[data-page="play"] .stage-hand {
+    width: 52px;
+    height: 52px;
+    font-size: 1.75rem;
+  }
+  main[data-page="play"] .stage-msg {
+    font-size: var(--step-1);
+  }
+  main[data-page="play"] .stage-msg.tone-chant {
+    font-size: var(--step-2);
+  }
+  main[data-page="play"] .stage-sub {
+    font-size: 0.75rem;
+  }
+  main[data-page="play"] .controls:has(> .field:first-child select) > .field:not(:first-child) {
+    order: 1;
+  }
+}
+/* 한 칸으로 쌓는 화면(휴대폰·세운 태블릿): 놀이 칸을 머리 바로 아래로, 고리·하는 법은 그 아래로 */
+@media (max-width: 900px) and (min-height: 501px), (max-width: 639px) {
+  main[data-page="play"] .entry-grid > .panel {
+    order: -1;
+  }
+}
+
 .panel {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1272,6 +1523,10 @@ table.grid td.s {
   color: var(--ink-2);
   font-size: 0.9375rem;
   margin: 12px 0 0;
+}
+/* 놀이 칸 위쪽의 상태 줄(남은 사람·점수 등) */
+.note-top {
+  margin: 0 0 14px;
 }
 .note b {
   color: var(--ink);

@@ -1314,6 +1314,14 @@ button.varrow {
 .pring.duo .pring-hand-art {
   font-size: 28px;
 }
+/* 나란히(둘이서, 낮은 화면: room.js fitRing): 나는 왼쪽·상대는 오른쪽, 낸 손은 얼굴 위에. 가운데 시계·결과와 겹치지 않는다 */
+.pring.side .pring-hand {
+  left: -26px;
+  top: calc(var(--s) / -2 - 58px);
+}
+.pring.side .pring-node.shown .pring-label {
+  top: calc(var(--s) / 2 + 4px);
+}
 .pring-hand-art {
   width: 80%;
   height: 80%;
@@ -2447,6 +2455,42 @@ dialog.ask::backdrop {
 .room-hist-box {
   font-size: 0.875rem;
   color: var(--ink-2);
+}
+/* 놀이 칸 맨 아래 줄: 지난 판(왼쪽) · 방 나가기(오른쪽). 지난 판이 아직 없으면 방 나가기만 가운데 */
+.room-foot {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px 12px;
+}
+.room-foot .room-hist-box {
+  flex: 1;
+  min-width: 0;
+  padding-top: 7px;
+}
+.room-foot .room-hist-box[hidden] + .btn {
+  margin-inline: auto;
+}
+
+/* 놀이·끝 칸은 한 화면에(room.js fitRing): 사이트 아래 줄을 숨기고 아래 여백을 줄인다 */
+html.room-fit .foot {
+  display: none;
+}
+html.room-fit main {
+  padding-bottom: 12px;
+}
+@media (max-height: 820px) {
+  .room-play,
+  .room-end {
+    gap: 8px;
+  }
+  .room-play .pring,
+  .room-end .pring {
+    margin-bottom: 8px;
+  }
+  .room-play .ds-num,
+  .room-end .ds-num {
+    font-size: clamp(2.2rem, 8vw, 2.75rem);
+  }
 }
 .room-hist-box summary {
   cursor: pointer;

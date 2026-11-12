@@ -36,7 +36,7 @@ export function penneyView(main, entry) {
   const picks = h("div", { class: "seq-picks" });
   const vs = h("div", { class: "seq-vs", "aria-live": "polite" });
   const flips = h("div", { class: "flips", "aria-label": t("던진 동전") });
-  const msg = h("p", { class: "note", style: { margin: "0 0 14px" } });
+  const msg = h("p", { class: "note note-top" });
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("penney")));
   const throwBtn = h("button", { class: "btn btn-ink btn-big", type: "button", hidden: true, onclick: () => run() }, t("동전 던지기"));

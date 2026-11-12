@@ -39,6 +39,7 @@ function route() {
   }
   current = null;
   clear(main);
+  delete main.dataset.page;
   const { path, params } = parse();
   let nav = "home";
   try {

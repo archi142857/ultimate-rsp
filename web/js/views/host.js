@@ -25,7 +25,7 @@ export function hostView(main, entry) {
 
   const st = stage({ meLabel: t("나"), opLabel: t("진행자") });
   const circle = h("div", { class: "circle", "aria-label": t("모인 사람") });
-  const status = h("p", { class: "note", style: { margin: "0 0 14px" } });
+  const status = h("p", { class: "note note-top" });
   const steps = stepList([t("진행자가 먼저 손을 정함"), t("모두 각자 냄"), t("진행자에게 지면 빠지고, 이기면 10점, 비기면 5점")]);
   const log = logList();
   const rec = h("p", { class: "rec" }, recordLine(record("host")));

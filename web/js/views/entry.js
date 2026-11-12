@@ -61,6 +61,8 @@ const VIEWS = {
 
 export function entryView(main, entry, params) {
   setTitle(entry.name);
+  // 놀이 화면(style.css: 한 화면에 담기). 전략의 진화는 따로 무대를 쓴다
+  if (entry.id !== "league") main.dataset.page = "play";
   if (entry.kind === "matrix") return matrixView(main, entry, params);
   if (entry.kind === "custom") return customView(main, entry, params);
   const v = VIEWS[entry.id];

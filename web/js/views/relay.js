@@ -30,7 +30,7 @@ export function relayView(main, entry) {
   const score = scoreboard();
   const st = stage({ meLabel: t("우리 편"), opLabel: t("상대 편") });
   const track = h("div", { class: "relay-track", role: "img" });
-  const clock = h("p", { class: "note", style: { margin: "0 0 14px" }, "aria-live": "polite" });
+  const clock = h("p", { class: "note note-top", "aria-live": "polite" });
   const steps = stepList([t("한 명씩 달려 나감"), t("만나면 가위바위보를 하고, 진 편은 다음 사람이 나옴"), t("상대 진지에 들어가면 1점")]);
   const log = logList();
   const rec = h("p", { class: "rec" });

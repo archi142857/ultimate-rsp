@@ -38,6 +38,18 @@ export function ringLayout(n, W, H, size, R = null, start = 90) {
   return { cx, cy, R: r, pos, labelW };
 }
 
+/** 나란히(둘이서, 낮은 화면): 높이가 모자라 고리를 세울 수 없을 때 SIDE_H 높이로 나를 왼쪽·상대를 오른쪽에 놓는다 */
+export const SIDE_H = 168;
+/**
+ * 나란히 놓을 때의 자리(px). 이름 줄(104px)이 칸 안에 들게 양 끝에서 52px 안쪽, 동그라미 아래에 이름 두 줄,
+ * 위에는 공개한 손(52px)이 들어갈 자리를 둔다. 가운데(남은 시간·결과)도 같은 높이
+ */
+export function sideLayout(W, H, size) {
+  const y = H - size / 2 - 40;
+  const pad = 52;
+  return { cx: W / 2, cy: y, R: W / 2 - pad, pos: [[pad, y], [W - pad, y]], labelW: 104 };
+}
+
 /** 화살표 한 줄(이긴 사람 → 진 사람). 끝은 동그라미 테두리 밖에서 멈춘다 */
 function arrowPath(p, q, gap, width) {
   const [x1, y1] = p;
@@ -81,6 +93,7 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
   let H = height;
   let W = 328;
   let size = 56;
+  let side = false; // 둘이서 나란히(낮은 화면)
 
   function measure() {
     const w = el.clientWidth;
@@ -90,20 +103,26 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
   function draw() {
     const n = people.length;
     size = fixedSize || nodeSize(n);
-    el.style.height = `${H}px`;
+    const flat = side && n === 2;
+    el.style.height = `${flat ? SIDE_H : H}px`;
     el.style.setProperty("--s", `${size}px`);
     el.classList.toggle("small", size < 44);
     el.classList.toggle("duo", n === 2); // 둘이서: 공개 때 낸 손을 얼굴 옆에 크게 보인다
+    el.classList.toggle("side", flat);
     // 많이 모이면(13명부터) 이름 줄이 서로 덮는다: 나와 강조한 사람만 이름을 쓰고 나머지는 그림과 title 로
     el.classList.toggle("crowd", n > 12);
-    const L = ringLayout(Math.max(n, 1), W, H, size, radius, start);
+    const L = flat ? sideLayout(W, SIDE_H, size) : ringLayout(Math.max(n, 1), W, H, size, radius, start);
     el.style.setProperty("--lbw", `${L.labelW}px`);
     // 선: 고리 + 모든 쌍(+ 화살표)
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const vh = flat ? SIDE_H : H;
+    svg.setAttribute("viewBox", `0 0 ${W} ${vh}`);
     svg.setAttribute("width", W);
-    svg.setAttribute("height", H);
+    svg.setAttribute("height", vh);
     const lines = s("g", { class: "pring-chords" + (arrows.length ? " faded" : "") });
-    if (n >= 2) lines.append(s("circle", { cx: L.cx, cy: L.cy, r: L.R.toFixed(1) }));
+    if (flat) {
+      const [[x1, y1], [x2, y2]] = L.pos;
+      lines.append(s("line", { x1, y1, x2, y2 }));
+    } else if (n >= 2) lines.append(s("circle", { cx: L.cx, cy: L.cy, r: L.R.toFixed(1) }));
     // 13명부터는 모든 쌍을 잇는 선(78개 넘음)이 고리를 덮어 고리 선만 둔다
     if (chords && n >= 3 && n <= 12) {
       for (let i = 0; i < n; i++)
@@ -112,7 +131,7 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
           const [x2, y2] = L.pos[j];
           lines.append(s("line", { x1: x1.toFixed(1), y1: y1.toFixed(1), x2: x2.toFixed(1), y2: y2.toFixed(1) }));
         }
-    } else if (chords && n === 2) {
+    } else if (chords && n === 2 && !flat) {
       const [x1, y1] = L.pos[0];
       const [x2, y2] = L.pos[1];
       lines.append(s("line", { x1, y1, x2, y2 }));
@@ -231,6 +250,18 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
       if (next.height) H = next.height;
       W = measure();
       draw();
+    },
+    /** 높이·나란히를 바꾼다(사람·화살표는 그대로). 화면 높이에 맞출 때 쓴다 */
+    shape({ height = H, side: flat = side } = {}) {
+      if (height === H && flat === side) return;
+      H = height;
+      side = flat;
+      W = measure();
+      draw();
+    },
+    /** 지금 높이와 나란히 여부 */
+    get height() {
+      return side && people.length === 2 ? SIDE_H : H;
     },
     /** 가운데 칸(남은 시간, 준비 수, 판 결과) */
     center(...children) {

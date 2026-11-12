@@ -31,7 +31,7 @@ export function dynamiteWbView(main, entry) {
   const hist = h("ol", { class: "hist", "aria-label": t("지난 판") });
   const rec = h("p", { class: "rec" }, recordLine(record("dynamitewb")));
   const doneBar = h("div", { class: "done-bar", hidden: true });
-  const potLine = h("p", { class: "note", style: { margin: "0 0 14px" } });
+  const potLine = h("p", { class: "note note-top" });
   const grid = handGrid(V, { onPick: (i) => play(i) });
 
   const targetSeg = segmented({
