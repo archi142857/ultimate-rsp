@@ -1304,6 +1304,16 @@ button.varrow {
 .pring-hand[hidden] {
   display: none;
 }
+/* 둘이서 하는 경기: 낸 손을 얼굴 옆에 크게(11-12 사용자: 컴퓨터가 무엇을 냈는지 잘 안 보였다) */
+.pring.duo .pring-hand {
+  width: 52px;
+  height: 52px;
+  left: calc(var(--s) / 2 + 8px);
+  top: -26px;
+}
+.pring.duo .pring-hand-art {
+  font-size: 28px;
+}
 .pring-hand-art {
   width: 80%;
   height: 80%;
@@ -1512,6 +1522,22 @@ button.varrow {
    room.js revealOn 이 고리에 .revealing 을 붙였다 뗀다. 움직임 줄이기면 style.css 가 움직임을 모두 끈다 */
 .pring-say.tone-count {
   padding: 0 14px;
+}
+/* 공개 뒤 다음 판 번호(11-12) */
+.pring-say.tone-next b {
+  font-size: 2.4rem;
+  animation: o-next 0.4s ease-out both;
+}
+@keyframes o-next {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pring-say.tone-next b {
+    animation: none;
+  }
 }
 /* 둘이서 하는 경기의 점수판(나 2 : 1 상대) */
 .duel-score {

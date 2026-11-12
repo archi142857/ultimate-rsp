@@ -29,9 +29,12 @@ import { sidesOf, seatName, seatBot, secondsLeft, canSit, finalFor, duelRound, g
 import { closeText, wsErrorText, noticeFor } from "./messages.js";
 import { sfx, roundTone } from "../sound/index.js";
 
-// 공개 연출: 한 마디 세는 시간, 결과를 적어도 보여 주는 시간. 셋을 세고(≈1.1초) 결과를 보여도 REVEAL_MS(2.5초) 안에 끝난다
-const COUNT_MS = 360;
-const SHOW_MS = 1300;
+// 공개 연출: 한 마디 세는 시간, 결과를 적어도 보여 주는 시간, 다음 판 번호를 띄우는 시간.
+// 11-12 사용자: 컴퓨터와 하면 휙휙 지나가서 무엇이 진행되는지 안 보인다 → 셋을 세고(≈1.3초) 결과를 2.4초 보인 뒤 '2판'을 0.8초 띄운다.
+// 서버는 공개 뒤 REVEAL_MS(2.5초)만큼 다음 판 마감을 늘려 두므로, 그보다 긴 만큼(≈2초) 다음 판 시계가 덜 남은 채로 보인다
+const COUNT_MS = 420;
+const SHOW_MS = 2400;
+const NEXT_MS = 800;
 
 export function roomView(main, code) {
   setTitle(t("방 {code}", { code }));
@@ -155,7 +158,7 @@ export function roomView(main, code) {
   };
 
   // ── 그리기 ─────────────────
-  function render(ev) {
+  function render(ev, { fromPlay = false } = {}) {
     const r = room.rules;
     const key = isGroup(r) ? `g:${r.base}` : r.game === "custom" && r.custom ? `c:${r.custom.n}:${r.custom.k}:${r.custom.seed}` : r.game;
     if (key !== vKey) {
@@ -165,9 +168,16 @@ export function roomView(main, code) {
     root.dataset.phase = room.phase;
     const pk = [room.phase, vKey, you, room.host === you, isGroup(r) ? "g" : "d"].join("|");
     if (pk !== panelKey || !panel) {
+      // 경기가 끝났어도 놀이 칸이 마지막 판을 공개하는 중이면 그것을 마저 보이고 끝 칸으로 넘어간다
+      // (11-12 사용자: 마지막 손을 내자마자 끝 화면으로 확 바뀌었다). 공개가 끝나면 놀이 칸이 render 를 다시 부른다
+      if (room.phase === "end" && panel && panel.holdEnd && panel.holdEnd()) {
+        panel.update(ev);
+        if (ev) tell(ev);
+        return;
+      }
       if (panel && panel.destroy) panel.destroy();
       panelKey = pk;
-      panel = !V ? messagePanel(t("이 방의 게임은 이 화면에서 아직 열 수 없습니다. 새로고침해 주십시오.")) : room.phase === "play" ? playPanel() : room.phase === "end" ? endPanel() : lobbyPanel();
+      panel = !V ? messagePanel(t("이 방의 게임은 이 화면에서 아직 열 수 없습니다. 새로고침해 주십시오.")) : room.phase === "play" ? playPanel() : room.phase === "end" ? endPanel({ fromPlay }) : lobbyPanel();
       fill(panel.el);
     }
     panel.update(ev);
@@ -541,6 +551,7 @@ export function roomView(main, code) {
     const leave = h("button", { type: "button", class: "btn btn-sm btn-quiet", onclick: leaveRoom }, t("방 나가기"));
     let revealing = false;
     let revealSeq = 0; // 공개가 겹치면(판이 빨리 이어지면) 앞의 것은 그만둔다
+    let cueUntil = 0; // 이때까지 가운데에 다음 판 번호를 띄운다
     let live = true;
     let localPick = null; // 서버 답이 오기 전에 누른 손 { r, i }
 
@@ -565,10 +576,12 @@ export function roomView(main, code) {
       if (room.mine && V.index[room.mine] !== undefined) return V.index[room.mine];
       return localPick && r && localPick.r === r.r ? localPick.i : null;
     }
+    const cueOn = () => Date.now() < cueUntil;
     function drawRing() {
       const { people } = seatPeople("play");
       ring.set({ people });
-      ring.center(dial.el);
+      const r = room.round;
+      ring.center(cueOn() && r ? midText(t("{r}판", { r: r.r }), "", "next") : dial.el);
     }
     async function reveal(entry) {
       const my = ++revealSeq;
@@ -578,6 +591,21 @@ export function roomView(main, code) {
       await revealOn(ring, entry, { isLive: () => live && my === revealSeq, onShow: () => score && score.set(true) });
       if (!live || my !== revealSeq) return;
       revealing = false;
+      // 경기가 끝났으면 이 공개를 다 보인 뒤에 끝 칸으로(끝 칸은 같은 판을 다시 세지 않는다)
+      if (room.phase !== "play") {
+        render(null, { fromPlay: true });
+        return;
+      }
+      // 다음 판 번호를 잠깐 띄운다(손은 바로 낼 수 있다)
+      if (room.round && !(fastMode() || reducedMotion())) {
+        cueUntil = Date.now() + NEXT_MS;
+        setTimeout(() => {
+          if (live && my === revealSeq && !revealing) {
+            drawRing();
+            tick();
+          }
+        }, NEXT_MS + 20);
+      }
       update(null);
     }
     function update() {
@@ -610,7 +638,9 @@ export function roomView(main, code) {
       const now = serverNow();
       const sec = r ? secondsLeft(r.deadline, now) : null;
       const total = room.rules.timer || 0;
-      if (!r || !total || r.paused || sec === null) {
+      if (cueOn()) {
+        // 다음 판 번호를 띄우는 동안에는 가운데를 그대로 둔다
+      } else if (!r || !total || r.paused || sec === null) {
         dial.set(null, 0);
         ring.center(midText(r ? t("{r}판", { r: r.r }) : "", r && r.paused ? t("@timer:멈춤") : t("시간 제한 없음")));
       } else {
@@ -659,6 +689,8 @@ export function roomView(main, code) {
         hist.update();
       },
       tick,
+      // 마지막 판을 공개하는 중이거나 아직 공개하지 않았으면 끝 칸으로 넘어가지 않고 기다린다
+      holdEnd: () => live && (revealing || lastR(room) > seenR),
       bubble: (s, e) => ring.bubble(s, e),
       onKey: (e) => (grid && !revealing ? grid.keyHandler(e) : false),
       destroy() {
@@ -669,7 +701,7 @@ export function roomView(main, code) {
   }
 
   // ── 끝 ─────────────────
-  function endPanel() {
+  function endPanel({ fromPlay = false } = {}) {
     const group = isGroup(room.rules);
     const host = you !== null && room.host === you;
     const top = topBar({ href: "#/play", label: t("방 {code}", { code }) }, group ? t("경기 끝") : t("{format} 끝", { format: formatById(room.rules.format).name }));
@@ -822,6 +854,8 @@ export function roomView(main, code) {
       return fin > 0 ? [t("경기 승리!"), "win"] : fin < 0 ? [t("경기 패배"), "lose"] : [t("무승부"), ""];
     }
     if (intro) runIntro();
+    // 놀이 칸에서 마지막 판 공개를 마치고 넘어왔으면 경기 끝 가락만 낸다
+    else if (fromPlay && lastEntry) sfx("match" + finalTitle()[1]);
     return {
       el,
       update,

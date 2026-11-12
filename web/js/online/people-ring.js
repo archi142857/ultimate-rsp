@@ -93,6 +93,7 @@ export function peopleRing({ height = 300, label = t("자리"), chords = true, s
     el.style.height = `${H}px`;
     el.style.setProperty("--s", `${size}px`);
     el.classList.toggle("small", size < 44);
+    el.classList.toggle("duo", n === 2); // 둘이서: 공개 때 낸 손을 얼굴 옆에 크게 보인다
     // 많이 모이면(13명부터) 이름 줄이 서로 덮는다: 나와 강조한 사람만 이름을 쓰고 나머지는 그림과 title 로
     el.classList.toggle("crowd", n > 12);
     const L = ringLayout(Math.max(n, 1), W, H, size, radius, start);
