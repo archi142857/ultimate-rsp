@@ -9,8 +9,8 @@
 //   단추와 링크를 누르는 소리(tap)는 여기서 알아서 낸다. 제 소리를 낸 단추는 겹쳐 내지 않는다.
 // 소리는 화면에 이미 보이는 것을 한 번 더 알릴 뿐이다(소리로만 전하는 것은 없다).
 // 배경음악은 설정(music)이 켜져 있으면 저절로 흐른다. 화면이 부를 것은 없다.
-// 브라우저는 그 쪽을 한 번 누르기(글쇠도 된다) 전의 소리를 막는다. 그래서 보통은 첫 손짓에 오디오를 열고,
-// 브라우저가 허락하는 때(같은 사이트에서 넘어온 쪽, 소리를 허락해 둔 사이트, 설치한 앱)에는 손짓 없이 바로 연다.
+// 브라우저는 첫 손짓(마우스 누름, 손가락 톡, 글쇠. 움직이기·굴리기·쓸기는 아니다) 전의 소리를 막는다.
+// 그래서 화면 어디든 첫 손짓에 오디오를 열고, 브라우저가 허락하는 곳(같은 사이트에서 넘어온 쪽, 소리를 허락한 사이트, 설치한 앱)에서는 바로 연다.
 // 가볍게 둔다: engine.js, 곡(music.js), 녹음은 켠 사람에게만 뒤늦게 받는다. 다 끄면 엔진도 오디오 장치도 놓는다.
 
 import { setting, setSetting } from "../ui/store.js";
@@ -40,6 +40,7 @@ let engine = null; // engine.js 의 createEngine(ctx)
 let loading = null; // import("./engine.js")
 let claimed = false; // 지금 누른 단추가 제 소리를 냈는가
 let tapping = false; // 지금 누른 것이 단추 소리를 낼 단추인가
+let pressed = false; // 지금 누르고 있는가(마우스 단추나 손가락)
 let previewed = 0;
 const queue = []; // 엔진이 준비되기 전에 부른 소리. 잠깐만 기다려 준다(늦은 소리는 없느니만 못하다)
 const WAIT_MS = 250;
@@ -96,6 +97,7 @@ function apply(next, byHand) {
   state = next;
   if (!wanted()) rest();
   else if (byHand) wake();
+  else auto(); // 다른 탭에서 켰다
   if (engine) {
     engine.setVolume(state.volume);
     if (ready()) engine.setMusic(state.music);
@@ -121,10 +123,14 @@ function play(name, detail) {
   }
 }
 
-/** 소리가 났다: 첫 소리를 기다리던 것들을 부른다. 지금 누름이 끝난 뒤에 부른다(손을 뗄 때 화면이 바뀌면 그 click 이 사라진다) */
 function heard() {
-  if (sounded) return;
   sounded = true;
+  tell();
+}
+
+/** 첫 소리를 기다리던 것들을 부른다. 누르고 있으면 뗀 뒤(click 뒤)로 미룬다: 그 사이에 누른 단추가 다시 그려지면 click 이 사라진다 */
+function tell() {
+  if (pressed || !firsts.size) return;
   const waiting = [...firsts];
   firsts.clear();
   setTimeout(() => waiting.forEach((fn) => fn()), 0);
@@ -155,11 +161,12 @@ function load() {
   });
 }
 
-/** 손짓 안에서(또는 손짓 없이도 소리가 허락된 때에) 부른다: 오디오를 열고 엔진을 받는다 */
+/** 손짓 안에서(또는 소리가 허락된 곳에서) 부른다: 오디오를 열고 엔진을 받는다 */
 function wake(e) {
   if (!wanted() || typeof window === "undefined") return;
-  // 글쇠는 브라우저가 손짓으로 쳐 준 것만(Esc 같은 글쇠에 열면 막힌 채로 열린다)
-  if (e && e.type === "keydown" && !(navigator.userActivation && navigator.userActivation.isActive)) return;
+  // 브라우저가 손짓으로 쳐 준 일에만 연다(손가락을 댈 때나 Shift·Esc 에 열면 막힌 채로 열린다)
+  const ua = navigator.userActivation;
+  if (e && (ua ? !ua.hasBeenActive : e.type === "pointerdown" || e.type === "keydown")) return;
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
   if (!ctx) {
@@ -182,7 +189,7 @@ function wake(e) {
     .catch(() => {});
 }
 
-/** 손짓 없이도 소리가 허락된 곳이면 바로 연다. 아니면 엔진과 녹음만 미리 받아 두고 첫 손짓을 기다린다 */
+/** 손짓 없이도 소리가 허락된 곳이면 바로 연다. 아니면 엔진과 녹음만 받아 두고 첫 손짓을 기다린다 */
 function auto() {
   if (ctx || !wanted() || document.hidden) return;
   load()
@@ -228,7 +235,7 @@ export function roundTone({ shown, you, group = false, mode = "" } = {}) {
 const TAPPABLE = 'button, a[href], summary, input[type="checkbox"], input[type="radio"], [role="button"], [role="tab"], [role="switch"]';
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {
-  // 주소로도 켜고 끈다: ?sound=1·0(효과음), ?music=1·0(배경음악). 이 브라우저에 남기고 주소에서는 지운다
+  // 주소로도 켜고 끈다: ?sound=1·0, ?music=1·0. 이 브라우저에 남기고 주소에서는 지운다
   try {
     const url = new URL(location.href);
     let seen = false;
@@ -248,15 +255,19 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
     /* 주소를 못 읽어도 그대로 간다 */
   }
 
-  // 오디오는 브라우저가 손짓으로 쳐 주는 때에 연다(손가락을 뗄 때, 누름, 글쇠. 그 전에 열면 막힌다)
-  for (const ev of ["pointerup", "touchend", "keydown"]) window.addEventListener(ev, wake, { capture: true, passive: true });
-  // 단추·링크를 누르는 소리. 누를 수 있는 단추였는지는 누르는 순간에 본다(누르자마자 스스로 잠기는 단추가 있다).
-  // 그 단추가 제 소리(손 내기 같은)를 냈으면 겹쳐 내지 않는다
+  // 화면 어디서든 첫 손짓에 오디오를 연다: 마우스는 누르는 순간, 손가락은 뗄 때, 글쇠
+  const early = { capture: true, passive: true };
+  window.addEventListener("pointerdown", (e) => ((pressed = true), wake(e)), early);
+  for (const ev of ["pointerup", "pointercancel", "contextmenu"]) {
+    window.addEventListener(ev, (e) => ((pressed = false), wake(e), sounded && tell()), early);
+  }
+  for (const ev of ["touchend", "keydown"]) window.addEventListener(ev, wake, early);
+  // 단추·링크를 누르는 소리. 누를 수 있는 단추였는지는 누르는 순간에 본다(누르자마자 스스로 잠기는 단추가 있다)
   window.addEventListener(
     "click",
     (e) => {
       claimed = false;
-      wake();
+      wake(e);
       const el = e.target instanceof Element ? e.target.closest(TAPPABLE) : null;
       tapping = !!el && !el.disabled && el.getAttribute("aria-disabled") !== "true";
     },
@@ -279,6 +290,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
     if (e.key === null || e.key.startsWith("ursp.set.sound.")) apply(read(), false);
   });
 
-  // 소리를 켜 둔 사람은 한가할 때 엔진과 녹음(과 곡)을 미리 받아 둔다(첫 소리가 늦지 않게). 소리가 허락된 곳이면 그대로 시작한다
+  // 소리를 켜 둔 사람은 한가할 때 엔진과 녹음(과 곡)을 미리 받는다. 소리가 허락된 곳이면 그대로 시작한다
   if (wanted()) (window.requestIdleCallback || ((fn) => setTimeout(fn, 1200)))(auto);
 }
