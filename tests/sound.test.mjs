@@ -1,4 +1,4 @@
-// node --test 로 돈다. 소리: 앞문(설정·판 결과 읽기), 표(손 → 소리, 녹음 파일), 짜임과 겹치는 차례.
+// node --test 로 돈다. 소리: 앞문(설정·판 결과 읽기), 표(손 → 소리, 녹음 파일), 짜임과 겹치는 차례, 배경음악(악보·연주·엔진).
 // 귀로 듣는 것은 여기서 못 본다. 가짜 AudioContext 에 걸린 것(무엇을 언제 얼마나)만 본다.
 
 import test from "node:test";
@@ -7,7 +7,8 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sfx, soundState, setSound, onSoundChange, onFirstSound, HAS_MUSIC, roundTone } from "../web/js/sound/index.js";
-import { SAMPLES, SOUNDS, RECIPES, handKind, countHz, hz, gainOf, leadOf, parseWav, preload, kitOf, createEngine } from "../web/js/sound/engine.js";
+import { SAMPLES, SFX_SAMPLES, MUSIC_SAMPLES, MUSIC_LEVEL, SOUNDS, RECIPES, handKind, countHz, hz, gainOf, leadOf, parseWav, preload, loadMusic, kitOf, createEngine } from "../web/js/sound/engine.js";
+import { BPM, STEP, BAR, TRACKS, SCORE, FORM, ONCE_STEPS, LOOP_STEPS, PAGE_LEAD, eventsOf, eventsAt, schedule, createMusic } from "../web/js/sound/music.js";
 import { CATALOG, findEntry } from "../web/js/data/catalog.js";
 import { POOL } from "../web/js/data/custom.js";
 
@@ -132,7 +133,7 @@ test("앞문: 설정을 바꾸면 알리고, 음량은 0~1 로 자른다", () =>
 });
 
 test("앞문: 소리 단추가 쓰는 값(배경음악이 있는지, 첫 소리 알림)", () => {
-  assert.equal(HAS_MUSIC, false, "배경음악을 넣으면 참으로 바꾼다");
+  assert.equal(HAS_MUSIC, true, "배경음악이 들어 있다(소리 단추가 배경음악 줄을 보인다)");
   let called = 0;
   const off = onFirstSound(() => (called += 1));
   assert.equal(typeof off, "function");
@@ -146,7 +147,14 @@ test("앞문은 가볍다: 엔진은 뒤늦게만 부른다", () => {
   assert.ok(statSync(join(ROOT, "web/js/sound/index.js")).size < 12000, "앞문은 첫 화면에 같이 실린다");
   assert.ok(src.includes('import("./engine.js")'));
   assert.ok(!/^import[^\n]*engine\.js/m.test(src), "engine.js 를 바로 import 하지 않는다");
-  assert.deepEqual([...src.matchAll(/^import[^\n]*from\s+"([^"]+)"/gm)].map((m) => m[1]), ["../ui/store.js"]);
+  assert.ok(!src.includes("music.js\""), "곡은 엔진이 부른다");
+  const statics = (text) => [...text.matchAll(/^import[^\n]*from\s+"([^"]+)"/gm)].map((m) => m[1]);
+  assert.deepEqual(statics(src), ["../ui/store.js"]);
+  // 엔진도 곡(music.js)은 배경음악을 켠 사람에게만 뒤늦게 부른다. 곡은 엔진의 악기를 쓴다
+  const engine = readFileSync(join(ROOT, "web/js/sound/engine.js"), "utf8");
+  assert.deepEqual(statics(engine), []);
+  assert.ok(engine.includes('import("./music.js")'));
+  assert.deepEqual(statics(readFileSync(join(ROOT, "web/js/sound/music.js"), "utf8")), ["./engine.js"]);
 });
 
 test("온라인 판 결과: 둘이서는 내 쪽에서 본 승패", () => {
@@ -235,6 +243,10 @@ test("녹음 파일: 표에 있는 것이 모두 있고, 표에 없는 것은 �
     assert.ok(Math.abs(wav.data[0]) < 0.05 && Math.abs(wav.data[wav.data.length - 1]) < 0.05, `${name}: 양 끝`);
   }
   assert.ok(total < 200_000, `녹음은 모두 합쳐 200KB 아래로: ${total}`);
+  // 효과음 것과 배경음악 것으로 나뉜다(켜 둔 쪽 것만 받는다). 어디에도 안 쓰는 녹음은 없다
+  assert.deepEqual([...new Set([...SFX_SAMPLES, ...MUSIC_SAMPLES])].sort(), Object.keys(SAMPLES).sort());
+  assert.equal(new Set(SFX_SAMPLES).size, SFX_SAMPLES.length);
+  assert.equal(new Set(MUSIC_SAMPLES).size, MUSIC_SAMPLES.length);
 });
 
 test("녹음 출처: 파일마다 LICENSE 에 적혀 있고 모두 CC0", () => {
@@ -310,8 +322,8 @@ test("엔진: 녹음을 못 받아 손 내는 소리가 안 났으면 세는 소
   assert.ok(near(firstStart(ctx, from), 2.01));
 });
 
-test("짜임: 녹음을 받은 뒤에는 모든 소리가 제때 시작하고 끝난다", async () => {
-  // 브라우저의 fetch 대신 파일을 읽는다(엔진이 찾는 주소가 web/sound/ 를 가리키는지도 같이 본다)
+/** 브라우저의 fetch 대신 파일을 읽게 해 두고 fn 을 돈다. 엔진이 찾은 주소들을 돌려준다 */
+async function withFiles(fn) {
   const real = globalThis.fetch;
   const asked = [];
   globalThis.fetch = async (url) => {
@@ -320,12 +332,28 @@ test("짜임: 녹음을 받은 뒤에는 모든 소리가 제때 시작하고 �
     return { ok: true, arrayBuffer: async () => b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) };
   };
   try {
-    await preload();
-    await preload(); // 두 번 불러도 한 번만 받는다
+    await fn(asked);
   } finally {
     globalThis.fetch = real;
   }
+  return asked;
+}
+/** 걸어 둔 약속(곡 받기)이 풀릴 틈을 준다 */
+const settle = () => new Promise((ok) => setTimeout(ok, 0));
+
+test("짜임: 녹음을 받은 뒤에는 모든 소리가 제때 시작하고 끝난다", async () => {
+  // 엔진이 찾는 주소가 web/sound/ 를 가리키는지도 같이 본다
+  const asked = await withFiles(async (seen) => {
+    await preload();
+    await preload(); // 두 번 불러도 한 번만 받는다
+    assert.equal(seen.length, SFX_SAMPLES.length, "배경음악만 쓰는 녹음은 아직 받지 않는다");
+    // 배경음악을 켠 사람은 곡과 함께 나머지 녹음을 받는다(효과음과 같이 쓰는 것은 다시 받지 않는다)
+    const music = await loadMusic();
+    assert.equal(typeof music.createMusic, "function");
+    await loadMusic();
+  });
   assert.equal(asked.length, Object.keys(SAMPLES).length);
+  assert.equal(new Set(asked).size, asked.length);
   assert.ok(asked.every((u) => u.includes("/web/sound/")));
 
   const ctx = fakeContext();
@@ -628,3 +656,309 @@ function chain(node) {
   for (let at = node; at && at.to.length; at = at.to[0]) seen.push(at.to[0]);
   return seen;
 }
+
+// ── 배경음악 ──────────────────────────────────
+const NOTE_RE = /^([A-G]#?)(\d)$/;
+const SCALE = ["G", "A", "B", "C", "D", "E", "F#"];
+const CHORDS = { G: ["G", "B", "D"], Em: ["E", "G", "B"], C: ["C", "E", "G"], D: ["D", "F#", "A"], D7: ["D", "F#", "A", "C"] };
+const PARTS = [...FORM.once, ...FORM.loop];
+const midi = (n) => Math.round(69 + 12 * Math.log2(hz(n) / 440));
+const nameOf = (n) => NOTE_RE.exec(n)[1];
+/** 그 칸의 화음("C|D" 는 마디의 앞 절반과 뒤 절반) */
+const chordAt = (chords, step) => {
+  const [a, b] = chords[Math.floor(step / BAR)].split("|");
+  return CHORDS[b && step % BAR >= BAR / 2 ? b : a];
+};
+
+test("배경음악: 여는 네 마디 뒤에 스물여덟 마디를 되풀이한다(1분에 100박, 한 바퀴 67초)", () => {
+  assert.equal(BPM, 100);
+  assert.ok(near(STEP, 0.3));
+  assert.deepEqual(FORM, { once: ["intro"], loop: ["a", "b", "a2", "rest"] });
+  assert.deepEqual(Object.keys(SCORE).sort(), [...PARTS].sort(), "안 쓰는 대목은 없다");
+  assert.deepEqual(PARTS.map((name) => SCORE[name].chords.length), [4, 8, 8, 8, 4]);
+  assert.equal(ONCE_STEPS, 4 * BAR);
+  assert.equal(LOOP_STEPS, 28 * BAR);
+  assert.ok(near(LOOP_STEPS * STEP, 67.2));
+  for (const name of PARTS) {
+    const part = SCORE[name];
+    for (const ch of part.chords) for (const c of ch.split("|")) assert.ok(CHORDS[c], `${name}: 화음 ${ch}`);
+    for (const track of TRACKS) assert.equal(part[track].length, part.chords.length, `${name}.${track}: 마디 수`);
+  }
+  // 여는 대목이 지나면 되풀이 대목만 돈다
+  for (const i of [0, 5, LOOP_STEPS - 1]) assert.equal(eventsAt(ONCE_STEPS + LOOP_STEPS + i), eventsAt(ONCE_STEPS + i));
+  assert.equal(eventsAt(ONCE_STEPS + 3 * LOOP_STEPS), eventsAt(ONCE_STEPS));
+  assert.notEqual(eventsAt(ONCE_STEPS + LOOP_STEPS), eventsAt(0));
+});
+
+test("배경음악 악보: 모든 음이 사장조 안에 있고, 줄마다 제 음역을 지킨다", () => {
+  const RANGE = { lead: ["D5", "E6"], comp: ["D4", "C5"], bass: ["E2", "F#3"] };
+  for (const name of PARTS) {
+    const steps = SCORE[name].chords.length * BAR;
+    for (const track of ["lead", "comp", "bass"]) {
+      for (const e of eventsOf(track, SCORE[name][track])) {
+        assert.match(e.note, NOTE_RE, `${name}.${track}`);
+        assert.ok(SCALE.includes(nameOf(e.note)), `${name}.${track}: 조 밖의 음 ${e.note}`);
+        assert.ok(midi(e.note) >= midi(RANGE[track][0]) && midi(e.note) <= midi(RANGE[track][1]), `${name}.${track}: 음역 밖 ${e.note}`);
+        assert.ok(e.len >= 1 && e.step + e.len <= steps && e.cell === e.step % BAR, `${name}.${track}: ${e.note} 의 길이`);
+      }
+    }
+    // 리듬 줄: t 쿵, k 톡, c 손뼉, s 싹둑, p 책장
+    for (const e of eventsOf("beat", SCORE[name].beat)) assert.ok(["t", "k", "c", "s", "p"].includes(e.note) && e.len === 1, `${name}.beat: ${e.note}`);
+  }
+  // 가락은 반주보다 늘 위에 있다(두 줄이 같은 음에서 뭉개지지 않는다)
+  assert.ok(midi(RANGE.lead[0]) > midi(RANGE.comp[1]) && midi(RANGE.comp[0]) > midi(RANGE.bass[1]));
+  assert.throws(() => eventsOf("lead", ["B5 - D6"]), "한 마디는 여덟 칸");
+  assert.deepEqual(eventsOf("lead", ["."]), [], "점 하나는 한 마디 쉼");
+  // "-" 는 앞 음을 늘인다(마디를 넘어서도)
+  assert.deepEqual(eventsOf("lead", ["G5 - . A5 - - . B5", "- - . . . . . ."]).map((e) => [e.note, e.step, e.len]), [["G5", 0, 2], ["A5", 3, 3], ["B5", 7, 3]]);
+});
+
+test("배경음악 악보: 반주와 베이스는 그 마디의 화음을 짚고, 가락은 센박에서 화음에 선다", () => {
+  for (const name of PARTS) {
+    const { chords } = SCORE[name];
+    const fits = (e) => chordAt(chords, e.step).includes(nameOf(e.note));
+    for (const e of eventsOf("comp", SCORE[name].comp)) assert.ok(fits(e), `${name}: 반주 ${e.note} (${e.step}칸)`);
+    const bass = eventsOf("bass", SCORE[name].bass);
+    bass.forEach((e, i) => {
+      if (e.cell === 0) assert.equal(nameOf(e.note), chordAt(chords, e.step)[0], `${name}: 마디 첫 박의 베이스는 밑음`);
+      if (fits(e)) return;
+      // 화음 밖의 음은 한 걸음 올라가 화음에 닿는 지나가는 음뿐이다(레 · 미 파# → 솔)
+      const next = bass[i + 1];
+      assert.ok(next && [1, 2].includes(midi(next.note) - midi(e.note)) && fits(next), `${name}: 베이스 ${e.note}`);
+    });
+    const lead = eventsOf("lead", SCORE[name].lead);
+    lead.forEach((e, i) => {
+      if (e.cell % (BAR / 2) !== 0 || fits(e)) return;
+      // 센박의 화음 밖 음은 바로 아래 화음음으로 풀린다(앞꾸밈음)
+      const next = lead[i + 1];
+      assert.ok(next && [1, 2].includes(midi(e.note) - midi(next.note)) && fits(next), `${name}: 센박의 ${e.note} (${e.step}칸)`);
+    });
+    // 가락은 한 옥타브 넘게 뛰지 않는다
+    for (let i = 1; i < lead.length; i++) assert.ok(Math.abs(midi(lead[i].note) - midi(lead[i - 1].note)) <= 9, `${name}: ${lead[i - 1].note} → ${lead[i].note}`);
+  }
+});
+
+test("배경음악 악보: 첫머리는 사용자가 고른 시안 ⑦의 네 마디 그대로다", () => {
+  const SIAN = {
+    lead: ["B5 - D6 B5 . A5 G5 -", "B5 - G5 E5 - - G5 -", "G5 - C6 G5 . E5 G5 -", "A5 - F#5 D5 . F#5 A5 -"],
+    comp: ["D4 G4 B4 G4 D4 G4 B4 G4", "E4 G4 B4 G4 E4 G4 B4 G4", "E4 G4 C5 G4 E4 G4 C5 G4", "D4 F#4 A4 F#4 D4 F#4 A4 F#4"],
+    bass: ["G2 . . G2 . . D3 .", "E2 . . E2 . . B2 .", "C3 . . C3 . . G2 .", "D3 . . D3 . . A2 ."],
+    beat: ["t k c k t k c s", "t k c k . t c k", "t k c k t k c s"],
+  };
+  for (const name of ["a", "a2"]) for (const [track, bars] of Object.entries(SIAN)) assert.deepEqual(SCORE[name][track].slice(0, bars.length), bars, `${name}.${track}`);
+  // 첫머리 앞에는 늘 솔 라로 들어간다(여는 대목, 나, 쉬어 가는 마디의 끝). 그 마디의 끝은 책장을 넘긴다
+  for (const name of ["intro", "b", "rest"]) {
+    const steps = SCORE[name].chords.length * BAR;
+    assert.deepEqual(eventsOf("lead", SCORE[name].lead).slice(-2).map((e) => [e.note, e.step, e.len]), [["G5", steps - 2, 1], ["A5", steps - 1, 1]], name);
+    assert.deepEqual(eventsOf("beat", SCORE[name].beat).at(-1).note, "p", name);
+  }
+  // 가′ 는 으뜸음에서 맺고, 쉬어 가는 마디에서는 가락이 (들어가는 두 음 말고는) 쉰다
+  assert.equal(eventsOf("lead", SCORE.a2.lead).at(-1).note, "G5");
+  assert.equal(eventsOf("lead", SCORE.rest.lead).length, 2);
+  // 한 바퀴의 끝과 처음이 이어진다: 끝 마디는 딸림화음, 첫 마디는 으뜸화음
+  assert.equal(SCORE[FORM.loop.at(-1)].chords.at(-1), "D");
+  assert.equal(SCORE[FORM.loop[0]].chords[0], "G");
+});
+
+test("배경음악 연주: 칸마다 제때 걸리고 끝이 있으며, 크기는 1 을 넘지 않는다", async () => {
+  await withFiles(() => loadMusic());
+  const ctx = fakeContext();
+  const k = kitOf(ctx);
+  const T0 = 2;
+  for (let pos = 0; pos < ONCE_STEPS + LOOP_STEPS; pos++) {
+    const from = ctx.made.length;
+    schedule(k, ctx.destination, T0, pos, pos + 1);
+    const events = eventsAt(pos);
+    const nodes = started(ctx, from);
+    assert.ok(nodes.length >= events.length, `${pos}칸: 울릴 것 ${events.length}개에 소리 ${nodes.length}개`);
+    if (!events.length) continue;
+    // 박에서 ±6ms 안(사람 손맛)에 시작한다. 손뼉은 0.03초에 걸쳐 치고, 책장 넘기는 소리만 0.241초 당겨 튼다
+    const at = T0 + pos * STEP;
+    const early = events.some((e) => e.note === "p") ? PAGE_LEAD + 0.0061 : 0.0061;
+    for (const n of nodes) {
+      assert.ok(n.startAt >= at - early && n.startAt <= at + 0.04, `${pos}칸: ${n.startAt - at}`);
+      assert.ok(n.stopAt !== undefined || (n.kind === "src" && !n.loop), `${pos}칸: 멈추지 않는 소리`);
+    }
+    for (const g of ctx.made.slice(from).filter((n) => n.kind === "gain")) {
+      assert.ok(g.gain.value > 0 && g.gain.value <= 1);
+      for (const [, v] of g.gain.events) assert.ok(v >= 0 && v <= 1, `${pos}칸: 크기 ${v}`);
+    }
+  }
+  // 책장 넘기는 소리는 넘어가는 소리가 박에 오게 당겨 튼다
+  const page = parseWav(read(SAMPLES.page));
+  let peak = 0;
+  page.data.forEach((v, i) => {
+    if (Math.abs(v) > Math.abs(page.data[peak])) peak = i;
+  });
+  assert.ok(Math.abs(peak / page.sampleRate - PAGE_LEAD) < 0.01, `page.wav 의 가장 큰 곳 ${peak / page.sampleRate}초`);
+});
+
+test("배경음악 연주: 1초 앞까지만 미리 걸고, 같은 칸을 두 번 걸지 않으며, 밀린 칸은 버린다", () => {
+  const ctx = fakeContext();
+  const player = createMusic(ctx, kitOf(ctx), ctx.createGain());
+  ctx.currentTime = 10;
+  const from = ctx.made.length;
+  // 여는 첫 마디는 반주만 있다: 칸마다 마림바 한 음(오실레이터 셋)이 박에 딱 맞게 걸린다
+  const cells = (since = from) => started(ctx, since).filter((n) => n.kind === "osc").map((n) => Math.round(((n.startAt - 10.12) / STEP) * 1e6) / 1e6);
+  try {
+    player.tick(); // 시작하기 전에는 아무것도 걸지 않는다
+    assert.equal(ctx.made.length, from);
+    player.start();
+    assert.deepEqual(cells(), [0, 0, 0, 1, 1, 1, 2, 2, 2], "첫 음은 0.12초 뒤, 1초 앞까지");
+    assert.equal(player.pos, 3);
+    player.tick(); // 시계가 그대로면 더 걸지 않는다
+    assert.equal(cells().length, 9);
+    ctx.currentTime = 10.45;
+    player.tick();
+    assert.deepEqual(cells().slice(9), [3, 3, 3, 4, 4, 4]);
+    for (ctx.currentTime = 10.5; ctx.currentTime < 12.2; ctx.currentTime += 0.11) player.tick();
+    assert.deepEqual([...new Set(cells())], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "빠진 칸도 겹친 칸도 없다");
+    assert.equal(cells().length, 33);
+    // 화면이 3초 멈췄다 돌아왔다: 밀린 칸(11~22)은 버리고 박자 그대로 이어 간다
+    const before = ctx.made.length;
+    ctx.currentTime = 16.8;
+    player.tick();
+    const late = started(ctx, before);
+    assert.ok(late.length > 0);
+    for (const n of late) assert.ok(n.startAt >= 16.8 + 0.02, `늦은 소리 ${n.startAt}`);
+    assert.equal(Math.min(...cells(before)), 23);
+    assert.equal(player.pos, 26);
+    // 그만
+    player.stop();
+    const n = ctx.made.length;
+    ctx.currentTime = 30;
+    player.tick();
+    assert.equal(ctx.made.length, n);
+    // 다시 켜면 처음부터
+    player.start();
+    assert.equal(player.pos, 3);
+    assert.ok(near(Math.min(...started(ctx, n).map((x) => x.startAt)), 30.12));
+  } finally {
+    player.stop();
+  }
+});
+
+test("엔진: 배경음악을 켜면 곡을 받아 처음부터 틀고, 끄면 줄이며 멈춘다", async () => {
+  await withFiles(() => loadMusic());
+  const ctx = fakeContext();
+  let heard = 0;
+  const engine = createEngine(ctx, { onMusic: () => (heard += 1) });
+  const master = masterOf(ctx);
+  const outs = () => ctx.made.filter((n) => n.kind === "gain" && n.gain.value === MUSIC_LEVEL);
+  try {
+    ctx.currentTime = 3;
+    const from = ctx.made.length;
+    engine.setMusic(true);
+    engine.setMusic(true);
+    assert.equal(started(ctx, from).length, 0, "곡을 받은 뒤에 시작한다");
+    await settle();
+    assert.equal(heard, 1, "시작할 때 한 번 알린다");
+    // 길: 곡 → 배경음악 크기 → 가락 때 낮추는 마디 → 음량
+    assert.equal(outs().length, 1);
+    const [out] = outs();
+    const duck = out.to[0];
+    assert.ok(duck.kind === "gain" && duck.gain.value === 1 && duck.to.includes(master));
+    const notes = started(ctx, from);
+    assert.ok(near(Math.min(...notes.map((n) => n.startAt)), 3.12));
+    for (const n of notes) assert.ok(chain(n).includes(out) && chain(n).includes(duck));
+    // 효과음은 그 길로 가지 않는다
+    let at = ctx.made.length;
+    engine.play("tap");
+    engine.play("win");
+    for (const n of started(ctx, at)) assert.ok(!chain(n).includes(duck) && chain(n).includes(master));
+    // 켠 채로 다시 부르면 밀린 박을 채운다(탭이 숨었다 돌아왔을 때)
+    ctx.currentTime = 4;
+    at = ctx.made.length;
+    engine.setMusic(true);
+    assert.ok(started(ctx, at).length > 0);
+    assert.equal(heard, 1);
+    // 끄면 그 길을 줄여 미리 걸어 둔 음까지 사그라들게 하고, 더 걸지 않는다
+    engine.setMusic(false);
+    assert.ok(faded(out));
+    ctx.currentTime = 9;
+    at = ctx.made.length;
+    engine.setMusic(false);
+    await settle();
+    assert.equal(started(ctx, at).length, 0);
+    // 다시 켜면 새 길로 처음부터
+    engine.setMusic(true);
+    await settle();
+    assert.equal(heard, 2);
+    assert.equal(outs().length, 2);
+    assert.ok(near(Math.min(...started(ctx, at).map((n) => n.startAt)), 9.12));
+    assert.ok(!faded(outs()[1]));
+    // 엔진을 놓으면 곡도 멈춘다
+    engine.stop();
+    ctx.currentTime = 20;
+    at = ctx.made.length;
+    engine.setMusic(true);
+    await settle();
+    assert.equal(ctx.made.length, at);
+  } finally {
+    engine.stop();
+  }
+  // 켜자마자 끄면 시작하지 않는다
+  const ctx2 = fakeContext();
+  let heard2 = 0;
+  const engine2 = createEngine(ctx2, { onMusic: () => (heard2 += 1) });
+  const at2 = ctx2.made.length;
+  engine2.setMusic(true);
+  engine2.setMusic(false);
+  await settle();
+  engine2.setMusic(true);
+  engine2.stop();
+  await settle();
+  assert.equal(heard2, 0);
+  assert.equal(started(ctx2, at2).length, 0);
+});
+
+test("엔진: 결과 가락이 울리는 동안 배경음악을 낮췄다가 되돌린다", async () => {
+  await withFiles(() => loadMusic());
+  const ctx = fakeContext();
+  const engine = createEngine(ctx);
+  try {
+    engine.setMusic(true);
+    await settle();
+    const duck = ctx.made.find((n) => n.kind === "gain" && n.gain.value === MUSIC_LEVEL).to[0];
+    const since = (n) => duck.gain.events.slice(n);
+    ctx.currentTime = 5;
+    let n = duck.gain.events.length;
+    engine.play("win");
+    let ev = since(n);
+    assert.deepEqual(ev.map((e) => e.slice(0, 2)), [["target", 0.5], ["target", 1]]);
+    assert.ok(near(ev[0][2], 5), "가락과 같이 낮춘다");
+    assert.ok(ev[1][2] > 5.6 && ev[1][2] < 6.1, `가락이 사그라들 때 되돌린다: ${ev[1][2]}`);
+    // 새 손을 내면 가락을 거두면서 배경음악도 바로 되돌린다
+    ctx.currentTime = 5.3;
+    n = duck.gain.events.length;
+    engine.play("throw", "rock");
+    ev = since(n);
+    assert.deepEqual(ev.map((e) => e.slice(0, 2)), [["target", 1]]);
+    assert.ok(near(ev[0][2], 5.3));
+    // 세는 소리, 공개, 단추 소리에는 낮추지 않는다
+    ctx.currentTime = 6;
+    n = duck.gain.events.length;
+    engine.play("count", 3);
+    engine.play("reveal");
+    engine.play("tap");
+    engine.play("go");
+    assert.equal(duck.gain.events.length, n);
+    // 공개와 같이 온 가락은 가락이 시작할 때(공개 0.3초 뒤)에 맞춰 낮춘다
+    ctx.currentTime = 7;
+    n = duck.gain.events.length;
+    engine.play("reveal", "lose");
+    ev = since(n);
+    assert.deepEqual(ev.map((e) => e.slice(0, 2)), [["target", 0.5], ["target", 1]]);
+    assert.ok(near(ev[0][2], 7.01 + 0.3 - 0.03));
+    // 짧은 무승부 소리에도 잠깐은 낮춘다
+    ctx.currentTime = 9;
+    n = duck.gain.events.length;
+    engine.play("draw");
+    ev = since(n);
+    assert.deepEqual(ev.map((e) => e.slice(0, 2)), [["target", 1], ["target", 0.5], ["target", 1]], "앞 가락을 거두고 새로 낮춘다");
+    assert.ok(ev[2][2] - ev[1][2] >= 0.1 - 1e-9);
+  } finally {
+    engine.stop();
+  }
+});
+

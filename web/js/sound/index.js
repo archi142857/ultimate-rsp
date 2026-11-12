@@ -8,13 +8,13 @@
 //   sfx("right") · sfx("wrong")   빠르게 잇달아 답하는 놀이에서 맞음과 틀림
 //   단추와 링크를 누르는 소리(tap)는 여기서 알아서 낸다. 제 소리를 낸 단추는 겹쳐 내지 않는다.
 // 소리는 화면에 이미 보이는 것을 한 번 더 알릴 뿐이다(소리로만 전하는 것은 없다).
-// 가볍게 둔다: 소리를 만드는 engine.js 와 녹음은 소리를 켠 사람에게만 뒤늦게 받는다.
+// 배경음악은 설정(music)이 켜져 있으면 첫 손짓 뒤에 저절로 흐른다. 화면이 부를 것은 없다.
+// 가볍게 둔다: 소리를 만드는 engine.js, 곡(music.js), 녹음은 그것을 켠 사람에게만 뒤늦게 받는다.
 // AudioContext 는 첫 손짓 뒤에 만든다(브라우저가 그 전에는 소리를 막는다). 다 끄면 엔진도 오디오 장치도 놓는다.
 
 import { setting, setSetting } from "../ui/store.js";
 
 // 처음 온 사람의 값(B9, 사용자 11-12 09:31): 효과음·배경음악 둘 다 켬. 머리글 소리 단추(ui/sound-btn.js)로 끈다.
-// 주소에 ?sound=1 을 붙여 켜고 ?sound=0 으로 끄는 길도 그대로 둔다(한 번 붙이면 이 브라우저에 남는다).
 const DEFAULTS = { sfx: true, music: true, volume: 0.8 };
 const KEYS = { sfx: "sound.sfx", music: "sound.music", volume: "sound.vol" };
 
@@ -77,11 +77,11 @@ export function onSoundChange(fn) {
   return () => listeners.delete(fn);
 }
 
-/** 배경음악이 들어 있는가. 아직 없다(소리 단추는 이 값이 참이 될 때까지 배경음악 줄을 숨긴다) */
-export const HAS_MUSIC = false;
+/** 배경음악이 들어 있는가(소리 단추는 이 값이 참일 때 배경음악 줄을 보인다) */
+export const HAS_MUSIC = true;
 
 /**
- * 이 쪽에서 첫 소리가 날 때 fn() 을 한 번 부른다(처음 온 사람에게 '효과음 켜짐'을 알릴 때 쓴다).
+ * 이 쪽에서 첫 소리(효과음이든 배경음악이든)가 날 때 fn() 을 한 번 부른다(처음 온 사람에게 '소리 켜짐'을 알릴 때 쓴다).
  * 이미 소리가 났으면 곧바로 부른다. 돌려주는 함수를 부르면 그만 기다린다
  */
 export function onFirstSound(fn) {
@@ -95,7 +95,11 @@ function apply(next, byHand) {
   state = next;
   if (!wanted()) rest();
   else if (byHand) wake();
-  if (engine) engine.setVolume(state.volume);
+  if (engine) {
+    engine.setVolume(state.volume);
+    if (ready()) engine.setMusic(state.music);
+    if (changed) load().catch(() => {}); // 새로 켠 쪽의 녹음을 받는다
+  }
   if (changed) for (const fn of [...listeners]) fn(soundState());
 }
 
@@ -110,18 +114,25 @@ export function sfx(name, detail) {
 
 function play(name, detail) {
   try {
-    if (!engine.play(name, detail) || sounded) return;
-    sounded = true;
-    const waiting = [...firsts];
-    firsts.clear();
-    for (const fn of waiting) fn();
+    if (engine.play(name, detail)) heard();
   } catch (e) {
     console.error(e);
   }
 }
 
+/** 소리가 났다: 첫 소리를 기다리던 것들을 부른다. 지금 누름이 끝난 뒤에 부른다(손을 뗄 때 화면이 바뀌면 그 click 이 사라진다) */
+function heard() {
+  if (sounded) return;
+  sounded = true;
+  const waiting = [...firsts];
+  firsts.clear();
+  setTimeout(() => waiting.forEach((fn) => fn()), 0);
+}
+
+/** 오디오가 돌기 시작했다: 배경음악을 맞추고, 기다리던 소리를 낸다 */
 function flush() {
   if (!ready()) return;
+  engine.setMusic(state.music);
   const t0 = now();
   // 기다린 것 가운데 아직 늦지 않은 것만, 같은 소리는 마지막 것 하나만 낸다. 이미 공개했으면 세는 소리는 버린다
   const fresh = new Map();
@@ -130,15 +141,17 @@ function flush() {
   if (state.sfx) for (const q of fresh.values()) play(q.name, q.detail);
 }
 
+/** 엔진과, 켜 둔 쪽의 녹음·곡을 받아 둔다 */
 function load() {
   if (!loading) {
-    loading = import("./engine.js").then((m) => {
-      m.preload();
-      return m;
-    });
+    loading = import("./engine.js");
     loading.catch(() => (loading = null)); // 못 받았으면 다음 손짓에 다시
   }
-  return loading;
+  return loading.then((m) => {
+    if (state.sfx) m.preload();
+    if (state.music) m.loadMusic().catch(() => {});
+    return m;
+  });
 }
 
 /** 손짓 안에서 부른다: 오디오를 열고 엔진을 받는다 */
@@ -160,7 +173,7 @@ function wake() {
   load()
     .then((m) => {
       if (ctx !== mine || engine || !wanted()) return;
-      engine = m.createEngine(ctx, { volume: state.volume });
+      engine = m.createEngine(ctx, { volume: state.volume, onMusic: heard });
       flush();
     })
     .catch(() => {});
@@ -203,17 +216,20 @@ export function roundTone({ shown, you, group = false, mode = "" } = {}) {
 const TAPPABLE = 'button, a[href], summary, input[type="checkbox"], input[type="radio"], [role="button"], [role="tab"], [role="switch"]';
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {
-  // 소리 단추가 생기기 전까지 쓰는 길: ?sound=1 로 켜고 ?sound=0 으로 끈다. 주소에서는 바로 지운다(남에게 건넨 주소가 그 사람 소리를 켜지 않게)
+  // 주소로도 켜고 끈다: ?sound=1·0(효과음), ?music=1·0(배경음악). 이 브라우저에 남기고, 주소에서는 바로 지운다(남에게 건넨 주소가 그 사람 소리를 바꾸지 않게)
   try {
     const url = new URL(location.href);
-    const q = url.searchParams.get("sound");
-    if (q !== null) {
+    let seen = false;
+    for (const [name, key] of [["sound", KEYS.sfx], ["music", KEYS.music]]) {
+      const q = url.searchParams.get(name);
+      if (q === null) continue;
       const v = /^(1|on|true)$/i.test(q) ? true : /^(0|off|false)$/i.test(q) ? false : null;
-      if (v !== null) {
-        setSetting(KEYS.sfx, v);
-        state = read();
-      }
-      url.searchParams.delete("sound");
+      if (v !== null) setSetting(key, v);
+      url.searchParams.delete(name);
+      seen = true;
+    }
+    if (seen) {
+      state = read();
       history.replaceState(history.state, "", url);
     }
   } catch {
@@ -251,6 +267,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
     if (e.key === null || e.key.startsWith("ursp.set.sound.")) apply(read(), false);
   });
 
-  // 소리를 켜 둔 사람은 한가할 때 엔진과 녹음을 미리 받아 둔다(첫 소리가 늦지 않게)
+  // 소리를 켜 둔 사람은 한가할 때 엔진과 녹음(과 곡)을 미리 받아 둔다(첫 소리가 늦지 않게)
   if (wanted()) (window.requestIdleCallback || ((fn) => setTimeout(fn, 1200)))(() => wanted() && load().catch(() => {}));
 }

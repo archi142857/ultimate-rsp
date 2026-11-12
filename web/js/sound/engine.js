@@ -4,6 +4,7 @@
 // 소리 하나는 (k, out, at) 을 받아 at(초)부터 소리를 걸어 두고 끝나는 때를 돌려준다.
 //   k: 그 AudioContext 의 재료(잡음, 녹음, 난수), out: 이을 곳
 // AudioContext 와 OfflineAudioContext 에서 똑같이 돈다(점검할 때 오프라인으로 뽑아 크기를 잰다).
+// 배경음악의 악보와 연주는 music.js 에 있다. 배경음악을 켠 사람에게만 여기서 뒤늦게 부른다.
 // 불러오기만 해서는 브라우저 기능을 건드리지 않는다(Node 테스트가 표와 순수 함수를 읽는다).
 
 // ── 표 ─────────────────────────────────────
@@ -17,7 +18,13 @@ export const SAMPLES = {
   flip: "flip.wav", // 책장 넘기기
   thud: "thud.wav", // 책을 내려놓는 쿵
   crumple: "crumple.wav", // 종이 구기기
+  thud_b: "thud-b.wav", // 배경음악: 책을 덮는 쿵
+  snip_b: "snip-b.wav", // 배경음악: 짧은 싹둑
+  page: "page.wav", // 배경음악: 책장 넘기기
 };
+/** 효과음이 쓰는 녹음과 배경음악이 쓰는 녹음. 켜 둔 쪽 것만 받는다 */
+export const SFX_SAMPLES = ["snip", "knock_1", "knock_2", "knock_3", "clack", "flip", "thud", "crumple"];
+export const MUSIC_SAMPLES = ["knock_1", "knock_2", "knock_3", "thud_b", "snip_b", "page"];
 
 /** 화면이 부르는 소리 이름. result(판 결과 값)와 match(승패 없는 경기 끝)는 아래 play 가 다른 이름으로 바꾼다 */
 export const SOUNDS = ["tap", "throw", "count", "reveal", "win", "lose", "draw", "matchwin", "matchlose", "go", "right", "wrong"];
@@ -83,8 +90,8 @@ export function parseWav(bytes) {
 const PCM = new Map(); // 이름 → { sampleRate, data }
 const asked = new Map(); // 이름 → Promise
 
-/** 녹음 파일을 받아 둔다. AudioContext 가 없어도 된다(소리를 켜 둔 사람은 한가할 때 미리 받는다) */
-export function preload(names = Object.keys(SAMPLES)) {
+/** 녹음 파일을 받아 둔다(기본은 효과음 것). AudioContext 가 없어도 된다(소리를 켜 둔 사람은 한가할 때 미리 받는다) */
+export function preload(names = SFX_SAMPLES) {
   return Promise.all(
     names.map((name) => {
       if (!asked.has(name)) {
@@ -184,7 +191,7 @@ function hiss(k, out, o) {
   return end;
 }
 /** 녹음 하나를 튼다. rate 는 빠르기(음높이). 아직 못 받은 녹음이면 그 소리만 건너뛴다 */
-function smp(k, out, o) {
+export function smp(k, out, o) {
   const buf = bufOf(k, o.s);
   if (!buf) return o.at;
   const rate = o.rate || 1;
@@ -200,10 +207,10 @@ function smp(k, out, o) {
 }
 // 녹음은 누를 때마다 빠르기를 조금(±pct%) 달리해 똑같이 되풀이되지 않게 한다. 같은 녹음을 잇달아 쓰지 않게 돌려 쓴다
 const vary = (k, pct = 2.5) => 1 + ((k.rnd() - 0.5) * pct) / 50;
-const turn = (k, key, list) => list[(k.turn[key] = ((k.turn[key] ?? -1) + 1) % list.length)];
+export const turn = (k, key, list) => list[(k.turn[key] = ((k.turn[key] ?? -1) + 1) % list.length)];
 
 // ── 악기 ────────────────────────────────────
-const wood = {
+export const wood = {
   /** 나무토막 */
   block(k, out, at, f = 880, vol = 0.3, d = 0.11) {
     tone(k, out, { f: f * 2.76, at, vol: vol * 0.3, a: 0.001, d: d * 0.45 });
@@ -309,6 +316,20 @@ export const RECIPES = {
   },
 };
 
+// ── 배경음악 받기 ──────────────────────────────
+let tune = null; // import("./music.js")
+/** 배경음악(악보와 연주)과 그 녹음을 받는다. AudioContext 가 없어도 된다 */
+export function loadMusic() {
+  if (!tune) {
+    tune = import("./music.js");
+    tune.catch(() => (tune = null)); // 못 받았으면 다음에 다시
+  }
+  return Promise.all([tune, preload(MUSIC_SAMPLES)]).then(([m]) => m);
+}
+/** 배경음악의 크기. 시안에서 맞춘 값이다(곡 전체가 A 가중 −35 dB 쯤으로, 효과음보다 한참 작다) */
+export const MUSIC_LEVEL = 0.43;
+const DIP = 0.5; // 결과 가락이 울리는 동안 배경음악을 이만큼으로 낮춘다(−6 dB)
+
 const JINGLES = ["win", "lose", "draw", "matchwin", "matchlose"];
 const AFTER_REVEAL = 0.3; // 공개 소리 뒤 결과 가락까지
 const AFTER_THROW = 0.18; // (세지 않을 때) 손 내는 소리 뒤 결과 가락까지
@@ -326,8 +347,10 @@ export const leadOf = (ctx) => Math.min(0.03, Math.max(0.01, (ctx.baseLatency ||
  * play(name, detail) 로 소리를 낸다. 소리를 걸었으면 true 를 돌려준다. 겹치는 차례는 여기서 정리한다:
  *   결과 가락은 공개 소리(나 손 내는 소리)가 지나간 뒤에 나온다.
  *   새 손, 새로 세기 시작, 공개, 새 가락이 오면 앞 가락은 거둔다. 다만 경기 끝 가락이 울리는 동안 판 가락은 내지 않는다.
+ * setMusic(true) 로 배경음악을 튼다(곡을 받는 대로 처음부터). 결과 가락이 울리는 동안에는 배경음악을 낮춘다.
+ * onMusic 은 배경음악이 실제로 시작할 때 부른다.
  */
-export function createEngine(ctx, { volume = 0.8 } = {}) {
+export function createEngine(ctx, { volume = 0.8, onMusic } = {}) {
   const k = kitOf(ctx);
   const master = ctx.createGain();
   master.gain.value = gainOf(volume);
@@ -345,7 +368,12 @@ export function createEngine(ctx, { volume = 0.8 } = {}) {
     return g;
   };
   const fx = bus(); // 누르는 소리, 세는 소리, 공개
+  const duck = bus(); // 배경음악이 지나는 길. 결과 가락이 울리는 동안 낮춘다
   let jingle = null; // 결과 가락 { bus, name, asked, end }
+  let music = null; // 틀고 있는 배경음악 { out, player }
+  let musicOn = false;
+  let fetching = false; // 곡을 받는 중
+  let dead = false;
   const mark = { tap: -9, throw: -9, reveal: -9, count: -9, i: 0 };
   const lead = leadOf(ctx);
   // 데워 두기: 브라우저는 오실레이터·필터·녹음을 처음 쓸 때 준비에 몇 ms 를 쓴다.
@@ -361,6 +389,27 @@ export function createEngine(ctx, { volume = 0.8 } = {}) {
     jingle = null;
     b.gain.setTargetAtTime(0, ctx.currentTime, 0.012);
     setTimeout(() => b.disconnect(), 200);
+    // 낮춰 둔 배경음악도 되돌린다
+    duck.gain.cancelScheduledValues(ctx.currentTime);
+    duck.gain.setTargetAtTime(1, ctx.currentTime, 0.2);
+  }
+
+  function startMusic(m) {
+    const out = ctx.createGain();
+    out.gain.value = MUSIC_LEVEL;
+    out.connect(duck);
+    music = { out, player: m.createMusic(ctx, k, out) };
+    music.player.start();
+    if (onMusic) onMusic();
+  }
+  function stopMusic() {
+    if (!music) return;
+    const { out, player } = music;
+    music = null;
+    player.stop();
+    // 미리 걸어 둔 음까지 같이 사그라들게 길을 줄이고 뗀다
+    out.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+    setTimeout(() => out.disconnect(), 400);
   }
 
   function play(name, detail) {
@@ -411,6 +460,11 @@ export function createEngine(ctx, { volume = 0.8 } = {}) {
       const b = bus();
       const end = RECIPES[name](k, b, start);
       jingle = { bus: b, name, asked: at, end };
+      // 가락이 울리는 동안 배경음악을 낮췄다가, 가락이 사그라들 때 되돌린다
+      const from = Math.max(ctx.currentTime, start - 0.03);
+      duck.gain.cancelScheduledValues(from);
+      duck.gain.setTargetAtTime(DIP, from, 0.03);
+      duck.gain.setTargetAtTime(1, Math.max(from + 0.1, end - 0.25), 0.3);
     } else return false;
     return true;
   }
@@ -423,9 +477,31 @@ export function createEngine(ctx, { volume = 0.8 } = {}) {
       master.gain.setValueAtTime(master.gain.value, now);
       master.gain.linearRampToValueAtTime(gainOf(v), now + 0.015);
     },
+    /**
+     * 배경음악을 켜고 끈다. 켠 채로 다시 부르면 밀린 박을 바로 채운다(탭이 숨었다 돌아왔을 때).
+     * 곡을 못 받았으면(망이 끊겼을 때) 다음에 부를 때 다시 받아 본다
+     */
+    setMusic(on) {
+      if (dead) return;
+      musicOn = !!on;
+      if (!musicOn) return void stopMusic();
+      if (music) return void music.player.tick();
+      if (fetching) return;
+      fetching = true;
+      const done = () => (fetching = false);
+      loadMusic()
+        .then((m) => {
+          if (musicOn && !music && !dead) startMusic(m);
+        })
+        .then(done, done);
+    },
     /** 다 끈다(이 뒤로는 쓰지 않는다) */
     stop() {
+      dead = true;
+      musicOn = false;
       jingle = null;
+      if (music) music.player.stop();
+      music = null;
       master.disconnect();
     },
   };
