@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sfx, soundState, setSound, onSoundChange, onFirstSound, HAS_MUSIC, roundTone } from "../web/js/sound/index.js";
-import { SAMPLES, SFX_SAMPLES, MUSIC_SAMPLES, MUSIC_LEVEL, SOUNDS, RECIPES, handKind, countHz, hz, gainOf, leadOf, parseWav, preload, loadMusic, kitOf, createEngine } from "../web/js/sound/engine.js";
+import { SAMPLES, SFX_SAMPLES, MUSIC_SAMPLES, MUSIC_LEVEL, SOUNDS, RECIPES, handKind, countHz, hz, gainOf, leadOf, parseWav, preload, loadMusic, canAutoplay, kitOf, createEngine } from "../web/js/sound/engine.js";
 import { BPM, STEP, BAR, TRACKS, SCORE, FORM, ONCE_STEPS, LOOP_STEPS, PAGE_LEAD, eventsOf, eventsAt, schedule, createMusic } from "../web/js/sound/music.js";
 import { CATALOG, findEntry } from "../web/js/data/catalog.js";
 import { POOL } from "../web/js/data/custom.js";
@@ -144,7 +144,7 @@ test("앞문: 소리 단추가 쓰는 값(배경음악이 있는지, 첫 소리 
 
 test("앞문은 가볍다: 엔진은 뒤늦게만 부른다", () => {
   const src = readFileSync(join(ROOT, "web/js/sound/index.js"), "utf8");
-  assert.ok(statSync(join(ROOT, "web/js/sound/index.js")).size < 12000, "앞문은 첫 화면에 같이 실린다");
+  assert.ok(statSync(join(ROOT, "web/js/sound/index.js")).size < 13000, "앞문은 첫 화면에 같이 실린다");
   assert.ok(src.includes('import("./engine.js")'));
   assert.ok(!/^import[^\n]*engine\.js/m.test(src), "engine.js 를 바로 import 하지 않는다");
   assert.ok(!src.includes("music.js\""), "곡은 엔진이 부른다");
@@ -959,6 +959,61 @@ test("엔진: 결과 가락이 울리는 동안 배경음악을 낮췄다가 되
     assert.ok(ev[2][2] - ev[1][2] >= 0.1 - 1e-9);
   } finally {
     engine.stop();
+  }
+});
+
+test("손짓 없이도 소리를 낼 수 있는지: 소리 없는 녹음을 틀어 보고 안다(파이어폭스는 물어본다)", async () => {
+  const had = { navigator: Object.getOwnPropertyDescriptor(globalThis, "navigator"), Audio: Object.getOwnPropertyDescriptor(globalThis, "Audio") };
+  const put = (name, value) => Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
+  const made = [];
+  class FakeAudio {
+    constructor(src) {
+      this.src = src;
+      this.paused = false;
+      made.push(this);
+    }
+    play() {
+      return FakeAudio.allow ? Promise.resolve() : Promise.reject(Object.assign(new Error("막힘"), { name: "NotAllowedError" }));
+    }
+    pause() {
+      this.paused = true;
+    }
+  }
+  try {
+    // 브라우저가 아니면(Audio 가 없으면) 못 낸다고 본다
+    put("navigator", {});
+    put("Audio", undefined);
+    assert.equal(await canAutoplay(), false);
+    // 크롬·사파리: 틀어 봐서 되면 허락된 것이다. 틀어 본 것은 바로 멈춘다
+    put("Audio", FakeAudio);
+    FakeAudio.allow = true;
+    assert.equal(await canAutoplay(), true);
+    assert.equal(made.length, 1);
+    assert.equal(made[0].paused, true);
+    // 막히면(조용히 거절되면) 아니다
+    FakeAudio.allow = false;
+    assert.equal(await canAutoplay(), false);
+    assert.equal(made.length, 2);
+    // 틀어 보는 것은 소리 없는 0.1초짜리 WAV 다: 8비트 한 채널 8kHz, 모든 값이 가운데(0x80)
+    assert.match(made[0].src, /^data:audio\/wav;base64,[A-Za-z0-9+/]+$/);
+    const b = Buffer.from(made[0].src.split(",")[1], "base64");
+    assert.equal(b.toString("latin1", 0, 4) + b.toString("latin1", 8, 16) + b.toString("latin1", 36, 40), "RIFFWAVEfmt data");
+    assert.equal(b.readUInt32LE(4), b.length - 8);
+    assert.deepEqual([b.readUInt16LE(20), b.readUInt16LE(22), b.readUInt32LE(24), b.readUInt32LE(28), b.readUInt16LE(32), b.readUInt16LE(34)], [1, 1, 8000, 8000, 1, 8]);
+    assert.equal(b.readUInt32LE(40), b.length - 44);
+    assert.ok(b.length - 44 >= 400 && b.subarray(44).every((v) => v === 0x80));
+    // 파이어폭스: 물어보는 길이 있으면 그것만 쓴다(녹음을 틀어 보지 않는다)
+    put("navigator", { getAutoplayPolicy: (type) => (type === "audiocontext" ? "allowed" : "disallowed") });
+    assert.equal(await canAutoplay(), true);
+    put("navigator", { getAutoplayPolicy: () => "disallowed" });
+    FakeAudio.allow = true;
+    assert.equal(await canAutoplay(), false);
+    assert.equal(made.length, 2);
+  } finally {
+    for (const name of ["navigator", "Audio"]) {
+      if (had[name]) Object.defineProperty(globalThis, name, had[name]);
+      else delete globalThis[name];
+    }
   }
 });
 

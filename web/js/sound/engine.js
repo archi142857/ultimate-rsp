@@ -316,6 +316,29 @@ export const RECIPES = {
   },
 };
 
+// ── 손짓 없이도 소리를 낼 수 있는가 ───────────────────
+// 소리 없는 0.1초짜리 WAV(8비트, 8kHz). 머리 44바이트와 첫 바이트, 그 뒤로 0x80 세 바이트("gICA")를 266번
+const HUSH = "data:audio/wav;base64,UklGRkMDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YR8DAACA" + "gICA".repeat(266);
+/**
+ * 브라우저가 손짓 없이도 소리를 허락하는지 알아본다(약속으로 true·false).
+ * 브라우저는 보통 그 쪽을 한 번 누르기 전의 소리를 막는다. 푸는 때는 같은 사이트의 링크나 단추로 넘어온 쪽,
+ * 사용자가 소리를 허락해 둔 사이트, 설치한 앱 정도다(브라우저가 스스로 새로 고친 쪽은 다시 막힌다).
+ * AudioContext 를 열어 놓고 보면 막혔을 때 콘솔에 경고가 남을 수 있어서, 소리 없는 짧은 녹음을 틀어 본다(막히면 조용히 거절된다).
+ * 파이어폭스는 물어보는 길(getAutoplayPolicy)이 따로 있다
+ */
+export function canAutoplay() {
+  try {
+    if (navigator.getAutoplayPolicy) return Promise.resolve(navigator.getAutoplayPolicy("audiocontext") === "allowed");
+    const probe = new Audio(HUSH);
+    return probe.play().then(
+      () => (probe.pause(), true),
+      () => false,
+    );
+  } catch {
+    return Promise.resolve(false);
+  }
+}
+
 // ── 배경음악 받기 ──────────────────────────────
 let tune = null; // import("./music.js")
 /** 배경음악(악보와 연주)과 그 녹음을 받는다. AudioContext 가 없어도 된다 */
