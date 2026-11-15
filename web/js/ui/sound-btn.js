@@ -1,9 +1,9 @@
-// 머리글 소리 단추(디자인 11-12 최종 ③ 누르면 펼치는 칸, 사용자 결정 컨셉 11-12 09:31).
+// 머리글 소리 단추(디자인 11-12 최종 ③ 누르면 펼치는 칸, `세션소통\자료\소리_단추_시안\설명.md`. 사용자 결정 컨셉 11-12 09:34).
 // 누르면 단추 아래에 칸이 펼쳐진다: 효과음 스위치 → 배경음악 스위치(배경음악이 들어 있을 때만) → 음량.
-// 칸 안에서 바꿔도 닫히지 않고, 바깥을 누르거나 Esc·화면을 옮기면 닫힌다.
-// 아이콘: 소리가 하나라도 켜져 있으면 물결(음량 50% 아래면 한 줄, 0 이면 없음), 다 꺼지면 사선.
+// 열면 첫 스위치로 초점이 간다. 칸 안에서 바꿔도 닫히지 않고, 바깥을 누르거나 Tab 으로 벗어나거나 Esc·화면 이동이면 닫힌다.
+// 아이콘: 소리가 하나라도 켜져 있으면 물결(음량 0 이면 없음, 50% 아래면 한 줄), 다 꺼지면 사선.
 // 처음 온 사람(소리 설정을 손대지 않은 사람)에게는 첫 소리가 날 때 단추 아래에 한 번만 '소리 켜짐 · 끄기'(6초 뒤 닫힘).
-// 소리 설정은 sound/index.js 가 갖고 있다. 여기서는 그것을 보이고 바꾸기만 한다.
+// 소리 설정은 sound/index.js 가 갖고 있다. 여기서는 그것을 보이고 바꾸기만 한다(켜고 음량을 바꿀 때의 소리도 그쪽이 낸다).
 
 import { h } from "./dom.js";
 import { t } from "../i18n.js";
@@ -13,15 +13,19 @@ import { soundState, setSound, onSoundChange, onFirstSound, HAS_MUSIC } from "..
 const NOTE_KEY = "soundNote"; // 처음 안내를 보였는가(이 브라우저에서 한 번)
 const NOTE_MS = 6000;
 
-const SPEAKER = '<path d="M3.5 9.2h3.6l5.2-4.2v14l-5.2-4.2H3.5z" stroke-linejoin="round"/>';
-const WAVE1 = '<path d="M15.6 9.2a4 4 0 0 1 0 5.6"/>';
-const WAVE2 = '<path d="M18.4 6.4a8 8 0 0 1 0 11.2"/>';
-const SLASH = '<path d="M3.5 3.5l17 17"/>';
+// 디자인 아이콘(24 격자, 선 1.8, currentColor). 끔은 사선 둘레를 가려 스피커와 겹치는 데가 비어 보이게
+const SPK = '<path d="M4 9.5h3l4.5-4v13l-4.5-4H4z" stroke-linejoin="round"/>';
+const OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">';
+const ICONS = {
+  on2: `${OPEN}${SPK}<path d="M14.8 9.6a3.4 3.4 0 0 1 0 4.8"/><path d="M17.4 7a7 7 0 0 1 0 10"/></svg>`,
+  on1: `${OPEN}${SPK}<path d="M14.8 9.6a3.4 3.4 0 0 1 0 4.8"/></svg>`,
+  on0: `${OPEN}${SPK}</svg>`,
+  off: `${OPEN}<mask id="snd-cut"><rect width="24" height="24" fill="#fff"/><path d="M3.5 3.5L20.5 20.5" stroke="#000" stroke-width="5.2"/></mask><g mask="url(#snd-cut)">${SPK}</g><path d="M3.5 3.5L20.5 20.5"/></svg>`,
+};
 
 /** 아이콘 svg 글. on: 소리가 하나라도 켜짐, volume: 0~1 */
 export function soundIcon(on, volume) {
-  const waves = !on || volume <= 0 ? "" : volume < 0.5 ? WAVE1 : WAVE1 + WAVE2;
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">${SPEAKER}${on ? waves : SLASH}</svg>`;
+  return !on ? ICONS.off : volume <= 0 ? ICONS.on0 : volume < 0.5 ? ICONS.on1 : ICONS.on2;
 }
 
 /** 소리가 하나라도 켜져 있나(배경음악은 곡이 들어 있을 때만 센다) */
@@ -38,15 +42,15 @@ export function mountSoundButton(btn) {
   const sfxSw = switchRow("sfx");
   const musicSw = HAS_MUSIC ? switchRow("music") : null;
   const volIn = h("input", { type: "range", class: "sound-vol", min: "0", max: "100", step: "5" });
-  const volOut = h("output", { class: "sound-vol-out" });
+  const volOut = h("span", { class: "sound-vol-out", "aria-hidden": "true" });
   const volLabel = h("span", { class: "sound-row-label" });
   const volRow = h("label", { class: "sound-row sound-vol-row" }, volLabel, volIn, volOut);
   volIn.addEventListener("input", () => setSound({ volume: Number(volIn.value) / 100 }));
   const panel = h("div", { class: "sound-panel", id: "sound-panel", role: "group", hidden: true }, sfxSw.el, musicSw ? musicSw.el : null, volRow);
-  // 처음 안내
-  const noteText = h("span", {});
+  // 처음 안내: '소리 켜짐'(낭독은 이것만) + 끄기
+  const noteText = h("span", { class: "sound-note-text", role: "status" });
   const noteOff = h("button", { type: "button", class: "sound-note-off" });
-  const note = h("div", { class: "sound-note", role: "status", hidden: true }, noteText, noteOff);
+  const note = h("div", { class: "sound-note", hidden: true }, noteText, noteOff);
   noteOff.addEventListener("click", () => {
     setSound({ sfx: false, music: false });
     hideNote();
@@ -63,6 +67,7 @@ export function mountSoundButton(btn) {
     const el = h("div", { class: "sound-row" }, label, state, sw);
     return {
       el,
+      sw,
       draw(s) {
         const on = !!s[key];
         label.textContent = key === "sfx" ? t("효과음") : t("배경음악");
@@ -77,21 +82,23 @@ export function mountSoundButton(btn) {
     const s = soundState();
     const on = soundOn(s);
     btn.innerHTML = soundIcon(on, s.volume);
-    const word = t("소리: {s}", { s: on ? t("켬") : t("끔") });
+    const word = on ? t("소리: 켜짐") : t("소리: 꺼짐");
     btn.setAttribute("aria-label", word);
     btn.title = word;
-    btn.classList.toggle("off", !on);
     panel.setAttribute("aria-label", t("소리"));
     sfxSw.draw(s);
     if (musicSw) musicSw.draw(s);
+    const pct = Math.round(s.volume * 100);
     volLabel.textContent = t("음량");
     volIn.setAttribute("aria-label", t("음량"));
-    volIn.value = String(Math.round(s.volume * 100));
-    volOut.textContent = `${Math.round(s.volume * 100)}%`;
+    volIn.setAttribute("aria-valuetext", `${pct}%`);
+    volIn.value = String(pct);
+    volIn.style.setProperty("--v", `${pct}%`);
+    volOut.textContent = `${pct}%`;
     // 소리가 다 꺼져도 음량은 움직일 수 있다(흐리게만)
     volRow.classList.toggle("dim", !on);
-    noteText.textContent = t("소리 켜짐");
     noteOff.textContent = t("끄기");
+    if (!note.hidden) noteText.textContent = t("소리 켜짐");
   }
 
   function setOpen(next, { focusBtn = false } = {}) {
@@ -99,10 +106,10 @@ export function mountSoundButton(btn) {
     open = next;
     panel.hidden = !open;
     btn.setAttribute("aria-expanded", String(open));
-    btn.classList.toggle("on", open);
     if (open) {
       hideNote();
       draw();
+      sfxSw.sw.focus();
     } else if (focusBtn) btn.focus();
   }
 
@@ -127,14 +134,20 @@ export function mountSoundButton(btn) {
   function hideNote() {
     clearTimeout(noteTimer);
     note.hidden = true;
+    noteText.textContent = "";
   }
   const untouched = () => setting("sound.sfx", null) === null && setting("sound.music", null) === null;
   if (!setting(NOTE_KEY, false) && untouched() && soundOn(soundState())) {
     onFirstSound(() => {
-      if (setting(NOTE_KEY, false) || open || !soundOn(soundState())) return;
+      if (setting(NOTE_KEY, false) || open || !untouched() || !soundOn(soundState())) return;
       setSetting(NOTE_KEY, true);
-      draw();
       note.hidden = false;
+      // 꼬리가 스피커 가운데를 가리키게(단추 여백은 폭마다 다르다)
+      const b = btn.getBoundingClientRect();
+      const r = box.getBoundingClientRect();
+      note.style.setProperty("--tail", `${Math.round(r.right - (b.left + b.width / 2))}px`);
+      noteText.textContent = t("소리 켜짐");
+      draw();
       noteTimer = setTimeout(hideNote, NOTE_MS);
     });
   }
