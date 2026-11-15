@@ -31,8 +31,9 @@ import { sfx, roundTone } from "../sound/index.js";
 
 // 공개 연출: 한 마디 세는 시간, 결과를 적어도 보여 주는 시간, 다음 판 번호를 띄우는 시간.
 // 11-12 사용자: 컴퓨터와 하면 휙휙 지나가서 무엇이 진행되는지 안 보인다 → 셋을 세고(≈1.3초) 결과를 2.4초 보인 뒤 '2판'을 0.8초 띄운다.
-// 서버는 공개 뒤 REVEAL_MS(2.5초)만큼 다음 판 마감을 늘려 두므로, 그보다 긴 만큼(≈2초) 다음 판 시계가 덜 남은 채로 보인다
-// (백엔드에 서버·protocol.js 의 REVEAL_MS 를 4500 으로 늘려 달라고 함. 늘려도 위 빠르기는 그대로)
+// 서버는 공개 뒤 REVEAL_MS(4.5초, 백엔드 5f71dbf)만큼 다음 판 마감을 늘려 두어, 이 연출이 끝날 때 다음 판 시계가
+// 정한 시간(20초 판이면 20)에서 시작한다(11-15 사용자). 셋을 바꾸면 REVEAL_MS 도 맞춘다: server/tests/protocol.test.mjs 가
+// 아래 세 줄(`const 이름 = 수;` 꼴)을 읽어 3 × COUNT_MS + SHOW_MS + NEXT_MS ≤ REVEAL_MS < 그 합 + 1초 인지 본다
 const COUNT_MS = 420;
 const SHOW_MS = 2400;
 const NEXT_MS = 800;
