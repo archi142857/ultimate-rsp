@@ -7,10 +7,12 @@
 //  POST /api/auth/signup                  처음 보는 로그인: 가입 화면(이름·처리방침 동의·만 14세 이상)을 마치고 계정을 만든다
 //  POST /api/auth/email/signup|verify|login|reset|reset/confirm   이메일·비밀번호(비밀번호는 화면이 PBKDF2 로 바꿔 보낸다)
 //  POST /api/account[/profile|/logout|/unlink|/delete]   세션 토큰으로 계정 보기·이름·로그아웃·로그인 떼기·지우기
+//  GET|POST /api/auth/kakao/unlink        카카오 연결 해제 웹훅(카카오가 보낸다. 대표 어드민 키로 확인)
+//  GET  /api/auth/kakao/hook              검증된 웹훅이 닿은 적이 있는지(웹훅 시험 확인용)
 // 세션 토큰은 쿠키가 아니라 본문으로 주고받는다(웹·앱·스팀이 같은 방식. text/plain POST 라 CORS 미리 묻기도 없다)
 
 import { backWith, checkBack, checkCode, checkConsent, checkEmail, checkHandoff, checkKey, checkNonce, checkTicket, checkToken, isState } from "./account.js";
-import { PROVIDERS, enabledProviders, pkceChallenge, providerOf, randomId, sha256Hex } from "./auth.js";
+import { PROVIDERS, enabledProviders, pkceChallenge, providerOf, randomId, readKakaoHook, sha256Hex } from "./auth.js";
 import { checkFace, checkName, checkPid } from "./check.js";
 import { Fail, checkVersion, json, originList, readBody } from "./http.js";
 import { mailReady, mailTest, mailText, sendMail } from "./mail.js";
@@ -85,6 +87,25 @@ export async function authCallback(env, p, url) {
   } catch (e) {
     return redirect(backWith(data.back, "login_error", e instanceof Fail ? e.code : "server"));
   }
+}
+
+const plain = (text, status) => new Response(text, { status, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
+
+/**
+ * 카카오 연결 해제 웹훅(GET·POST /api/auth/kakao/unlink). 카카오가 보내 출처 머리가 없다(입구가 출처 검사 전에 넘긴다).
+ * 3초 안에 200 을 줘야 한다. 어드민 키(KAKAO_ADMIN_KEY)가 없으면 꺼져 있다(404)
+ */
+export async function kakaoHookRoute(request, env) {
+  const h = await readKakaoHook(request, env);
+  if (h.status) return plain(h.status === 404 ? "not found" : h.status === 401 ? "unauthorized" : "bad request", h.status);
+  await call(() => accounts(env).kakaoHook({ sub: h.sub, why: h.why }));
+  return plain("ok", 200);
+}
+
+/** GET /api/auth/kakao/hook → { seen }: 검증된 웹훅이 닿은 적이 있는지. 사용자가 카카오 웹훅 시험(가입 미완료로 보내기)을 한 뒤 본다 */
+export async function kakaoHookStatus(env, now) {
+  const r = await call(() => accounts(env).hookSeen());
+  return json({ seen: r.seen, now }, 200, null);
 }
 
 /** /api/auth… (출처 검사 뒤) */

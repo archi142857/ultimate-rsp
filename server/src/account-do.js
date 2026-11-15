@@ -1,17 +1,19 @@
 // 계정 Durable Object. 하나(이름 "accounts-1")에 계정 전부. SQLite 표.
 // 로그인은 드물어서 하나로 충분하다(게임 중에는 부르지 않는다. 게임은 지금처럼 pid 만 본다).
 //  - accounts:  계정(id, pid, 이름·그림, 동의한 처리방침 판·시각·만 14세 이상). pid 는 계정마다 하나, 다른 계정과 겹치지 않는다
-//  - logins:    로그인(제공자 + 번호, 이메일은 다듬은 메일 주소)의 열쇠 → 계정. 번호·주소는 그대로 두지 않고 이 DO 만 아는 값(pepper)으로 HMAC 한 값만 둔다
+//  - logins:    로그인(제공자 + 번호, 이메일은 다듬은 메일 주소)의 열쇠 → 계정. 번호·주소는 그대로 두지 않고 이 DO 만 아는 값(pepper)으로 HMAC 한 값만 둔다.
+//               ext: 카카오 회원번호를 이 DO 만 아는 열쇠(kkey)로 암호화한 값. 카카오 연결 끊기 때만 푼다. 어드민 키가 들어온 뒤의 카카오 로그인부터 담는다(B7 1번)
 //  - passwords: 이메일 로그인의 비밀번호. 화면이 PBKDF2 로 만든 열쇠(key)를 다시 HMAC 한 값만 둔다(비밀번호는 서버에 오지 않는다)
 //  - sessions:  세션 토큰의 SHA-256 → 계정. 토큰 자체는 저장하지 않는다. until 은 새 토큰으로 바뀐 옛 세션이 끝나는 때(아니면 null)
 //  - pending:   잠깐 두는 값: 로그인 창에 다녀오는 동안(state), 돌아온 화면이 한 번 쓰는 코드(handoff), 가입 화면 표(signup), 메일 확인 코드(email). 몇 분 뒤 지운다
 //  - limits:    시도 횟수(메일 보내기·로그인 실패·하루 메일 수)
-//  - meta:      pepper
+//  - kakao_unlinks: 지운 카카오 로그인 중 카카오 연결 끊기를 기다리는 것(암호화한 회원번호). 알람이 끊고, 안 되면 간격을 늘려 다시 한다. 끊으면 지운다
+//  - meta:      pepper, kkey(카카오 회원번호 열쇠), kakao_hook(검증된 연결 해제 웹훅을 받은 때)
 // 규칙은 account.js(planLogin), 제공자 확인은 auth.js, 메일은 mail.js. 입구(account-route.js)가 부른다.
 
 import { DurableObject } from "cloudflare:workers";
 import { planLogin, newPid, newCode } from "./account.js";
-import { hmacHex, randomId, sha256Hex } from "./auth.js";
+import { KAKAO_HOOK_DROP, hmacHex, kakaoUnlink, kakaoUnlinkReady, openText, randomId, sealText, sha256Hex } from "./auth.js";
 import { checkFace, checkName } from "./check.js";
 import { Fail } from "./http.js";
 import {
@@ -32,6 +34,10 @@ const TIDY_MS = 3600_000;
 /** 세션을 쓴 때(used)는 하루에 한 번만 고쳐 쓴다(쓰기를 아끼려고) */
 const TOUCH_MS = 24 * 3600_000;
 const HOUR = 3600_000;
+/** 카카오 연결 끊기가 안 되면 다시 해 보는 간격(앞에서부터). 다 쓰면(사흘쯤) 그만두고 로그를 남긴다 */
+const UNLINK_BACKOFF_MS = [60_000, 5 * 60_000, 30 * 60_000, 2 * HOUR, 6 * HOUR, 12 * HOUR, 24 * HOUR, 24 * HOUR];
+/** 알람 한 번에 끊어 보는 수 */
+const UNLINK_BATCH = 10;
 const FAIL_WINDOW_MS = 15 * 60_000;
 /** 같은 곳(IP 해시)에서: 한 시간에 메일 보내기 요청, 이메일 로그인 실패 */
 const IP_SEND_PER_HOUR = 20;
@@ -58,8 +64,14 @@ export class Accounts extends DurableObject {
         // 이미 있다
       }
     }
-    this.sql.exec("CREATE TABLE IF NOT EXISTS logins (key TEXT PRIMARY KEY, account TEXT NOT NULL, provider TEXT NOT NULL, made INTEGER NOT NULL) WITHOUT ROWID");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS logins (key TEXT PRIMARY KEY, account TEXT NOT NULL, provider TEXT NOT NULL, made INTEGER NOT NULL, ext TEXT) WITHOUT ROWID");
+    try {
+      this.sql.exec("ALTER TABLE logins ADD COLUMN ext TEXT");
+    } catch {
+      // 이미 있다(11-15 앞 판의 표에만 없다)
+    }
     this.sql.exec("CREATE INDEX IF NOT EXISTS logins_account ON logins (account)");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS kakao_unlinks (key TEXT PRIMARY KEY, ext TEXT NOT NULL, tries INTEGER NOT NULL, next INTEGER NOT NULL, made INTEGER NOT NULL) WITHOUT ROWID");
     this.sql.exec("CREATE TABLE IF NOT EXISTS passwords (account TEXT PRIMARY KEY, login TEXT NOT NULL, hash TEXT NOT NULL, made INTEGER NOT NULL, changed INTEGER NOT NULL) WITHOUT ROWID");
     this.sql.exec("CREATE TABLE IF NOT EXISTS sessions (hash TEXT PRIMARY KEY, account TEXT NOT NULL, made INTEGER NOT NULL, used INTEGER NOT NULL, until INTEGER) WITHOUT ROWID");
     try {
@@ -71,7 +83,7 @@ export class Accounts extends DurableObject {
     this.sql.exec("CREATE TABLE IF NOT EXISTS pending (hash TEXT PRIMARY KEY, kind TEXT NOT NULL, data TEXT NOT NULL, exp INTEGER NOT NULL) WITHOUT ROWID");
     this.sql.exec("CREATE INDEX IF NOT EXISTS pending_exp ON pending (exp)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS limits (k TEXT PRIMARY KEY, n INTEGER NOT NULL, until INTEGER NOT NULL) WITHOUT ROWID");
-    this.pepper_ = null;
+    this.secrets_ = new Map();
     this.tidied = 0;
   }
 
@@ -81,16 +93,61 @@ export class Accounts extends DurableObject {
     return this.sql.exec(q, ...args).toArray()[0] || null;
   }
 
-  #pepper() {
-    if (this.pepper_) return this.pepper_;
-    let row = this.#one("SELECT v FROM meta WHERE k = 'pepper'");
-    if (!row) {
+  /**
+   * 이 DO 만 아는 무작위 값(32바이트, 16진). 처음 쓸 때 만든다.
+   * pepper: 로그인 번호·주소 HMAC. kkey: 카카오 회원번호 암호화(어드민 키와 떨어져 있어 어드민 키를 다시 발급해도 그대로 풀린다)
+   */
+  #secret(k) {
+    let v = this.secrets_.get(k);
+    if (v) return v;
+    const row = this.#one("SELECT v FROM meta WHERE k = ?", k);
+    if (row) v = row.v;
+    else {
       const a = new Uint8Array(32);
       crypto.getRandomValues(a);
-      row = { v: [...a].map((x) => x.toString(16).padStart(2, "0")).join("") };
-      this.sql.exec("INSERT INTO meta (k, v) VALUES ('pepper', ?)", row.v);
+      v = [...a].map((x) => x.toString(16).padStart(2, "0")).join("");
+      this.sql.exec("INSERT INTO meta (k, v) VALUES (?, ?)", k, v);
     }
-    return (this.pepper_ = row.v);
+    this.secrets_.set(k, v);
+    return v;
+  }
+
+  #pepper() {
+    return this.#secret("pepper");
+  }
+
+  /** 카카오 로그인이면 회원번호를 암호화한 값. 어드민 키가 들어온 뒤부터만 담는다(처리방침을 고친 뒤 사용자가 키를 넣는다). 아니면 null */
+  async #ext(provider, sub) {
+    return provider === "kakao" && kakaoUnlinkReady(this.env) ? sealText(this.#secret("kkey"), sub) : null;
+  }
+
+  /** 계정 하나를 다 지운다: 세션·로그인·비밀번호·계정 줄. 게임 기록(pid)은 계정과 떨어져 남는다 */
+  #wipe(account) {
+    this.sql.exec("DELETE FROM sessions WHERE account = ?", account);
+    this.sql.exec("DELETE FROM logins WHERE account = ?", account);
+    this.sql.exec("DELETE FROM passwords WHERE account = ?", account);
+    this.sql.exec("DELETE FROM accounts WHERE id = ?", account);
+  }
+
+  /**
+   * 카카오 로그인을 지울 때(로그인 떼기·계정 지우기): 회원번호를 담아 둔 것은 연결 끊기 줄에 넣고 알람을 깨운다.
+   * 돌려주는 값: 카카오 로그인이 없으면 null, 서버가 끊으면 "server",
+   * 회원번호가 없거나(어드민 키 전에 이은 로그인) 어드민 키가 없어 서버가 못 끊으면 "manual"(화면이 카카오계정에서 끊는 법을 알린다)
+   */
+  async #queueKakao(rows, now) {
+    const kakao = rows.filter((l) => l.provider === "kakao");
+    if (!kakao.length) return null;
+    for (const l of kakao) {
+      if (l.ext) this.sql.exec("INSERT OR REPLACE INTO kakao_unlinks (key, ext, tries, next, made) VALUES (?, ?, 0, ?, ?)", l.key, l.ext, now, now);
+    }
+    if (kakao.some((l) => l.ext)) await this.#wake(now);
+    return kakaoUnlinkReady(this.env) && kakao.every((l) => l.ext) ? "server" : "manual";
+  }
+
+  /** 알람을 t 에(이미 더 이른 알람이 있으면 그대로) */
+  async #wake(t) {
+    const cur = await this.ctx.storage.getAlarm();
+    if (cur === null || cur > t) await this.ctx.storage.setAlarm(t);
   }
 
   #tidy(now) {
@@ -173,8 +230,8 @@ export class Accounts extends DurableObject {
     return { token, fresh, linked, ...this.#view(acc, now) };
   }
 
-  /** 새 계정. 화면 pid 가 다른 계정 것이 아니면 그 pid(손님 기록을 이어 간다), 맞으면 새 pid */
-  #create({ key, provider, pid, name, face, consent, now }) {
+  /** 새 계정. 화면 pid 가 다른 계정 것이 아니면 그 pid(손님 기록을 이어 간다), 맞으면 새 pid. ext: 카카오 회원번호를 암호화한 값(#ext) */
+  #create({ key, provider, pid, name, face, consent, now, ext = null }) {
     const account = randomId(16);
     const taken = this.#one("SELECT id FROM accounts WHERE pid = ?", pid);
     const use = taken ? newPid() : pid;
@@ -189,7 +246,7 @@ export class Accounts extends DurableObject {
       now,
       consent.age14 ? 1 : 0,
     );
-    this.sql.exec("INSERT INTO logins (key, account, provider, made) VALUES (?, ?, ?, ?)", key, account, provider, now);
+    this.sql.exec("INSERT INTO logins (key, account, provider, made, ext) VALUES (?, ?, ?, ?, ?)", key, account, provider, now, ext);
     return account;
   }
 
@@ -295,6 +352,7 @@ export class Accounts extends DurableObject {
     const link = linked ? linked.acc.id : r.link || null;
     const linkHash = linked ? linked.hash : r.linkHash || null;
     const key = await this.#loginKey(r.provider, r.sub);
+    const ext = await this.#ext(r.provider, r.sub);
     const idAcc = this.#one("SELECT account FROM logins WHERE key = ?", key)?.account ?? null;
     let linkAcc = null;
     if (link) {
@@ -307,10 +365,12 @@ export class Accounts extends DurableObject {
     let out;
     if (plan.act === "create") {
       const ticket = randomId(32);
-      await this.#put("signup", ticket, { key, provider: r.provider, pid: r.pid }, now + AUTH_SIGNUP_MS);
+      await this.#put("signup", ticket, { key, provider: r.provider, pid: r.pid, ext }, now + AUTH_SIGNUP_MS);
       out = { signup: { ticket, provider: r.provider, profile: r.name ? { name: r.name, face: r.face ?? null } : null } };
     } else {
-      if (plan.act === "attach") this.sql.exec("INSERT INTO logins (key, account, provider, made) VALUES (?, ?, ?, ?)", key, plan.account, r.provider, now);
+      if (plan.act === "attach") this.sql.exec("INSERT INTO logins (key, account, provider, made, ext) VALUES (?, ?, ?, ?, ?)", key, plan.account, r.provider, now, ext);
+      // 어드민 키 전에 이은 카카오 로그인은 이번 로그인에 회원번호를 채운다
+      else if (ext) this.sql.exec("UPDATE logins SET ext = ? WHERE key = ? AND ext IS NULL", ext, key);
       // 그 계정에 로그인해 있던 기기면 옛 세션은 새 세션으로 바뀐다
       out = { account: plan.account, linked: plan.act === "attach", replace: linkAcc && plan.account === linkAcc ? linkHash : null };
     }
@@ -336,8 +396,11 @@ export class Accounts extends DurableObject {
     const d = await this.#take("signup", ticket, now);
     if (!d) throw new Fail("bad_login");
     const idAcc = this.#one("SELECT account FROM logins WHERE key = ?", d.key)?.account ?? null;
-    if (idAcc) return this.#result(idAcc, now);
-    const account = this.#create({ key: d.key, provider: d.provider, pid: d.pid, name, face, consent, now });
+    if (idAcc) {
+      if (d.ext) this.sql.exec("UPDATE logins SET ext = ? WHERE key = ? AND ext IS NULL", d.ext, d.key);
+      return this.#result(idAcc, now);
+    }
+    const account = this.#create({ key: d.key, provider: d.provider, pid: d.pid, name, face, consent, now, ext: d.ext ?? null });
     return this.#result(account, now, { fresh: true });
   }
 
@@ -456,27 +519,82 @@ export class Accounts extends DurableObject {
     return { ok: true };
   }
 
-  /** 로그인 방법 하나 떼기. 마지막 하나는 못 뗀다(계정에 다시 들어올 길이 없어진다). 이메일을 떼면 비밀번호도 지운다 */
+  /**
+   * 로그인 방법 하나 떼기. 마지막 하나는 못 뗀다(계정에 다시 들어올 길이 없어진다). 이메일을 떼면 비밀번호도 지운다.
+   * 카카오를 떼면 카카오 쪽 연결도 끊는다(kakaoUnlink: "server" 서버가 끊음 | "manual" 사용자가 카카오계정에서 끊어야 함)
+   */
   async #unlink({ token, provider }) {
     const now = Date.now();
     const { acc } = await this.#session(token, now);
-    const rows = this.sql.exec("SELECT key, provider FROM logins WHERE account = ?", acc.id).toArray();
+    const rows = this.sql.exec("SELECT key, provider, ext FROM logins WHERE account = ?", acc.id).toArray();
     const drop = rows.filter((l) => l.provider === provider);
     if (!drop.length) throw new Fail("not_found");
     if (drop.length === rows.length) throw new Fail("last_login");
     for (const l of drop) this.sql.exec("DELETE FROM logins WHERE key = ?", l.key);
     if (provider === "email") this.sql.exec("DELETE FROM passwords WHERE account = ?", acc.id);
-    return this.#view(acc, now);
+    const kakaoUnlink = await this.#queueKakao(drop, now);
+    return { ...this.#view(acc, now), ...(kakaoUnlink ? { kakaoUnlink } : {}) };
   }
 
-  /** 계정 지우기: 계정·로그인·비밀번호·세션을 모두 지운다. 게임 기록(pid)은 계정과 떨어져 남는다 */
+  /** 계정 지우기: 계정·로그인·비밀번호·세션을 모두 지운다. 게임 기록(pid)은 계정과 떨어져 남는다. 카카오 로그인이 있었으면 kakaoUnlink(위와 같다) */
   async #remove({ token }) {
-    const { acc } = await this.#session(token, Date.now());
-    this.sql.exec("DELETE FROM sessions WHERE account = ?", acc.id);
-    this.sql.exec("DELETE FROM logins WHERE account = ?", acc.id);
-    this.sql.exec("DELETE FROM passwords WHERE account = ?", acc.id);
-    this.sql.exec("DELETE FROM accounts WHERE id = ?", acc.id);
-    return { ok: true, pid: acc.pid };
+    const now = Date.now();
+    const { acc } = await this.#session(token, now);
+    const rows = this.sql.exec("SELECT key, provider, ext FROM logins WHERE account = ?", acc.id).toArray();
+    this.#wipe(acc.id);
+    const kakaoUnlink = await this.#queueKakao(rows, now);
+    return { ok: true, pid: acc.pid, ...(kakaoUnlink ? { kakaoUnlink } : {}) };
+  }
+
+  // ---- 카카오 쪽에서 온 것 ----
+
+  /**
+   * 카카오 연결 해제 웹훅(입구가 대표 어드민 키·앱 ID 를 본 뒤). 카카오 쪽에서 끊었으면(KAKAO_HOOK_DROP) 우리도 카카오 로그인을 떼고,
+   * 남은 로그인 방법이 없으면 계정을 지운다(카카오 권장). 가입 미완료(INCOMPLETE_SIGN_UP)는 떼지 않는다.
+   * 받았다는 표시(meta kakao_hook)를 남긴다: 사용자가 카카오 웹훅 시험을 보낸 뒤 GET /api/auth/kakao/hook 으로 닿았는지 본다
+   */
+  async #kakaoHook({ sub, why }) {
+    const now = Date.now();
+    this.sql.exec("INSERT OR REPLACE INTO meta (k, v) VALUES ('kakao_hook', ?)", String(now));
+    if (!KAKAO_HOOK_DROP.includes(why)) return { act: "keep" };
+    const key = await this.#loginKey("kakao", sub);
+    // 이미 카카오 쪽에서 끊겼으니 기다리던 연결 끊기도 할 일이 없다
+    this.sql.exec("DELETE FROM kakao_unlinks WHERE key = ?", key);
+    const login = this.#one("SELECT account FROM logins WHERE key = ?", key);
+    if (!login) return { act: "none" };
+    this.sql.exec("DELETE FROM logins WHERE key = ?", key);
+    if (this.#one("SELECT key FROM logins WHERE account = ? LIMIT 1", login.account)) return { act: "login" };
+    this.#wipe(login.account);
+    return { act: "account" };
+  }
+
+  /** 검증된 연결 해제 웹훅을 받은 적이 있는지(언제·누구인지는 안 알린다) */
+  #hookSeen() {
+    return { seen: Boolean(this.#one("SELECT v FROM meta WHERE k = 'kakao_hook'")) };
+  }
+
+  /** 알람: 기다리는 카카오 연결 끊기를 한다. 안 되면 간격을 늘려 다시 하고(UNLINK_BACKOFF_MS), 다 쓰면 그만둔다 */
+  async alarm() {
+    const now = Date.now();
+    const rows = this.sql.exec("SELECT key, ext, tries FROM kakao_unlinks WHERE next <= ? ORDER BY next LIMIT ?", now, UNLINK_BATCH).toArray();
+    for (const r of rows) {
+      let out;
+      try {
+        out = await kakaoUnlink(this.env, await openText(this.#secret("kkey"), r.ext), fetch);
+      } catch (e) {
+        // 풀리지 않는 값(열쇠가 바뀌었거나 값이 깨졌다): 다시 해도 같다
+        console.error("kakao unlink: sealed id", (e && e.message) || e);
+        out = "drop";
+      }
+      if (out === "retry" && r.tries < UNLINK_BACKOFF_MS.length) {
+        this.sql.exec("UPDATE kakao_unlinks SET tries = ?, next = ? WHERE key = ?", r.tries + 1, Date.now() + UNLINK_BACKOFF_MS[r.tries], r.key);
+        continue;
+      }
+      if (out !== "done") console.error("kakao unlink gave up", out, r.tries);
+      this.sql.exec("DELETE FROM kakao_unlinks WHERE key = ?", r.key);
+    }
+    const next = this.#one("SELECT MIN(next) AS t FROM kakao_unlinks")?.t ?? null;
+    if (next !== null) await this.ctx.storage.setAlarm(Math.max(next, Date.now() + 1000));
   }
 
   // ---- RPC 로 여는 것 ----
@@ -549,5 +667,13 @@ export class Accounts extends DurableObject {
 
   remove(arg) {
     return this.#safe(() => this.#remove(arg));
+  }
+
+  kakaoHook(arg) {
+    return this.#safe(() => this.#kakaoHook(arg));
+  }
+
+  hookSeen() {
+    return this.#safe(() => this.#hookSeen());
   }
 }

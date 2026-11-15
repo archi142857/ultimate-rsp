@@ -4,6 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { b64url, unb64url, randomId, sha256Hex, hmacHex, pkceChallenge, verifyJwt, clearJwks, PROVIDERS, enabledProviders, providerOf } from "../src/auth.js";
+import { KAKAO_HOOK_DROP, KAKAO_HOOK_KEEP, kakaoUnlink, kakaoUnlinkReady, openText, readKakaoHook, sealText } from "../src/auth.js";
 import { planLogin, checkBack, backWith, checkNonce, checkToken, checkHandoff, isState, newPid, checkEmail, checkKey, checkCode, checkConsent, checkTicket, newCode } from "../src/account.js";
 import { mailReady, mailTest, mailText, sendMail } from "../src/mail.js";
 import { Fail } from "../src/http.js";
@@ -218,6 +219,92 @@ test("카카오: 로그인 창 주소, 코드 → 액세스 토큰 → 사용자
   assert.equal(await k.exchange({ KAKAO_REST_KEY: "rest" }, { code: "C", redirectUri: "x", fetch: web }), "5");
   assert.equal(await k.exchange({ KAKAO_REST_KEY: "rest", KAKAO_APP_ID: "777" }, { code: "C", redirectUri: "x", fetch: web }), "5");
   assert.equal(new URLSearchParams(String(noSecret[0].init.body)).get("client_secret"), null, "시크릿을 안 켰으면 보내지 않는다");
+});
+
+test("카카오: 로컬 시험(AUTH_TEST)에서만, localhost 가짜 카카오로 돌릴 수 있다", async () => {
+  const seen = [];
+  const any = async (url) => {
+    seen.push(String(url));
+    const u = String(url);
+    return new Response(JSON.stringify(u.includes("/oauth/token") ? { access_token: "AT" } : { id: 7 }), { status: 200 });
+  };
+  const k = PROVIDERS.kakao;
+  await k.exchange({ KAKAO_REST_KEY: "r", AUTH_TEST: "1", KAKAO_TEST_API: "http://127.0.0.1:8798" }, { code: "C", redirectUri: "x", fetch: any });
+  assert.deepEqual(seen.splice(0), ["http://127.0.0.1:8798/oauth/token", "http://127.0.0.1:8798/v2/user/me"]);
+  for (const env of [
+    { KAKAO_REST_KEY: "r", KAKAO_TEST_API: "http://127.0.0.1:8798" },
+    { KAKAO_REST_KEY: "r", AUTH_TEST: "1", KAKAO_TEST_API: "https://evil.example" },
+    { KAKAO_REST_KEY: "r", AUTH_TEST: "1", KAKAO_TEST_API: "http://127.0.0.1:8798/x" },
+  ]) {
+    await k.exchange(env, { code: "C", redirectUri: "x", fetch: any });
+    assert.deepEqual(seen.splice(0), ["https://kauth.kakao.com/oauth/token", "https://kapi.kakao.com/v2/user/me"], JSON.stringify(env));
+  }
+});
+
+test("카카오 연결 끊기: 어드민 키로 회원번호를 보내고, 결과를 끊음·다시·버림으로 나눈다", async () => {
+  const env = { KAKAO_ADMIN_KEY: "ADMIN" };
+  assert.equal(kakaoUnlinkReady(env), true);
+  assert.equal(kakaoUnlinkReady({}), false);
+  assert.equal(await kakaoUnlink({}, "123", async () => assert.fail("키가 없으면 부르지 않는다")), "retry");
+  const calls = [];
+  const reply = (status, body) => fakeFetch({ "https://kapi.kakao.com/v1/user/unlink": { status, body } }, calls);
+  assert.equal(await kakaoUnlink(env, "4123456789", reply(200, { id: 4123456789 })), "done");
+  const c = calls.at(-1);
+  assert.equal(c.init.method, "POST");
+  assert.equal(c.init.headers.Authorization, "KakaoAK ADMIN");
+  assert.match(c.init.headers["Content-Type"], /^application\/x-www-form-urlencoded/);
+  const q = new URLSearchParams(String(c.init.body));
+  assert.equal(q.get("target_id_type"), "user_id");
+  assert.equal(q.get("target_id"), "4123456789");
+  assert.ok(c.init.signal, "오래 걸리면 끊는다");
+  assert.equal(await kakaoUnlink(env, "1", reply(200, { id: 2 })), "drop", "다른 번호가 끊겼다고 하면");
+  for (const code of [-101, -103]) assert.equal(await kakaoUnlink(env, "1", reply(400, { code, msg: "x" })), "done", `이미 끊김 ${code}`);
+  for (const [status, code] of [[400, -1], [403, -3], [400, -7], [400, -10], [401, -401], [400, -603], [500, null], [503, null], [401, null]]) {
+    assert.equal(await kakaoUnlink(env, "1", reply(status, code === null ? "oops" : { code })), "retry", `${status} ${code}`);
+  }
+  for (const [status, code] of [[400, -2], [400, -8], [403, -4], [404, null]]) assert.equal(await kakaoUnlink(env, "1", reply(status, code === null ? {} : { code })), "drop", `${status} ${code}`);
+  assert.equal(await kakaoUnlink(env, "1", async () => Promise.reject(new Error("net"))), "retry", "네트워크 오류");
+});
+
+test("카카오 연결 해제 웹훅: 대표 어드민 키·앱 ID 를 보고 회원번호와 경로를 읽는다(GET·POST 폼·JSON)", async () => {
+  const env = { KAKAO_ADMIN_KEY: "ADMIN", KAKAO_APP_ID: "777" };
+  const U = "https://w.test/api/auth/kakao/unlink";
+  const get = (q, auth = "KakaoAK ADMIN") => new Request(`${U}?${new URLSearchParams(q)}`, { headers: auth ? { Authorization: auth } : {} });
+  const post = (body, type, auth = "KakaoAK ADMIN") => new Request(U, { method: "POST", headers: { Authorization: auth, "Content-Type": type }, body });
+  const ok = { app_id: "777", user_id: "4123456789", referrer_type: "UNLINK_FROM_APPS" };
+  assert.deepEqual(await readKakaoHook(get(ok), env), { sub: "4123456789", why: "UNLINK_FROM_APPS" });
+  assert.deepEqual(await readKakaoHook(post(new URLSearchParams(ok).toString(), "application/x-www-form-urlencoded"), env), { sub: "4123456789", why: "UNLINK_FROM_APPS" });
+  assert.deepEqual(await readKakaoHook(post(JSON.stringify({ ...ok, app_id: 777, user_id: 4123456789 }), "application/json"), env), { sub: "4123456789", why: "UNLINK_FROM_APPS" });
+  assert.deepEqual(await readKakaoHook(get(ok), { KAKAO_ADMIN_KEY: "ADMIN" }), { sub: "4123456789", why: "UNLINK_FROM_APPS" }, "앱 ID 를 안 넣었으면 키만 본다");
+  assert.deepEqual(await readKakaoHook(get(ok), {}), { status: 404 }, "어드민 키가 없으면 꺼져 있다");
+  for (const auth of [null, "KakaoAK WRONG", "KakaoAK ADMIN2", "Bearer ADMIN", "kakaoak ADMIN", "ADMIN"]) assert.deepEqual(await readKakaoHook(get(ok, auth), env), { status: 401 }, String(auth));
+  assert.deepEqual(await readKakaoHook(get({ ...ok, app_id: "999" }), env), { status: 401 }, "다른 앱");
+  for (const user_id of ["", "0", "-1", "abc", String(2 ** 70)]) assert.deepEqual(await readKakaoHook(get({ ...ok, user_id }), env), { status: 400 }, user_id);
+  for (const referrer_type of ["", "unlink", "A".repeat(65)]) assert.deepEqual(await readKakaoHook(get({ ...ok, referrer_type }), env), { status: 400 }, referrer_type);
+  assert.deepEqual(await readKakaoHook(get({ ...ok, referrer_type: "SOMETHING_NEW" }), env), { sub: "4123456789", why: "SOMETHING_NEW" }, "모르는 경로는 받기만(계정 DO 가 안 뗀다)");
+  assert.deepEqual(await readKakaoHook(post("x".repeat(5000), "application/x-www-form-urlencoded"), env), { status: 400 });
+  assert.deepEqual(await readKakaoHook(post("{nope", "application/json"), env), { status: 400 });
+  // 떼는 경로와 안 떼는 경로가 겹치지 않는다
+  assert.deepEqual(KAKAO_HOOK_DROP, ["UNLINK_FROM_APPS", "ACCOUNT_DELETE", "FORCED_ACCOUNT_DELETE", "UNLINK_FROM_ADMIN"]);
+  assert.deepEqual(KAKAO_HOOK_KEEP, ["INCOMPLETE_SIGN_UP"]);
+});
+
+test("회원번호 암호화: 같은 값도 매번 다르게 잠기고, 같은 열쇠로만 풀린다. 바꾼 값은 안 풀린다", async () => {
+  const key = "ab".repeat(32);
+  const a = await sealText(key, "4123456789");
+  const b = await sealText(key, "4123456789");
+  assert.match(a, /^v1\.[A-Za-z0-9_-]{16}\.[A-Za-z0-9_-]+$/);
+  assert.notEqual(a, b, "iv 가 매번 다르다");
+  assert.ok(!a.includes("4123456789"));
+  assert.equal(await openText(key, a), "4123456789");
+  assert.equal(await openText(key, b), "4123456789");
+  await assert.rejects(openText("cd".repeat(32), a), "다른 열쇠");
+  const [v, iv, ct] = a.split(".");
+  const flipped = ct.slice(0, -2) + (ct.at(-2) === "A" ? "B" : "A") + ct.at(-1);
+  await assert.rejects(openText(key, `${v}.${iv}.${flipped}`), "바뀐 값");
+  await assert.rejects(openText(key, "v2." + a.slice(3)), "모르는 판");
+  await assert.rejects(openText(key, "nope"));
+  await assert.rejects(sealText("short", "1"), "열쇠 꼴");
 });
 
 test("로그인 정하기(planLogin)", () => {

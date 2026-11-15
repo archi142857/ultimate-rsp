@@ -6,7 +6,7 @@ import { RoomHost, refuse } from "./room-do.js";
 import { MatchQueue } from "./match-do.js";
 import { Ranking } from "./rank-do.js";
 import { Accounts } from "./account-do.js";
-import { accountRoute, authCallback, authRoute } from "./account-route.js";
+import { accountRoute, authCallback, authRoute, kakaoHookRoute, kakaoHookStatus } from "./account-route.js";
 import { QUEUE_HINT, RANK_HINT, placeOf } from "./where.js";
 import { ipTag } from "./rank.js";
 import { makeChallenge } from "./challenge.js";
@@ -55,6 +55,9 @@ export default {
       if (parts[0] === "api" && parts[1] === "auth" && parts.length === 4 && parts[3] === "callback" && request.method === "GET") {
         return await authCallback(env, parts[2], url);
       }
+      // 카카오 연결 해제 웹훅: 카카오 서버가 보내 Origin 머리가 없다(대표 어드민 키로 확인한다)
+      if (path === "/api/auth/kakao/unlink" && (request.method === "GET" || request.method === "POST")) return await kakaoHookRoute(request, env);
+      if (path === "/api/auth/kakao/hook" && request.method === "GET") return await kakaoHookStatus(env, now);
       if (!okOrigin) throw new Fail("origin");
       if (parts[0] === "api" && parts[1] === "c") return await challengeRoute(request, env, parts.slice(2), url, now, okOrigin);
       if (parts[0] === "api" && parts[1] === "rooms" && parts.length === 2 && request.method === "POST") {
