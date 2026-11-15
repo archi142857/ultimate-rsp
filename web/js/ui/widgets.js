@@ -64,8 +64,9 @@ export function field(label, control) {
 /**
  * 손 버튼 묶음. onPick(i). 숫자 키 1~9 도 받는다(keys 가 참이면).
  * setAllowed(boolean[]), setCount(i, 남은 수)로 한정 판을 보여 준다.
+ * oneSound 가 참이면 어느 손을 내든 같은 소리가 난다(온라인 방).
  */
-export function handGrid(V, { onPick, label = t("낼 손"), names = null, keys = true, compact = false } = {}) {
+export function handGrid(V, { onPick, label = t("낼 손"), names = null, keys = true, compact = false, oneSound = false } = {}) {
   const grid = h("div", {
     class: "hands" + (V.n > 7 ? " hands-many" : "") + (V.n > 15 ? " hands-lots" : "") + (V.n > 41 ? " hands-huge" : "") + (compact ? " hands-compact" : ""),
     role: "group",
@@ -81,7 +82,7 @@ export function handGrid(V, { onPick, label = t("낼 손"), names = null, keys =
         vars: handVars(V, hd.i),
         "data-i": hd.i,
         "aria-keyshortcuts": key || undefined,
-        onclick: () => !b.disabled && (sfx("throw", hd), onPick(hd.i)),
+        onclick: () => !b.disabled && (sfx("throw", oneSound ? null : hd), onPick(hd.i)),
       },
       handArt(hd, "hand-emoji"),
       h("span", { class: "hand-name" }, names ? names[hd.i] : hd.name),

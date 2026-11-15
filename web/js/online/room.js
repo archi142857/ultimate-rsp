@@ -584,7 +584,7 @@ export function roomView(main, code) {
     const dial = timerDial();
     const line = h("p", { class: "o-p o-center room-line" });
     const awayLine = h("p", { class: "o-p o-center room-away", hidden: true });
-    const grid = watcher ? null : handGrid(V, { onPick: throwHand });
+    const grid = watcher ? null : handGrid(V, { onPick: throwHand, oneSound: true });
     const emotes = emoteBar();
     const reclaimBtn = h("button", { type: "button", class: "btn btn-ink btn-sm", onclick: () => sock.reconnect() }, t("자리 되찾기"));
     const reclaim = h("p", { class: "reclaim", hidden: true }, h("span", {}, t("컴퓨터가 대신 내고 있습니다. 손을 내면 자리로 돌아옵니다.")), reclaimBtn);

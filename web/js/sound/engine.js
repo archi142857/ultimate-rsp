@@ -190,20 +190,26 @@ function hiss(k, out, o) {
   src.stop(end + 0.02);
   return end;
 }
-/** 녹음 하나를 튼다. rate 는 빠르기(음높이). 아직 못 받은 녹음이면 그 소리만 건너뛴다 */
+/** 녹음 하나를 튼다. rate 는 빠르기(음높이), from 은 앞에서 건너뛸 길이(초). 아직 못 받은 녹음이면 그 소리만 건너뛴다 */
 export function smp(k, out, o) {
   const buf = bufOf(k, o.s);
   if (!buf) return o.at;
   const rate = o.rate || 1;
+  const from = o.from || 0;
   const src = k.ctx.createBufferSource();
   src.buffer = buf;
   src.playbackRate.value = rate;
   const g = k.ctx.createGain();
   g.gain.value = o.vol;
+  // 가운데부터 틀면 첫 표본이 0 이 아니어서 딸깍한다. 0.001초에 걸쳐 올린다
+  if (from) {
+    g.gain.setValueAtTime(0, o.at);
+    g.gain.linearRampToValueAtTime(o.vol, o.at + 0.001);
+  }
   src.connect(g);
   g.connect(out);
-  src.start(o.at);
-  return o.at + buf.duration / rate;
+  src.start(o.at, from);
+  return o.at + (buf.duration - from) / rate;
 }
 // 녹음은 누를 때마다 빠르기를 조금(±pct%) 달리해 똑같이 되풀이되지 않게 한다. 같은 녹음을 잇달아 쓰지 않게 돌려 쓴다
 const vary = (k, pct = 2.5) => 1 + ((k.rnd() - 0.5) * pct) / 50;
@@ -238,20 +244,26 @@ const pop = (k, out, at, f1, f2, vol = 0.22, d = 0.1) => tone(k, out, { f: f1, t
 // ── 소리마다의 짜임 ─────────────────────────────
 // 크기는 시안에서 맞춘 값 그대로다(가장 큰 0.1초의 A 가중 크기: 단추 −30, 손 내기 −27, 세기 −26, 공개 −21,
 // 승리 −21.5, 패배 −25, 무승부 −27.5 dB). 경기 끝은 판 결과보다 조금 크고 길다(경기 승리 −20, 경기 패배 −24).
+// 손 내는 소리는 누르는 순간(첫 0.01초)도 본다. 바위·보·톡은 −19~−20 dB 로 바로 서는데, 가위 녹음은 앞머리가 여려 −33 dB 였다
+// (사용자 11-15: 가위가 묻힌다). 그래서 가위는 앞머리를 건너뛰고 조금 키웠다(첫 0.01초 −22, 가장 큰 0.1초 −25.4 dB).
 // 값을 바꾸면 귀로만 믿지 말고 오프라인으로 뽑아 다시 잰다.
+/** 가위 녹음에서 건너뛰는 앞머리(초). 싹둑은 이 뒤에야 커진다 */
+export const SNIP_FROM = 0.022;
+// 딱: 책상을 치는 톡에 밝은 딱을 얹는다
+const rap = (k, o, at) => Math.max(smp(k, o, { s: "clack", at, vol: 0.33, rate: vary(k) }), smp(k, o, { s: "knock_2", at, vol: 0.75, rate: vary(k) }));
 export const RECIPES = {
   tap: (k, o, at) => pop(k, o, at, 480, 720, 0.2, 0.09),
-  throw_scissors: (k, o, at) => smp(k, o, { s: "snip", at, vol: 0.35, rate: vary(k, 3) }),
-  throw_rock(k, o, at) {
-    const end = smp(k, o, { s: "clack", at, vol: 0.33, rate: vary(k) });
-    return Math.max(end, smp(k, o, { s: "knock_2", at, vol: 0.75, rate: vary(k) }));
-  },
+  // 가위: 녹음의 여린 앞머리(SNIP_FROM)를 건너뛰어, 다른 손처럼 누르는 순간에 소리가 서게 한다
+  throw_scissors: (k, o, at) => smp(k, o, { s: "snip", at, from: SNIP_FROM, vol: 0.42, rate: vary(k, 3) }),
+  throw_rock: rap,
   throw_paper: (k, o, at) => smp(k, o, { s: "flip", at, vol: 0.68, rate: vary(k, 3) }),
   // 가위·바위·보가 아닌 손: 책상에 가볍게 톡
   throw_other(k, o, at) {
     const [s, vol] = turn(k, "other", [["knock_1", 0.6], ["knock_3", 0.7]]);
     return smp(k, o, { s, at, vol, rate: vary(k, 4) });
   },
+  // 손을 가리지 않는 자리(온라인 방): 어느 손이든 바위와 같은 딱
+  throw_one: rap,
   // 세는 소리 한 마디: 나무토막
   count: (k, o, at, i = 2, n = 3) => wood.block(k, o, at, countHz(i, n), 0.28),
   // 공개: 책을 내려놓는 쿵에 손뼉과 나무토막
@@ -445,8 +457,9 @@ export function createEngine(ctx, { volume = 0.8, onMusic } = {}) {
       RECIPES.tap(k, fx, at);
     } else if (name === "throw") {
       cut();
+      // 손을 주지 않으면 어느 손이든 같은 소리(온라인 방).
       // 녹음을 아직 못 받아 소리가 안 났으면 낸 것으로 치지 않는다(세는 소리가 첫 마디부터 난다)
-      if (!(RECIPES["throw_" + handKind(detail)](k, fx, at) > at)) return false;
+      if (!(RECIPES["throw_" + (detail == null ? "one" : handKind(detail))](k, fx, at) > at)) return false;
       mark.throw = at;
     } else if (name === "count") {
       const n = detail > 0 ? Math.round(detail) : 3;

@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sfx, soundState, setSound, onSoundChange, onFirstSound, HAS_MUSIC, roundTone } from "../web/js/sound/index.js";
-import { SAMPLES, SFX_SAMPLES, MUSIC_SAMPLES, MUSIC_LEVEL, SOUNDS, RECIPES, handKind, countHz, hz, gainOf, leadOf, parseWav, preload, loadMusic, canAutoplay, kitOf, createEngine } from "../web/js/sound/engine.js";
+import { SAMPLES, SFX_SAMPLES, MUSIC_SAMPLES, MUSIC_LEVEL, SOUNDS, RECIPES, SNIP_FROM, handKind, countHz, hz, gainOf, leadOf, parseWav, preload, loadMusic, canAutoplay, kitOf, createEngine } from "../web/js/sound/engine.js";
 import { BPM, STEP, BAR, TRACKS, SCORE, FORM, ONCE_STEPS, LOOP_STEPS, PAGE_LEAD, eventsOf, eventsAt, schedule, createMusic } from "../web/js/sound/music.js";
 import { CATALOG, findEntry } from "../web/js/data/catalog.js";
 import { POOL } from "../web/js/data/custom.js";
@@ -71,6 +71,7 @@ class FakeNode {
     assert.ok(Number.isFinite(at) && at >= 0 && offset >= 0);
     assert.equal(this.startAt, undefined, "한 번만 시작한다");
     this.startAt = at;
+    this.offset = offset;
   }
   stop(at) {
     assert.ok(Number.isFinite(at) && at >= this.startAt);
@@ -381,6 +382,69 @@ test("짜임: 녹음을 받은 뒤에는 모든 소리가 제때 시작하고 �
   assert.equal(new Set(kinds).size, 4);
   // 나머지 손은 두 녹음을 번갈아 튼다
   assert.notEqual(sample("throw_other"), sample("throw_other"));
+  // 손을 가리지 않는 소리는 바위와 같은 딱이다
+  assert.equal(sample("throw_one"), sample("throw_rock"));
+});
+
+test("짜임: 가위는 녹음의 여린 앞머리를 건너뛰어 누르는 순간에 소리가 선다", () => {
+  const ctx = fakeContext();
+  const k = kitOf(ctx);
+  const play = (name) => {
+    const from = ctx.made.length;
+    const end = RECIPES[name](k, ctx.destination, 1);
+    const made = ctx.made.slice(from);
+    return { end, srcs: made.filter((n) => n.kind === "src"), gains: made.filter((n) => n.kind === "gain") };
+  };
+  const snip = play("throw_scissors");
+  assert.equal(snip.srcs.length, 1);
+  const [src] = snip.srcs;
+  assert.equal(src.offset, SNIP_FROM);
+  // 재 보면 녹음은 0.024초부터 커진다. 그 앞만 건너뛴다
+  assert.ok(SNIP_FROM >= 0.015 && SNIP_FROM <= 0.024);
+  assert.ok(near(snip.end, 1 + (src.buffer.duration - SNIP_FROM) / src.playbackRate.value), "건너뛴 만큼 일찍 끝난다");
+  // 가운데부터 틀어도 딸깍하지 않게 0 에서 0.001초에 걸쳐 올린다
+  const [first, second] = snip.gains[0].gain.events;
+  assert.deepEqual(first, ["set", 0, 1]);
+  assert.equal(second[0], "lin");
+  assert.ok(second[1] > 0.35 && second[1] <= 0.5 && near(second[2], 1.001));
+  // 다른 손은 녹음을 처음부터 그대로 튼다
+  for (const name of ["throw_rock", "throw_paper", "throw_other", "throw_one"]) {
+    const { srcs, gains } = play(name);
+    for (const n of srcs) assert.equal(n.offset, 0, name);
+    for (const g of gains) assert.equal(g.gain.events.length, 0, name);
+  }
+});
+
+test("엔진: 손을 주지 않으면 어느 손이든 같은 딱, 모르는 손은 가벼운 톡", () => {
+  const ctx = fakeContext();
+  const engine = createEngine(ctx);
+  const heard = (call) => {
+    ctx.currentTime += 1;
+    const from = ctx.made.length;
+    assert.equal(call(), true);
+    return ctx.made.slice(from).filter((n) => n.kind === "src").map((n) => n.buffer.length).sort().join("+");
+  };
+  const rock = heard(() => engine.play("throw", "rock"));
+  assert.equal(heard(() => engine.play("throw")), rock);
+  assert.equal(heard(() => engine.play("throw", null)), rock);
+  assert.equal(heard(() => engine.play("throw", undefined)), rock);
+  // 손을 줬으면 그 손의 소리다. 가위·바위·보가 아닌 손은 딱이 아니라 가벼운 톡
+  assert.notEqual(heard(() => engine.play("throw", { id: "dragon" })), rock);
+  assert.notEqual(heard(() => engine.play("throw", "scissors")), rock);
+  assert.notEqual(heard(() => engine.play("throw", "paper")), rock);
+  // 이 소리도 손 내는 소리다: 바로 이어 세면 첫 마디를 대신한다
+  ctx.currentTime += 1;
+  assert.equal(engine.play("throw"), true);
+  assert.equal(engine.play("count", 3), false);
+  ctx.currentTime += 0.2;
+  assert.equal(engine.play("count", 3), true);
+});
+
+test("온라인 방의 손 칸은 어느 손이든 같은 소리를 낸다(사용자 11-15). 혼자 하는 화면은 손마다 다른 소리 그대로", () => {
+  const read = (file) => readFileSync(join(ROOT, file), "utf8");
+  assert.match(read("web/js/online/room.js"), /handGrid\(V, \{[^}]*oneSound: true/);
+  assert.match(read("web/js/ui/widgets.js"), /sfx\("throw", oneSound \? null : hd\)/);
+  for (const f of readdirSync(join(ROOT, "web/js/views"))) assert.ok(!read("web/js/views/" + f).includes("oneSound"), f);
 });
 
 test("엔진: 소리 길은 음량 → 누르개 → 스피커, 음량은 제곱으로", () => {
