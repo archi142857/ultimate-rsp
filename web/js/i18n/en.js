@@ -827,7 +827,7 @@ export const EN = {
   "남은 사람끼리 마저 하기": "Let the rest play it out",
   "사람 수": "Players",
   "{n}명": "{n}",
-  "무엇을 정하나": "Deciding",
+  "뽑을 사람": "Deciding",
   "마지막 한 명": "Last one standing",
   "술래 한 명": "Who's it",
   "컴퓨터 {n}": "Computer {n}",

@@ -44,7 +44,7 @@ export function groupView(main, entry, params, preset = {}) {
     onChange: (v) => ((players = Number(v)), newGame()),
   });
   const mSeg = segmented({
-    label: t("무엇을 정하나"),
+    label: t("뽑을 사람"),
     small: true,
     value: mode,
     options: [
