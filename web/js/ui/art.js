@@ -51,18 +51,31 @@ export function ringArt(hand, size) {
   return s("image", { class: "art-g", href: artUrl(hand), x: `-${half}`, y: `-${half}`, width: size.toFixed(2), height: size.toFixed(2) });
 }
 
-const bitmaps = new Map(); // 그림 이름 → Image
+const bitmaps = new Map(); // 그림 이름 → { sprite: 미리 구운 캔버스 }
+/** 미리 구워 두는 크기(px). 전쟁의 손은 커야 27.5 CSS px, DPR 은 2까지라 55px 이면 되니 96 은 넉넉하다 */
+const SPRITE = 96;
 
-/** 캔버스에 그릴 손 그림. 읽혔으면 Image, 아직이면 null(그동안은 이모지를 그린다) */
+/**
+ * 캔버스에 그릴 손 그림. 구워 두었으면 캔버스, 아직이면 null(그동안은 이모지를 그린다).
+ * SVG 를 drawImage 로 바로 그리면 그릴 때마다 벡터를 다시 래스터화한다(전쟁 기본 90개 × 초당 60번이면 메인 스레드가 꽉 찬다).
+ * 그래서 읽히는 대로 한 번만 비트맵으로 구워 두고 그것을 그린다(백엔드 11-12 19:23 쟀음: 24 → 60fps)
+ */
 export function artBitmap(hand) {
   if (!hasArt(hand)) return null;
   const key = artKey(hand);
-  let img = bitmaps.get(key);
-  if (!img) {
-    img = new Image();
+  let entry = bitmaps.get(key);
+  if (!entry) {
+    entry = { sprite: null };
+    bitmaps.set(key, entry);
+    const img = new Image();
     img.decoding = "async";
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = c.height = SPRITE;
+      c.getContext("2d").drawImage(img, 0, 0, SPRITE, SPRITE);
+      entry.sprite = c;
+    };
     img.src = artUrl(hand);
-    bitmaps.set(key, img);
   }
-  return img.complete && img.naturalWidth ? img : null;
+  return entry.sprite;
 }
