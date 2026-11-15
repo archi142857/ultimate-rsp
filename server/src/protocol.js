@@ -37,8 +37,11 @@ export const GROUP_SEATS = { min: 3, max: 10, default: 5 };
 export const GROUP_MODES = ["survive", "loser"];
 /** 끊긴 자리를 지키는 시간 */
 export const GRACE_MS = 60_000;
-/** 공개 연출 몫. 다음 판 마감에 더한다 */
-export const REVEAL_MS = 2500;
+/**
+ * 공개 연출 몫. 다음 판 마감에 더한다(11-15 사용자: 결과를 보이는 시간은 다음 판 시간에 넣지 않는다).
+ * 화면의 공개(셋 세기 420ms×3 + 결과 2.4초 + 다음 판 번호 0.8초 ≈ 4.5초)가 끝날 때 다음 판 시계가 정한 시간(20초 판이면 20)에서 시작한다
+ */
+export const REVEAL_MS = 4500;
 /** 연달아 이만큼 시간을 넘기면 봇이 자리를 잇는다 */
 export const AFK_LIMIT = 3;
 /** 아무도 안 낸 판이 이만큼 이어지면 시간을 멈춘다 */

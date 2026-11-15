@@ -52,3 +52,13 @@ test("코드 글자, 이모트, 다시 붙는 간격", () => {
   for (let i = 1; i < P.RETRY_MS.length; i++) assert.ok(P.RETRY_MS[i] > P.RETRY_MS[i - 1]);
   assert.ok(P.GROUP_SEATS.min <= P.GROUP_SEATS.default && P.GROUP_SEATS.default <= P.GROUP_SEATS.max);
 });
+
+test("공개 연출 몫(REVEAL_MS)은 화면의 공개 연출(셋 세기·결과·다음 판 번호)만큼이다", () => {
+  // 11-15 사용자: 결과를 보이는 시간은 다음 판 시간에 넣지 않는다. 화면이 연출을 늘리거나 줄이면 이 값도 맞춘다
+  const src = readFileSync(fileURLToPath(new URL("../../web/js/online/room.js", import.meta.url)), "utf8");
+  const num = (k) => Number((src.match(new RegExp(`const ${k} = (\\d+);`)) || [])[1]);
+  const shown = 3 * num("COUNT_MS") + num("SHOW_MS") + num("NEXT_MS");
+  assert.ok(shown > 0, "화면의 COUNT_MS·SHOW_MS·NEXT_MS 를 못 찾음");
+  assert.ok(P.REVEAL_MS >= shown, `REVEAL_MS ${P.REVEAL_MS} < 화면 연출 ${shown}`);
+  assert.ok(P.REVEAL_MS - shown < 1000, `REVEAL_MS ${P.REVEAL_MS} 가 화면 연출 ${shown} 보다 1초 넘게 길다`);
+});
